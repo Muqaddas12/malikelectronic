@@ -1,0 +1,103 @@
+import { Inverter } from '@/types/inverter';
+
+export const inverters: Inverter[] = [
+  {
+    id: 'luminous-ecovolt-1650',
+    brand: 'Luminous',
+    model: 'EcoVolt 1650',
+    capacity: '1650 VA',
+    batteryVoltage: '12V',
+    type: 'Home UPS / Inverter',
+    image: require('@/assets/inverters/luminous-ecovolt.png'),
+
+    faults: [
+      'overload',
+      'low-battery',
+      'battery-dead',
+      'mosfet',
+      'relay',
+      'switch',
+      'fuse',
+      'charging',
+      'short-circuit',
+      'overheating',
+      'no-output',
+    ],
+  },
+
+  {
+    id: 'microtek-inverter',
+    brand: 'Microtek',
+    model: 'Home UPS',
+    capacity: '1400 VA',
+    batteryVoltage: '12V',
+    type: 'Digital Inverter',
+    image: require('@/assets/inverters/microtek.png'),
+
+    faults: [
+      'overload',
+      'low-battery',
+      'battery-dead',
+      'mosfet',
+      'relay',
+      'switch',
+      'fuse',
+      'charging',
+      'short-circuit',
+      'overheating',
+      'no-output',
+    ],
+  },
+
+  {
+    id: 'livguard-inverter',
+    brand: 'Livguard',
+    model: 'Pure Sine Wave',
+    capacity: '1600 VA',
+    batteryVoltage: '12V',
+    type: 'Pure Sine Wave Inverter',
+    image: require('@/assets/inverters/livguard.png'),
+
+    faults: [
+      'overload',
+      'low-battery',
+      'battery-dead',
+      'mosfet',
+      'relay',
+      'switch',
+      'fuse',
+      'charging',
+      'short-circuit',
+      'overheating',
+      'fan',
+      'no-output',
+    ],
+  },
+
+  {
+    id: 'generic-inverter',
+    brand: 'Generic',
+    model: 'Home Inverter',
+    capacity: '600–2000 VA',
+    batteryVoltage: '12V / 24V',
+    type: 'Home UPS',
+    image: require('@/assets/inverters/generic.png'),
+
+    faults: [
+      'overload',
+      'low-battery',
+      'battery-dead',
+      'mosfet',
+      'relay',
+      'switch',
+      'fuse',
+      'charging',
+      'short-circuit',
+      'overheating',
+      'transformer',
+      'pcb',
+      'fan',
+      'no-output',
+    ],
+  },
+];
