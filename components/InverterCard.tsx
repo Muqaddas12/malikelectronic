@@ -1,5 +1,4 @@
 import React from 'react';
-
 import {
   Image,
   Pressable,
@@ -44,30 +43,14 @@ export default function InverterCard({
           {inverter.brand}
         </Text>
 
-        <Text style={styles.model}>
+        <Text style={styles.model} numberOfLines={1}>
           {inverter.model}
         </Text>
 
         <View style={styles.infoRow}>
-          <View style={styles.info}>
-            <Text style={styles.label}>
-              {tr(language, 'capacity')}
-            </Text>
-
-            <Text style={styles.value}>
-              {inverter.capacity}
-            </Text>
-          </View>
-
-          <View style={styles.info}>
-            <Text style={styles.label}>
-              {tr(language, 'battery')}
-            </Text>
-
-            <Text style={styles.value}>
-              {inverter.batteryVoltage}
-            </Text>
-          </View>
+          <Text style={styles.specsText}>
+            {inverter.capacity} • {inverter.batteryVoltage}
+          </Text>
         </View>
 
         <Text style={styles.faultCount}>
@@ -87,32 +70,34 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
-    borderRadius: 20,
-    marginBottom: 16,
-    padding: 14,
+    borderRadius: 16,
+    marginBottom: 10,
+    padding: 10,
     shadowColor: '#000',
-    shadowOpacity: 0.08,
-    shadowRadius: 10,
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
     shadowOffset: {
       width: 0,
-      height: 4,
+      height: 2,
     },
-    elevation: 3,
+    elevation: 2,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
   },
 
   pressed: {
     opacity: 0.75,
     transform: [
       {
-        scale: 0.98,
+        scale: 0.99,
       },
     ],
   },
 
   imageContainer: {
-    width: 115,
-    height: 105,
-    borderRadius: 16,
+    width: 78,
+    height: 72,
+    borderRadius: 12,
     backgroundColor: '#F4F6F8',
     alignItems: 'center',
     justifyContent: 'center',
@@ -120,60 +105,53 @@ const styles = StyleSheet.create({
   },
 
   image: {
-    width: '95%',
-    height: '95%',
+    width: '92%',
+    height: '92%',
   },
 
   content: {
     flex: 1,
-    paddingLeft: 15,
+    paddingLeft: 12,
   },
 
   brand: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#6B7280',
-    marginBottom: 3,
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#2563EB',
+    textTransform: 'uppercase',
+    letterSpacing: 0.3,
   },
 
   model: {
-    fontSize: 18,
-    fontWeight: '800',
+    fontSize: 15,
+    fontWeight: '900',
     color: '#111827',
-    marginBottom: 10,
+    marginTop: 1,
+    marginBottom: 3,
   },
 
   infoRow: {
     flexDirection: 'row',
-    gap: 20,
+    alignItems: 'center',
   },
 
-  info: {
-    minWidth: 70,
-  },
-
-  label: {
-    fontSize: 11,
-    color: '#9CA3AF',
-  },
-
-  value: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: '#374151',
-    marginTop: 2,
+  specsText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#4B5563',
   },
 
   faultCount: {
-    marginTop: 9,
-    fontSize: 12,
-    color: '#2563EB',
-    fontWeight: '600',
+    marginTop: 4,
+    fontSize: 11,
+    color: '#15803D',
+    fontWeight: '700',
   },
 
   arrow: {
-    fontSize: 32,
+    fontSize: 22,
     color: '#9CA3AF',
+    fontWeight: '600',
     paddingHorizontal: 4,
   },
 });

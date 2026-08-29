@@ -1,15 +1,15 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-  BackHandler,
-  Dimensions,
-  FlatList,
-  Pressable,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
+    BackHandler,
+    Dimensions,
+    FlatList,
+    Pressable,
+    ScrollView,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TextInput,
+    View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -740,15 +740,15 @@ const styles = StyleSheet.create({
 
   icCard: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 18,
-    padding: 16,
+    borderRadius: 14,
+    padding: 11,
     borderWidth: 1,
     borderColor: '#E5E7EB',
     shadowColor: '#000',
-    shadowOpacity: 0.03,
-    shadowRadius: 6,
-    elevation: 2,
-    marginBottom: 2,
+    shadowOpacity: 0.02,
+    shadowRadius: 4,
+    elevation: 1,
+    marginBottom: 1,
   },
 
   icCardPressed: {
@@ -761,74 +761,74 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 6,
   },
 
   icCatBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
+    gap: 3,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
     borderWidth: 1,
   },
 
   icCatIcon: {
-    fontSize: 12,
+    fontSize: 10,
   },
 
   icCatText: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '800',
   },
 
   icPinsBadge: {
     backgroundColor: '#F1F5F9',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 5,
   },
 
   icPinsBadgeText: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '700',
     color: '#475569',
   },
 
   icTitleText: {
-    fontSize: 18,
+    fontSize: 15,
     fontWeight: '900',
     color: '#0F172A',
-    marginBottom: 2,
+    marginBottom: 1,
   },
 
   icAliasesText: {
-    fontSize: 12,
+    fontSize: 11,
     color: '#64748B',
-    marginBottom: 8,
+    marginBottom: 4,
     fontWeight: '600',
   },
 
   icDescText: {
-    fontSize: 13,
-    lineHeight: 19,
+    fontSize: 12,
+    lineHeight: 17,
     color: '#334155',
-    marginBottom: 10,
+    marginBottom: 6,
   },
 
   icAppSnippet: {
     backgroundColor: '#F8FAFC',
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
+    borderRadius: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
     borderLeftWidth: 3,
     borderLeftColor: '#2563EB',
-    marginBottom: 12,
+    marginBottom: 8,
   },
 
   icAppSnippetText: {
-    fontSize: 12,
+    fontSize: 11,
     color: '#1E40AF',
     fontWeight: '600',
   },
@@ -839,11 +839,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderTopWidth: 1,
     borderTopColor: '#F1F5F9',
-    paddingTop: 10,
+    paddingTop: 6,
   },
 
   icCardFooterAction: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '800',
     color: '#2563EB',
   },

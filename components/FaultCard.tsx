@@ -1,5 +1,4 @@
 import React from 'react';
-
 import {
   Pressable,
   StyleSheet,
@@ -54,7 +53,7 @@ export default function FaultCard({
 
       <View style={styles.content}>
         <View style={styles.titleRow}>
-          <Text style={styles.title}>
+          <Text style={styles.title} numberOfLines={1}>
             {fault.title}
           </Text>
 
@@ -72,7 +71,7 @@ export default function FaultCard({
           </View>
         </View>
 
-        <Text style={styles.subtitle} numberOfLines={2}>
+        <Text style={styles.subtitle} numberOfLines={1}>
           {fault.subtitle}
         </Text>
 
@@ -87,34 +86,40 @@ export default function FaultCard({
 const styles = StyleSheet.create({
   card: {
     flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: '#FFFFFF',
-    borderRadius: 18,
-    padding: 15,
-    marginBottom: 12,
+    borderRadius: 14,
+    padding: 10,
+    marginBottom: 8,
     borderWidth: 1,
     borderColor: '#E5E7EB',
+    shadowColor: '#000',
+    shadowOpacity: 0.03,
+    shadowRadius: 4,
+    elevation: 1,
   },
 
   pressed: {
     opacity: 0.7,
+    transform: [{ scale: 0.99 }],
   },
 
   iconContainer: {
-    width: 52,
-    height: 52,
-    borderRadius: 16,
+    width: 42,
+    height: 42,
+    borderRadius: 12,
     backgroundColor: '#F3F4F6',
     alignItems: 'center',
     justifyContent: 'center',
   },
 
   icon: {
-    fontSize: 25,
+    fontSize: 20,
   },
 
   content: {
     flex: 1,
-    marginLeft: 13,
+    marginLeft: 10,
   },
 
   titleRow: {
@@ -125,35 +130,35 @@ const styles = StyleSheet.create({
 
   title: {
     flex: 1,
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '800',
     color: '#111827',
   },
 
   subtitle: {
-    fontSize: 13,
+    fontSize: 11,
     color: '#6B7280',
-    marginTop: 4,
-    lineHeight: 19,
+    marginTop: 2,
+    lineHeight: 16,
   },
 
   tap: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '700',
     color: '#2563EB',
-    marginTop: 8,
+    marginTop: 4,
   },
 
   badge: {
-    borderRadius: 7,
-    paddingHorizontal: 7,
-    paddingVertical: 4,
+    borderRadius: 5,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
     marginLeft: 6,
   },
 
   badgeText: {
     color: '#FFFFFF',
-    fontSize: 9,
+    fontSize: 8,
     fontWeight: '900',
   },
 });

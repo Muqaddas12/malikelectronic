@@ -1,11 +1,11 @@
 import React from 'react';
 import {
-  Pressable,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  View,
+    Pressable,
+    ScrollView,
+    StatusBar,
+    StyleSheet,
+    Text,
+    View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -158,19 +158,19 @@ const styles = StyleSheet.create({
   /* TOOLS LIST */
 
   toolsContainer: {
-    gap: 14,
+    gap: 10,
   },
 
   toolCard: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 22,
-    padding: 18,
+    borderRadius: 16,
+    padding: 12,
     borderWidth: 1,
     borderColor: '#E5E7EB',
     shadowColor: '#000',
-    shadowOpacity: 0.06,
-    shadowRadius: 10,
-    elevation: 3,
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
+    elevation: 2,
   },
 
   toolCardPressed: {
@@ -181,13 +181,13 @@ const styles = StyleSheet.create({
   toolHeaderRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    gap: 14,
+    gap: 10,
   },
 
   toolIconBox: {
-    width: 52,
-    height: 52,
-    borderRadius: 16,
+    width: 42,
+    height: 42,
+    borderRadius: 12,
     backgroundColor: '#F8FAFC',
     borderWidth: 1,
     borderColor: '#E2E8F0',
@@ -196,69 +196,69 @@ const styles = StyleSheet.create({
   },
 
   toolIconText: {
-    fontSize: 26,
+    fontSize: 20,
   },
 
   badgeRow: {
     flexDirection: 'row',
-    marginBottom: 4,
+    marginBottom: 3,
   },
 
   badge: {
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 6,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 5,
   },
 
   badgeText: {
     color: '#FFFFFF',
-    fontSize: 10,
+    fontSize: 9,
     fontWeight: '900',
     letterSpacing: 0.5,
   },
 
   toolTitle: {
-    fontSize: 18,
+    fontSize: 15,
     fontWeight: '900',
     color: '#111827',
   },
 
   toolSubtitle: {
-    fontSize: 12,
+    fontSize: 11,
     color: '#6B7280',
-    marginTop: 2,
+    marginTop: 1,
   },
 
   toolDescription: {
-    fontSize: 13,
-    lineHeight: 19,
+    fontSize: 12,
+    lineHeight: 17,
     color: '#4B5563',
-    marginTop: 12,
+    marginTop: 8,
   },
 
   tagRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 6,
-    marginTop: 12,
+    gap: 5,
+    marginTop: 8,
   },
 
   tagPill: {
     backgroundColor: '#F1F5F9',
-    paddingHorizontal: 9,
-    paddingVertical: 4,
-    borderRadius: 8,
+    paddingHorizontal: 7,
+    paddingVertical: 3,
+    borderRadius: 6,
   },
 
   tagText: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '700',
     color: '#475569',
   },
 
   actionStrip: {
-    marginTop: 14,
-    paddingTop: 12,
+    marginTop: 10,
+    paddingTop: 8,
     borderTopWidth: 1,
     borderTopColor: '#F3F4F6',
     flexDirection: 'row',
@@ -266,7 +266,7 @@ const styles = StyleSheet.create({
   },
 
   actionText: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '800',
     color: '#2563EB',
   },

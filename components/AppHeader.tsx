@@ -45,30 +45,10 @@ export default function AppHeader({
       />
 
       <View style={styles.headerContainer}>
-        {/* Top Action Row (Back Button / Brand on Left, Hamburger Menu on Right) */}
+        {/* Top Action Row (Hamburger Menu & Back Button on LEFT, Brand Logo on RIGHT) */}
         <View style={styles.topRow}>
-          {showBack ? (
-            <Pressable
-              onPress={handleBack}
-              style={styles.backButton}
-              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-            >
-              <Text style={styles.backText}>
-                {backLabel || tr(language, 'back')}
-              </Text>
-            </Pressable>
-          ) : (
-            <View style={styles.brandRow}>
-              <View style={styles.brandIconCircle}>
-                <Text style={styles.brandIcon}>⚡</Text>
-              </View>
-              <Text style={styles.appName}>{tr(language, 'appName')}</Text>
-            </View>
-          )}
-
-          <View style={styles.rightActions}>
-            {rightComponent}
-
+          {/* LEFT SIDE: Hamburger Menu Button & Back Button */}
+          <View style={styles.leftActions}>
             {showMenu && (
               <Pressable
                 onPress={() => setSidebarVisible(true)}
@@ -86,6 +66,32 @@ export default function AppHeader({
                 </View>
                 <Text style={styles.langIndicator}>{language.toUpperCase()}</Text>
               </Pressable>
+            )}
+
+            {showBack && (
+              <Pressable
+                onPress={handleBack}
+                style={styles.backButton}
+                hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+              >
+                <Text style={styles.backText}>
+                  {backLabel || tr(language, 'back')}
+                </Text>
+              </Pressable>
+            )}
+          </View>
+
+          {/* RIGHT SIDE: App Brand Logo or Custom Right Component */}
+          <View style={styles.rightActions}>
+            {rightComponent ? (
+              rightComponent
+            ) : (
+              <View style={styles.brandRow}>
+                <View style={styles.brandIconCircle}>
+                  <Text style={styles.brandIcon}>⚡</Text>
+                </View>
+                <Text style={styles.appName}>{tr(language, 'appName')}</Text>
+              </View>
             )}
           </View>
         </View>
@@ -113,47 +119,12 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
 
-  brandRow: {
+  /* LEFT ACTIONS */
+
+  leftActions: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-  },
-
-  brandIconCircle: {
-    width: 28,
-    height: 28,
-    borderRadius: 8,
-    backgroundColor: '#EFF6FF',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-
-  brandIcon: {
-    fontSize: 14,
-  },
-
-  appName: {
-    fontSize: 15,
-    fontWeight: '800',
-    color: '#2563EB',
-    letterSpacing: 0.2,
-  },
-
-  backButton: {
-    paddingVertical: 6,
-    paddingRight: 15,
-  },
-
-  backText: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: '#2563EB',
-  },
-
-  rightActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+    gap: 10,
   },
 
   menuButton: {
@@ -196,11 +167,59 @@ const styles = StyleSheet.create({
     color: '#2563EB',
   },
 
+  backButton: {
+    paddingVertical: 6,
+    paddingHorizontal: 8,
+    backgroundColor: '#EFF6FF',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#DBEAFE',
+  },
+
+  backText: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#2563EB',
+  },
+
+  /* RIGHT ACTIONS */
+
+  rightActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+
+  brandRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+
+  brandIconCircle: {
+    width: 26,
+    height: 26,
+    borderRadius: 7,
+    backgroundColor: '#EFF6FF',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  brandIcon: {
+    fontSize: 13,
+  },
+
+  appName: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#2563EB',
+    letterSpacing: 0.2,
+  },
+
   pageTitle: {
     fontSize: 22,
     fontWeight: '900',
     color: '#111827',
-    marginTop: 2,
+    marginTop: 4,
   },
 
   pageSubtitle: {
@@ -209,4 +228,3 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
 });
-

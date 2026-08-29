@@ -11,7 +11,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import AppHeader from '@/components/AppHeader';
 import InverterCard from '@/components/InverterCard';
 import SearchBar from '@/components/SearchBar';
-import SectionTitle from '@/components/SectionTitle';
 
 import { useLanguage } from '@/context/LanguageContext';
 import { tr } from '@/data/translations';
@@ -51,11 +50,9 @@ export default function TabOneScreen() {
         backgroundColor="#F7F8FA"
       />
 
-      {/* Header Bar with App Name and Sidebar Hamburger Menu */}
+      {/* Header Bar with App Brand & Sidebar Hamburger Menu */}
       <AppHeader
         showBack={false}
-        title={tr(language, 'appTagline')}
-        subtitle={tr(language, 'appDescription')}
         showMenu={true}
       />
 
@@ -83,14 +80,6 @@ export default function TabOneScreen() {
               value={search}
               onChangeText={setSearch}
               placeholder={tr(language, 'searchModelOrBrand')}
-            />
-
-            <SectionTitle
-              title={tr(language, 'selectInverter')}
-              subtitle={`${filteredInverters.length} ${tr(
-                language,
-                'modelsAvailable',
-              )}`}
             />
           </View>
         }
@@ -123,7 +112,7 @@ const styles = StyleSheet.create({
   },
 
   listHeader: {
-    paddingBottom: 6,
+    paddingBottom: 10,
   },
 
   empty: {
