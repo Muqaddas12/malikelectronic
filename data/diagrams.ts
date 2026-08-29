@@ -78,8 +78,9 @@ export const diagramMap: Record<string, Record<string, any>> = {
  * Returns the diagram image or undefined if not available.
  */
 export function getDiagramImage(
-  inverterId: string,
-  faultId: string,
+  inverterId?: string,
+  faultId?: string,
 ): any | undefined {
+  if (!inverterId || !faultId) return undefined;
   return diagramMap[inverterId]?.[faultId];
 }

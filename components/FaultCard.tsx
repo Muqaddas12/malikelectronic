@@ -57,17 +57,25 @@ export default function FaultCard({
             {fault.title}
           </Text>
 
-          <View
-            style={[
-              styles.badge,
-              {
-                backgroundColor: severityColor,
-              },
-            ]}
-          >
-            <Text style={styles.badgeText}>
-              {tr(language, severityKey)}
-            </Text>
+          <View style={styles.badgeGroup}>
+            {fault.diagramImage ? (
+              <View style={styles.diagramBadge}>
+                <Text style={styles.diagramBadgeText}>SCHEMATIC</Text>
+              </View>
+            ) : null}
+
+            <View
+              style={[
+                styles.badge,
+                {
+                  backgroundColor: severityColor,
+                },
+              ]}
+            >
+              <Text style={styles.badgeText}>
+                {tr(language, severityKey)}
+              </Text>
+            </View>
           </View>
         </View>
 
@@ -135,6 +143,29 @@ const styles = StyleSheet.create({
     color: '#111827',
   },
 
+  badgeGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginLeft: 6,
+  },
+
+  diagramBadge: {
+    backgroundColor: '#DCFCE7',
+    borderRadius: 4,
+    paddingHorizontal: 5,
+    paddingVertical: 2,
+    borderWidth: 0.5,
+    borderColor: '#86EFAC',
+  },
+
+  diagramBadgeText: {
+    color: '#15803D',
+    fontSize: 8,
+    fontWeight: '900',
+    letterSpacing: 0.3,
+  },
+
   subtitle: {
     fontSize: 11,
     color: '#6B7280',
@@ -153,7 +184,6 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     paddingHorizontal: 6,
     paddingVertical: 2,
-    marginLeft: 6,
   },
 
   badgeText: {

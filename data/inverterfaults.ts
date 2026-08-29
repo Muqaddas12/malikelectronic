@@ -3954,6 +3954,7 @@ import { getTranslatedFault } from '@/data/faultTranslationsHi';
 
 /**
  * Get all faults for a given inverter as an array (for list rendering).
+ * Attaches circuit diagrams from assets when available.
  */
 export function getFaultsForInverter(
   inverterId: string,
@@ -3961,9 +3962,34 @@ export function getFaultsForInverter(
 ): InverterFaultDetail[] {
   const map = inverterFaultsMap[inverterId];
   if (!map) return [];
-  return Object.values(map).map((f) =>
-    getTranslatedFault(inverterId, f, language),
-  );
+
+  const list: InverterFaultDetail[] = [];
+
+  for (const fault of Object.values(map)) {
+    if (!fault || !fault.id) continue;
+    const diagram = getDiagramImage(inverterId, fault.id);
+    const diagramImg = diagram ?? fault.diagramImage;
+
+    // Only include faults that have real circuit diagram assets
+    if (!diagramImg) continue;
+
+    const faultWithDiagram: InverterFaultDetail = {
+      ...fault,
+      diagramImage: diagramImg,
+    };
+
+    const translated = getTranslatedFault(
+      inverterId,
+      faultWithDiagram,
+      language,
+    );
+
+    if (translated) {
+      list.push(translated);
+    }
+  }
+
+  return list;
 }
 
 /**
@@ -3974,6 +4000,7 @@ export function getInverterFault(
   faultId: string,
   language = 'en',
 ): InverterFaultDetail | undefined {
+  if (!inverterId || !faultId) return undefined;
   const fault = inverterFaultsMap[inverterId]?.[faultId];
   if (!fault) return undefined;
   const diagram = getDiagramImage(inverterId, faultId);

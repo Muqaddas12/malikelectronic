@@ -1,15 +1,14 @@
 import React from 'react';
 import {
-  Image,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
+    Image,
+    Pressable,
+    StyleSheet,
+    Text,
+    View,
 } from 'react-native';
 
-import { Inverter } from '@/types/inverter';
 import { useLanguage } from '@/context/LanguageContext';
-import { tr } from '@/data/translations';
+import { Inverter } from '@/types/inverter';
 
 type Props = {
   inverter: Inverter;
@@ -54,7 +53,12 @@ export default function InverterCard({
         </View>
 
         <Text style={styles.faultCount}>
-          {inverter.faults.length} {tr(language, 'troubleshootingTopics')}
+          {inverter.faults.length}{' '}
+          {language === 'hi'
+            ? 'सर्किट डायग्राम उपलब्ध'
+            : inverter.faults.length === 1
+            ? 'Circuit Diagram'
+            : 'Circuit Diagrams'}
         </Text>
       </View>
 

@@ -743,6 +743,10 @@ export function getTranslatedFault(
   fault: InverterFaultDetail,
   language: string,
 ): InverterFaultDetail {
+  if (!fault) {
+    return fault;
+  }
+
   if (language !== 'hi') {
     return fault;
   }
