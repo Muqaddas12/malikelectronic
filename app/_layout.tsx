@@ -194,6 +194,10 @@ export default function RootLayout() {
             name="tools/dip-calculator"
             options={{ headerShown: false }}
           />
+          <Stack.Screen
+            name="tools/ic-guide"
+            options={{ headerShown: false }}
+          />
         </Stack>
       </ThemeProvider>
     </LanguageProvider>

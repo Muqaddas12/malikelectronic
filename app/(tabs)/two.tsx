@@ -1,8 +1,5 @@
-import React, { useState } from 'react';
-
+import React from 'react';
 import {
-  Dimensions,
-  FlatList,
   Pressable,
   ScrollView,
   StatusBar,
@@ -10,10 +7,9 @@ import {
   Text,
   View,
 } from 'react-native';
-
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import Sidebar from '@/components/Sidebar';
+import AppHeader from '@/components/AppHeader';
 import { useLanguage } from '@/context/LanguageContext';
 import { tr } from '@/data/translations';
 import { useSafeNavigate } from '@/hooks/useSafeNavigate';
@@ -21,7 +17,6 @@ import { useSafeNavigate } from '@/hooks/useSafeNavigate';
 export default function ToolsListScreen() {
   const { language } = useLanguage();
   const { safePush } = useSafeNavigate();
-  const [sidebarVisible, setSidebarVisible] = useState(false);
 
   const toolsList = [
     {
@@ -52,63 +47,42 @@ export default function ToolsListScreen() {
       tags: ['4-Band', '5-Band', 'Live Graphics', '±0.05% to ±10%'],
       route: '/tools/dip-calculator' as const,
     },
+    {
+      id: 'ic-guide',
+      icon: '💾',
+      badge: language === 'hi' ? 'DIP व SMD ICs' : 'DIP & SMD ICs',
+      badgeColor: '#7C3AED',
+      title: tr(language, 'icGuideTitle'),
+      subtitle: tr(language, 'icGuideSubtitle'),
+      description:
+        language === 'hi'
+          ? 'LM324, SG3525, ULN2003, 7805, MOC3021, PC817, PIC16F72 आदि 200+ मुख्य ICs के कंबाइंड DIP और SMD विजुअल डायग्राम, कार्यप्रणाली, पिन विवरण और टेस्टिंग टिप्स।'
+          : '200+ IC directory with combined DIP & SMD visual graphics, complete pinout details, simple working principles, and multimeter testing voltages.',
+      tags: ['200+ ICs Directory', 'DIP & SMD Graphic', 'Working Principles', 'Pin Tables'],
+      route: '/tools/ic-guide' as const,
+    },
   ];
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="dark-content" backgroundColor="#F7F8FA" />
 
-      {/* Slide-in Sidebar Drawer */}
-      <Sidebar
-        visible={sidebarVisible}
-        onClose={() => setSidebarVisible(false)}
+      {/* Header Bar with App Name and Sidebar Drawer */}
+      <AppHeader
+        showBack={false}
+        title={tr(language, 'tools')}
+        subtitle={
+          language === 'hi'
+            ? 'इन्वर्टर और इलेक्ट्रॉनिक PCB रिपेयरिंग के लिए उपयोगी टूल्स, कैलकुलेटर व IC गाइड।'
+            : 'Essential calculators, pinout guides, and reference tools for inverter & PCB technicians.'
+        }
+        showMenu={true}
       />
 
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.content}
       >
-        {/* Top Navigation Bar with App Name and Sidebar Hamburger Menu */}
-        <View style={styles.topBar}>
-          <View style={styles.brandRow}>
-            <View style={styles.brandIconCircle}>
-              <Text style={styles.brandIcon}>⚡</Text>
-            </View>
-            <Text style={styles.appName}>
-              {tr(language, 'appName')}
-            </Text>
-          </View>
-
-          <Pressable
-            onPress={() => setSidebarVisible(true)}
-            style={({ pressed }) => [
-              styles.menuButton,
-              pressed && styles.menuButtonPressed,
-            ]}
-            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-            accessibilityLabel="Open settings menu"
-          >
-            <View style={styles.hamburgerIcon}>
-              <View style={styles.hamburgerBar} />
-              <View style={styles.hamburgerBar} />
-              <View style={styles.hamburgerBar} />
-            </View>
-            <Text style={styles.langIndicator}>
-              {language.toUpperCase()}
-            </Text>
-          </Pressable>
-        </View>
-
-        {/* Page Heading */}
-        <Text style={styles.pageTitle}>
-          {tr(language, 'tools')}
-        </Text>
-        <Text style={styles.pageSubtitle}>
-          {language === 'hi'
-            ? 'इन्वर्टर और इलेक्ट्रॉनिक PCB रिपेयरिंग के लिए उपयोगी टूल्स व कैलकुलेटर।'
-            : 'Essential calculators and reference tools for inverter & PCB technicians.'}
-        </Text>
-
         {/* Tools Cards List */}
         <View style={styles.toolsContainer}>
           {toolsList.map((tool) => (
@@ -158,50 +132,11 @@ export default function ToolsListScreen() {
               {/* Action Button Strip */}
               <View style={styles.actionStrip}>
                 <Text style={styles.actionText}>
-                  {language === 'hi' ? 'कैलकुलेटर खोलें →' : 'Open Calculator →'}
+                  {language === 'hi' ? 'खोलें / Open →' : 'Open →'}
                 </Text>
               </View>
             </Pressable>
           ))}
-        </View>
-
-        {/* Quick Inverter Resistor Reference Card */}
-        <View style={styles.referenceCard}>
-          <Text style={styles.referenceTitle}>
-            ⚡ {language === 'hi' ? 'मुख्य इन्वर्टर SMD कोड्स' : 'Common Inverter SMD Resistor Codes'}
-          </Text>
-          <Text style={styles.referenceDesc}>
-            {language === 'hi'
-              ? 'ल्युमिनस, माइक्रोटेक और लिवगार्ड इन्वर्टर PCB में इस्तेमाल होने वाले महत्वपूर्ण कोड:'
-              : 'Important resistor values used in Luminous, Microtek & Livguard PCBs:'}
-          </Text>
-
-          <View style={styles.refGrid}>
-            <View style={styles.refItem}>
-              <Text style={styles.refCode}>1001</Text>
-              <Text style={styles.refVal}>1 kΩ (1,000 Ω)</Text>
-            </View>
-            <View style={styles.refItem}>
-              <Text style={styles.refCode}>1002</Text>
-              <Text style={styles.refVal}>10 kΩ (10,000 Ω)</Text>
-            </View>
-            <View style={styles.refItem}>
-              <Text style={styles.refCode}>1502</Text>
-              <Text style={styles.refVal}>15 kΩ (15,000 Ω)</Text>
-            </View>
-            <View style={styles.refItem}>
-              <Text style={styles.refCode}>2201</Text>
-              <Text style={styles.refVal}>2.2 kΩ (2,200 Ω)</Text>
-            </View>
-            <View style={styles.refItem}>
-              <Text style={styles.refCode}>5101</Text>
-              <Text style={styles.refVal}>5.1 kΩ (5,100 Ω)</Text>
-            </View>
-            <View style={styles.refItem}>
-              <Text style={styles.refCode}>4R7</Text>
-              <Text style={styles.refVal}>4.7 Ω (Gate Resistor)</Text>
-            </View>
-          </View>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -216,96 +151,8 @@ const styles = StyleSheet.create({
 
   content: {
     paddingHorizontal: 18,
-    paddingTop: 12,
+    paddingTop: 8,
     paddingBottom: 40,
-  },
-
-  topBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 10,
-  },
-
-  brandRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-
-  brandIconCircle: {
-    width: 28,
-    height: 28,
-    borderRadius: 8,
-    backgroundColor: '#EFF6FF',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-
-  brandIcon: {
-    fontSize: 14,
-  },
-
-  appName: {
-    fontSize: 15,
-    fontWeight: '800',
-    color: '#2563EB',
-    letterSpacing: 0.2,
-  },
-
-  menuButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 7,
-    backgroundColor: '#FFFFFF',
-    paddingVertical: 7,
-    paddingHorizontal: 11,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    shadowColor: '#000',
-    shadowOpacity: 0.04,
-    shadowRadius: 4,
-    elevation: 1,
-  },
-
-  menuButtonPressed: {
-    opacity: 0.7,
-    backgroundColor: '#F3F4F6',
-  },
-
-  hamburgerIcon: {
-    width: 15,
-    height: 12,
-    justifyContent: 'space-between',
-  },
-
-  hamburgerBar: {
-    width: '100%',
-    height: 2,
-    backgroundColor: '#111827',
-    borderRadius: 1,
-  },
-
-  langIndicator: {
-    fontSize: 11,
-    fontWeight: '800',
-    color: '#2563EB',
-  },
-
-  pageTitle: {
-    fontSize: 28,
-    fontWeight: '900',
-    color: '#111827',
-    marginTop: 6,
-  },
-
-  pageSubtitle: {
-    fontSize: 13,
-    lineHeight: 20,
-    color: '#6B7280',
-    marginTop: 4,
-    marginBottom: 18,
   },
 
   /* TOOLS LIST */
@@ -422,55 +269,5 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '800',
     color: '#2563EB',
-  },
-
-  /* REFERENCE CARD */
-
-  referenceCard: {
-    backgroundColor: '#0F172A',
-    borderRadius: 20,
-    padding: 18,
-    marginTop: 20,
-  },
-
-  referenceTitle: {
-    fontSize: 15,
-    fontWeight: '900',
-    color: '#F8FAFC',
-  },
-
-  referenceDesc: {
-    fontSize: 12,
-    color: '#94A3B8',
-    marginTop: 4,
-    marginBottom: 12,
-  },
-
-  refGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-
-  refItem: {
-    width: '48%',
-    backgroundColor: '#1E293B',
-    padding: 10,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: '#334155',
-  },
-
-  refCode: {
-    color: '#38BDF8',
-    fontSize: 14,
-    fontWeight: '900',
-    fontFamily: 'monospace',
-  },
-
-  refVal: {
-    color: '#E2E8F0',
-    fontSize: 11,
-    marginTop: 2,
   },
 });

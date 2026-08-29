@@ -1,20 +1,18 @@
 import React, { useState } from 'react';
-
 import {
-    Pressable,
-    ScrollView,
-    StatusBar,
-    StyleSheet,
-    Text,
-    TextInput,
-    View
+  Pressable,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
 } from 'react-native';
-
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import AppHeader from '@/components/AppHeader';
 import { useLanguage } from '@/context/LanguageContext';
 import { tr } from '@/data/translations';
-import { useSafeNavigate } from '@/hooks/useSafeNavigate';
 import { decodeSmdResistor } from '@/utils/resistorCalculators';
 
 // Popular SMD codes found on Luminous, Microtek, and Livguard inverter PCBs
@@ -35,8 +33,6 @@ const POPULAR_SMD = [
 
 export default function SmdCalculatorScreen() {
   const { language } = useLanguage();
-  const { safeBack } = useSafeNavigate();
-
   const [smdInput, setSmdInput] = useState('1001');
   const smdResult = decodeSmdResistor(smdInput);
 
@@ -44,25 +40,13 @@ export default function SmdCalculatorScreen() {
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="dark-content" backgroundColor="#F7F8FA" />
 
-      {/* Top Header Bar with Back Button */}
-      <View style={styles.header}>
-        <Pressable
-          onPress={() => safeBack()}
-          style={styles.backButton}
-          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-        >
-          <Text style={styles.backText}>
-            {tr(language, 'back')}
-          </Text>
-        </Pressable>
-
-        <Text style={styles.pageTitle}>
-          📱 {tr(language, 'smdTitle')}
-        </Text>
-        <Text style={styles.pageSubtitle}>
-          {tr(language, 'smdSubtitle')}
-        </Text>
-      </View>
+      {/* Top Header Bar with Back Button & Sidebar Drawer */}
+      <AppHeader
+        showBack={true}
+        title={`📱 ${tr(language, 'smdTitle')}`}
+        subtitle={tr(language, 'smdSubtitle')}
+        showMenu={true}
+      />
 
       <ScrollView
         showsVerticalScrollIndicator={false}
@@ -183,39 +167,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#F7F8FA',
   },
 
-  header: {
-    paddingHorizontal: 18,
-    paddingTop: 10,
-    paddingBottom: 12,
-  },
-
-  backButton: {
-    alignSelf: 'flex-start',
-    paddingVertical: 6,
-    paddingRight: 15,
-    marginBottom: 6,
-  },
-
-  backText: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: '#2563EB',
-  },
-
-  pageTitle: {
-    fontSize: 22,
-    fontWeight: '900',
-    color: '#111827',
-  },
-
-  pageSubtitle: {
-    fontSize: 13,
-    color: '#6B7280',
-    marginTop: 3,
-  },
-
   content: {
     paddingHorizontal: 18,
+    paddingTop: 6,
     paddingBottom: 60,
   },
 
@@ -435,4 +389,3 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
 });
-

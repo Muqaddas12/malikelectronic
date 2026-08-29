@@ -14,7 +14,7 @@ export const t: Translations = {
     // Navigation & Sidebar
     homepage: 'Homepage',
     tools: 'Electronics Tools',
-    toolsSubtitle: 'SMD & DIP Resistor Calculators',
+    toolsSubtitle: 'Resistor Calculators & IC Pinout Guide',
     support: 'Support & Help',
     supportModalTitle: 'Technical Support & Help',
     supportModalDesc:
@@ -92,6 +92,25 @@ export const t: Translations = {
     selectColor: 'Select color band',
     quickExamples: 'Popular SMD Codes in Inverters',
 
+    // IC Guide
+    icGuideTitle: 'IC Pinout & Working Guide',
+    icGuideSubtitle: 'Popular Inverter & Electronic ICs (SMD & DIP Packages)',
+    icListTitle: 'Inverter IC Directory',
+    icListSubtitle: 'Browse 200+ Inverter & Power Electronics ICs. Tap any IC to inspect pinout & working principle.',
+    totalIcsAvailable: 'ICs available',
+    viewIcDetails: 'View Pinout & Working →',
+    backToIcsList: '‹ Back to IC List',
+    searchIc: 'Search IC name (e.g. LM324, SG3525, ULN2003)...',
+    noIcFound: 'No IC found matching your search',
+    pinNumber: 'Pin No.',
+    pinName: 'Pin Name',
+    pinFunction: 'Pin Function & Description',
+    workingTitle: 'Working Principle (In Simple Words)',
+    inverterApplication: 'Inverter & PCB Application',
+    testingTitle: 'Multimeter Testing & Key Voltages',
+    dipPackage: 'DIP Package (Through-Hole)',
+    smdPackage: 'SMD Package (SOIC / SOP)',
+
     // Sidebar
     language: 'Language',
     english: 'English',
@@ -113,7 +132,7 @@ export const t: Translations = {
     // Navigation & Sidebar
     homepage: 'होम पेज (Home)',
     tools: 'इलेक्ट्रॉनिक्स टूल्स (Tools)',
-    toolsSubtitle: 'SMD और DIP रेजिस्टेंस कैलकुलेटर',
+    toolsSubtitle: 'रेजिस्टेंस कैलकुलेटर और IC गाइड',
     support: 'सहायता और संपर्क (Support)',
     supportModalTitle: 'तकनीकी सहायता और संपर्क',
     supportModalDesc:
@@ -190,6 +209,25 @@ export const t: Translations = {
     toleranceBand: 'टॉलरेंस बैंड',
     selectColor: 'रंग बैंड चुनें',
     quickExamples: 'इन्वर्टर में इस्तेमाल होने वाले मुख्य SMD कोड्स',
+
+    // IC Guide
+    icGuideTitle: 'IC पिनआउट और कार्यप्रणाली गाइड',
+    icGuideSubtitle: 'इन्वर्टर और इलेक्ट्रॉनिक मुख्य ICs (SMD और DIP पैकेज)',
+    icListTitle: 'इन्वर्टर IC डायरेक्टरी',
+    icListSubtitle: '200+ इन्वर्टर और पावर इलेक्ट्रॉनिक्स ICs उपलब्ध हैं। पिनआउट और कार्यप्रणाली देखने के लिए किसी भी IC पर टैप करें।',
+    totalIcsAvailable: 'ICs उपलब्ध हैं',
+    viewIcDetails: 'पिनआउट व कार्यप्रणाली देखें →',
+    backToIcsList: '‹ IC सूची पर वापस जाएं',
+    searchIc: 'IC नाम खोजें (उदा. LM324, SG3525, ULN2003)...',
+    noIcFound: 'इस नाम से कोई IC नहीं मिली',
+    pinNumber: 'पिन नंबर',
+    pinName: 'पिन नाम',
+    pinFunction: 'पिन कार्य और सरल विवरण',
+    workingTitle: 'कार्यप्रणाली (सरल शब्दों में समझें)',
+    inverterApplication: 'इन्वर्टर सर्किट में उपयोग',
+    testingTitle: 'मल्टीमीटर टेस्टिंग व वोल्टेज जांच',
+    dipPackage: 'DIP पैकेज (Through-Hole)',
+    smdPackage: 'SMD पैकेज (SOIC / SOP)',
 
     // Sidebar
     language: 'भाषा (Language)',

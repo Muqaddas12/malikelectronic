@@ -1,18 +1,16 @@
 import React, { useMemo, useState } from 'react';
-
 import {
-    FlatList,
-    Image,
-    Pressable,
-    StatusBar,
-    StyleSheet,
-    Text,
-    View,
+  FlatList,
+  Image,
+  StatusBar,
+  StyleSheet,
+  Text,
+  View,
 } from 'react-native';
-
 import { useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import AppHeader from '@/components/AppHeader';
 import FaultCard from '@/components/FaultCard';
 import SearchBar from '@/components/SearchBar';
 
@@ -26,7 +24,7 @@ export default function InverterFaultsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const [search, setSearch] = useState('');
   const { language } = useLanguage();
-  const { safePush, safeBack } = useSafeNavigate();
+  const { safePush } = useSafeNavigate();
 
   const inverter = inverters.find((item) => item.id === id);
 
@@ -49,6 +47,7 @@ export default function InverterFaultsScreen() {
   if (!inverter) {
     return (
       <SafeAreaView style={styles.safeArea}>
+        <AppHeader showBack={true} showMenu={true} />
         <View style={styles.center}>
           <Text style={styles.notFound}>
             {tr(language, 'inverterNotFound')}
@@ -63,6 +62,12 @@ export default function InverterFaultsScreen() {
       <StatusBar
         barStyle="dark-content"
         backgroundColor="#F7F8FA"
+      />
+
+      {/* Header Bar with Back Button & Sidebar Drawer */}
+      <AppHeader
+        showBack={true}
+        showMenu={true}
       />
 
       <FlatList
@@ -84,17 +89,6 @@ export default function InverterFaultsScreen() {
         )}
         ListHeaderComponent={
           <>
-            {/* BACK BUTTON */}
-            <Pressable
-              onPress={() => safeBack()}
-              style={styles.backButton}
-              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-            >
-              <Text style={styles.backText}>
-                {tr(language, 'back')}
-              </Text>
-            </Pressable>
-
             {/* HERO BANNER SHOWING INVERTER DETAILS & PCB IMAGE */}
             <View style={styles.hero}>
               {/* LEFT SIDE: INVERTER SPECS */}
@@ -165,23 +159,8 @@ const styles = StyleSheet.create({
 
   content: {
     paddingHorizontal: 18,
-    paddingTop: 10,
+    paddingTop: 6,
     paddingBottom: 20,
-  },
-
-  /* BACK BUTTON */
-
-  backButton: {
-    alignSelf: 'flex-start',
-    paddingVertical: 6,
-    paddingRight: 15,
-    marginBottom: 10,
-  },
-
-  backText: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: '#2563EB',
   },
 
   /* HERO */

@@ -12,17 +12,18 @@ import {
   View,
 } from 'react-native';
 
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams } from 'expo-router';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
+import AppHeader from '@/components/AppHeader';
+import { useLanguage } from '@/context/LanguageContext';
 import { getInverterFault } from '@/data/inverterfaults';
+import { tr } from '@/data/translations';
+import { useSafeNavigate } from '@/hooks/useSafeNavigate';
 import {
   ComponentDetail,
   InverterFaultDetail,
 } from '@/types/faultDetail';
-import { useLanguage } from '@/context/LanguageContext';
-import { tr } from '@/data/translations';
-import { useSafeNavigate } from '@/hooks/useSafeNavigate';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } =
   Dimensions.get('window');
@@ -446,27 +447,17 @@ export default function FaultDetailScreen() {
         </Modal>
       )}
 
+      {/* HEADER WITH BACK BUTTON, TITLE & SIDEBAR MENU */}
+      <AppHeader
+        showBack={true}
+        title={fault.title}
+        showMenu={true}
+      />
+
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.content}
       >
-        {/* TOP BAR WITH BACK BUTTON & CLEAN TITLE (HERO CARD REMOVED AS REQUESTED) */}
-        <View style={styles.topBar}>
-          <Pressable
-            onPress={() => safeBack()}
-            style={styles.backButton}
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-          >
-            <Text style={styles.backText}>
-              {tr(language, 'back')}
-            </Text>
-          </Pressable>
-
-          <Text style={styles.faultHeaderTitle}>
-            {fault.title}
-          </Text>
-        </View>
-
         {/* 1. SYMPTOMS (FIRST SECTION) */}
         <BulletSection
           title={tr(language, 'symptoms')}

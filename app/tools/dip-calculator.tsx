@@ -1,28 +1,25 @@
 import React, { useState } from 'react';
-
 import {
-    Pressable,
-    ScrollView,
-    StatusBar,
-    StyleSheet,
-    Text,
-    View
+  Pressable,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  View,
 } from 'react-native';
-
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import AppHeader from '@/components/AppHeader';
 import { useLanguage } from '@/context/LanguageContext';
 import { tr } from '@/data/translations';
-import { useSafeNavigate } from '@/hooks/useSafeNavigate';
 import {
-    calculate4Band,
-    calculate5Band,
-    RESISTOR_COLORS,
+  calculate4Band,
+  calculate5Band,
+  RESISTOR_COLORS,
 } from '@/utils/resistorCalculators';
 
 export default function DipCalculatorScreen() {
   const { language } = useLanguage();
-  const { safeBack } = useSafeNavigate();
 
   const [dipBandsMode, setDipBandsMode] = useState<4 | 5>(4);
   const [band1, setBand1] = useState(3); // Orange (3)
@@ -49,25 +46,13 @@ export default function DipCalculatorScreen() {
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="dark-content" backgroundColor="#F7F8FA" />
 
-      {/* Header Bar */}
-      <View style={styles.header}>
-        <Pressable
-          onPress={() => safeBack()}
-          style={styles.backButton}
-          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-        >
-          <Text style={styles.backText}>
-            {tr(language, 'back')}
-          </Text>
-        </Pressable>
-
-        <Text style={styles.pageTitle}>
-          🎨 {tr(language, 'dipTitle')}
-        </Text>
-        <Text style={styles.pageSubtitle}>
-          {tr(language, 'dipSubtitle')}
-        </Text>
-      </View>
+      {/* Header Bar with Sidebar Menu */}
+      <AppHeader
+        showBack={true}
+        title={`🎨 ${tr(language, 'dipTitle')}`}
+        subtitle={tr(language, 'dipSubtitle')}
+        showMenu={true}
+      />
 
       <ScrollView
         showsVerticalScrollIndicator={false}
@@ -365,39 +350,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#F7F8FA',
   },
 
-  header: {
-    paddingHorizontal: 18,
-    paddingTop: 10,
-    paddingBottom: 12,
-  },
-
-  backButton: {
-    alignSelf: 'flex-start',
-    paddingVertical: 6,
-    paddingRight: 15,
-    marginBottom: 6,
-  },
-
-  backText: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: '#2563EB',
-  },
-
-  pageTitle: {
-    fontSize: 22,
-    fontWeight: '900',
-    color: '#111827',
-  },
-
-  pageSubtitle: {
-    fontSize: 13,
-    color: '#6B7280',
-    marginTop: 3,
-  },
-
   content: {
     paddingHorizontal: 18,
+    paddingTop: 6,
     paddingBottom: 60,
   },
 
@@ -564,4 +519,3 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 });
-
