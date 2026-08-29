@@ -53,6 +53,15 @@ export const diagramMap: Record<string, Record<string, any>> = {
      */
     'charging': require('@/assets/diagrams/Livguard-LG-E-Model/pin 9 10 Livguard 700E Charging.png'),
   },
+
+  // ─── Su-Kam Shark SMD / DIP (Square Wave) ──────────────────────────────────
+  'sukam-shark-inverter': {
+    /**
+     * Microcontroller 28-Pin Details & Voltage Guide:
+     *   Pins 1-28 complete functions, sensing, relay drives, switching & LED voltages
+     */
+    'microcontroller-pin-details': require('@/assets/diagrams/Sukam-Shark-Smd-Dip-Old-Model/Microcontroller.png'),
+  },
 };
 
 /**

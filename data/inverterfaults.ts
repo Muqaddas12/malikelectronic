@@ -3944,6 +3944,243 @@ export const inverterFaultsMap: Record<
       diagnosis: 'Systematic from power input to output. First fault found = likely cause.',
     },
   },
+
+  // ─── Su-Kam Shark SMD / DIP (Square Wave) ──────────────────────────────────
+  'sukam-shark-inverter': {
+    'microcontroller-pin-details': {
+      id: 'microcontroller-pin-details',
+      title: 'Microcontroller 28-Pin Details & Voltage Guide',
+      subtitle:
+        'Su-Kam Shark SMD & DIP Square Wave Inverter — Complete 28-Pin voltage readings in Mains and Inverter modes with fault testing guide.',
+      icon: '📟',
+      severity: 'high',
+
+      symptoms: [
+        'Inverter output switching signals nahi de raha (Pin 27/28 par 0V hai)',
+        'Inverter battery ko charge nahi kar raha (Pin 26 charging signal 0V)',
+        'Mains connect hone par bhi inverter backup mode se switch nahi kar raha (Pin 2/22 sensing failure)',
+        'Relay operate nahi kar rahi — changeover nahi ho raha (Pin 11/23 drive line)',
+        'Fan continuous maximum speed par chal raha hai ya bilkul nahi chal raha (Pin 24)',
+        'Display LEDs (Mains, Low Batt, Overload, Charging, Inv On) glow nahi kar rahe (Pins 12–16)',
+        'Overload trip bar-bar ho raha hai (Pin 5 & Pin 21 sensing circuit)',
+      ],
+
+      basicChecks: [
+        'Pin 20 par +5V VCC supply multimeter se check karein (5V/5V constant)',
+        'Pin 8 aur Pin 19 par GND continuity check karein (0V)',
+        'Pin 1 Reset pin par 5V logic high voltage check karein',
+        'Pin 9 aur Pin 10 Crystal Oscillator pins par 2.4V DC check karein',
+        'Pin 2 (1.4V Mains / 0V Inv) aur Pin 22 (2.5V Mains / 5V Inv) mains sensing check karein',
+        'Pin 3 Battery Level Sensing par 3.4V DC check karein (12V nominal)',
+        'Pin 27 aur Pin 28 Switching Output par Inverter mode mein 1.8V DC check karein',
+        'Pin 26 Charging Signal par Mains mode mein 2.0V DC check karein',
+        'Pin 23 Output Relay Drive (0V Mains / 4.9V Inv) aur Pin 11 Relay 1 Drive check karein',
+        'Pin 24 Fan Drive par 0V (OFF) aur 4.9V (ON) logic check karein',
+      ],
+
+      technicalExplanation: {
+        title: 'Su-Kam Shark 28-Pin Microprocessor Architecture & Voltage Chart',
+        explanation:
+          'Su-Kam Shark Square Wave inverter mein 28-pin microcontroller main central processing unit hai. Yeh Mains Sensing (Pins 2, 22), Battery Voltage (Pin 3), Overload (Pins 5, 21), Relays (Pins 11, 23), Fan (Pin 24), Charging PWM (Pin 26), aur MOSFET Gate Drive (Pins 27, 28) ko monitor v control karta hai. Niche har pin ka standard working voltage diya gaya hai.',
+        components: [
+          {
+            component: 'Pin 1 (RESET)',
+            function: 'Microcontroller Master Clear / Reset line. Active low pull-up.',
+            value: '5V (Mains) / 5V (Inv)',
+          },
+          {
+            component: 'Pin 2 (MAINS SENSING)',
+            function: 'AC mains presence detection input signal.',
+            value: '1.4V (Mains) / 0V (Inv)',
+          },
+          {
+            component: 'Pin 3 (BATTERY SENSING)',
+            function: '12V Battery level divider sensing input for Low Batt & Overcharge.',
+            value: '3.4V (Mains) / 3.4V (Inv)',
+          },
+          {
+            component: 'Pin 4 (CHARGING AMP SENSE)',
+            function: 'Charging current sensing input from CT / shunt.',
+            value: '0V (Mains) / 0V (Inv)',
+          },
+          {
+            component: 'Pin 5 (OVERLOAD SENSING 1)',
+            function: 'Current sense amplifier input for overload trip detection.',
+            value: '0V (Mains) / 0V (Inv)',
+          },
+          {
+            component: 'Pin 6 (UPS ON/OFF SW)',
+            function: 'Front panel ON/OFF push switch input.',
+            value: '5V (Mains) / 0V (Inv)',
+          },
+          {
+            component: 'Pin 7 (THERMISTOR)',
+            function: 'Heatsink thermal sensor input for overheat protection.',
+            value: '0V (Mains) / 0V (Inv)',
+          },
+          {
+            component: 'Pin 8 (GND)',
+            function: 'Digital ground reference connection.',
+            value: '0V (Ground)',
+          },
+          {
+            component: 'Pin 9 & 10 (CRYSTAL)',
+            function: 'Clock oscillator crystal inputs for 50Hz timebase generation.',
+            value: '2.4V (Mains) / 2.4V (Inv)',
+          },
+          {
+            component: 'Pin 11 (RELAY 1 DRIVE)',
+            function: 'Input changeover relay driver trigger output.',
+            value: '0V (Mains) / 5V (Inv)',
+          },
+          {
+            component: 'Pin 12 (LOW BATT LED)',
+            function: 'Front panel Low Battery LED driver output.',
+            value: '0V (Normal) / 4.5V (Active)',
+          },
+          {
+            component: 'Pin 13 (OVERLOAD LED)',
+            function: 'Front panel Overload warning LED output.',
+            value: '0V (Normal) / 4.5V (Active)',
+          },
+          {
+            component: 'Pin 14 (CHARGING LED)',
+            function: 'Battery Charging indicator LED output.',
+            value: '0V (Idle) / 4.5V (Active)',
+          },
+          {
+            component: 'Pin 15 (MAINS LED)',
+            function: 'Mains ON green indicator LED output.',
+            value: '5V (Mains) / 0V (Inv)',
+          },
+          {
+            component: 'Pin 16 (INV ON LED)',
+            function: 'Inverter Backup ON indicator LED output.',
+            value: '0V (Mains) / 5V (Inv)',
+          },
+          {
+            component: 'Pin 17 (BUZZER DRIVE)',
+            function: 'Audio alarm buzzer driver output.',
+            value: '5V (Mains) / 5V (Inv)',
+          },
+          {
+            component: 'Pin 18 (AC FUSE BLOWN)',
+            function: 'AC Input glass fuse monitoring feedback input.',
+            value: '5V (Mains) / 5V (Inv)',
+          },
+          {
+            component: 'Pin 19 (GND)',
+            function: 'Internal chip logic ground.',
+            value: '0V (Ground)',
+          },
+          {
+            component: 'Pin 20 (VCC +5V)',
+            function: 'Main +5V regulated DC power supply from 7805 regulator.',
+            value: '5V (Mains) / 5V (Inv)',
+          },
+          {
+            component: 'Pin 21 (OVERLOAD SENSE 2)',
+            function: 'Secondary peak current sensing comparator input.',
+            value: '5V (Mains) / 5V (Inv)',
+          },
+          {
+            component: 'Pin 22 (AC VOLT SENSING)',
+            function: 'AC Line voltage level sensing input for high/low voltage cut-off.',
+            value: '2.5V (Mains) / 5V (Inv)',
+          },
+          {
+            component: 'Pin 23 (OUTPUT RELAY)',
+            function: 'Output Changeover relay trigger drive output.',
+            value: '0V (Mains) / 4.9V (Inv)',
+          },
+          {
+            component: 'Pin 24 (FAN DRIVE)',
+            function: 'Cooling fan speed/ON-OFF trigger output to driver transistor.',
+            value: '0V (OFF) / 4.9V (ON)',
+          },
+          {
+            component: 'Pin 25 (UPS/INV MODE)',
+            function: 'Narrow/Wide input voltage window selection switch input.',
+            value: '5V (UPS) / 0V (INV)',
+          },
+          {
+            component: 'Pin 26 (CHARGING SIGNAL)',
+            function: 'SCR / Optocoupler / MOSFET charging trigger pulse output.',
+            value: '2V (Mains) / 0V (Inv)',
+          },
+          {
+            component: 'Pin 27 & 28 (SWITCHING)',
+            function: 'Channel A & B 50Hz PWM switching gate drive outputs to driver transistors.',
+            value: '0V (Mains) / 1.8V (Inv)',
+          },
+        ],
+      },
+
+      possibleCauses: [
+        {
+          cause: 'Pin 20 VCC +5V missing ya low',
+          explanation: '7805 regulator kharab hone par MCU start nahi hota aur sabhi pins dead ho jati hain.',
+        },
+        {
+          cause: 'Pin 1 Reset voltage drop (<4.5V)',
+          explanation: 'Reset capacitor leak hone par MCU continuous reset loop mein phans jata hai.',
+        },
+        {
+          cause: 'Pin 9/10 Crystal oscillator dead',
+          explanation: 'Crystal kharab hone par 50Hz clock generate nahi hoti aur Pin 27/28 output dead rehti hai.',
+        },
+        {
+          cause: 'Pin 2 ya Pin 22 AC sensing resistor open',
+          explanation: 'Mains sensing divider resistor open hone par inverter mains sense nahi karta.',
+        },
+        {
+          cause: 'Pin 27/28 gate drive transistor short',
+          explanation: 'Driver transistor short hone se switching pulse ground ho jati hai.',
+        },
+        {
+          cause: 'Pin 26 charging line optocoupler / driver damaged',
+          explanation: 'Charging trigger pulse gate circuit tak nahi pahunch pati.',
+        },
+      ],
+
+      repairProcedure: [
+        {
+          step: 1,
+          title: 'Power & Clock Verification',
+          explanation: 'Multimeter DC par Pin 20 (+5V), Pin 1 (+5V), aur Pin 9/10 (2.4V) check karein.',
+        },
+        {
+          step: 2,
+          title: 'Battery & Mains Sensing Test',
+          explanation: 'Pin 3 par 3.4V (12V Battery) aur Pin 2 par 1.4V (Mains on) check karein.',
+        },
+        {
+          step: 3,
+          title: 'Switching Gate Drive Test',
+          explanation: 'Inverter mode mein Pin 27 aur Pin 28 dono par exactly 1.8V DC measure karein.',
+        },
+        {
+          step: 4,
+          title: 'Charging PWM Output Test',
+          explanation: 'Mains mode mein Pin 26 par 2.0V DC charging drive check karein.',
+        },
+        {
+          step: 5,
+          title: 'Relay & Fan Drive Verification',
+          explanation: 'Pin 23 (4.9V in Inv) aur Pin 24 (4.9V on Load) par switching logic confirm karein.',
+        },
+      ],
+
+      circuitFlow:
+        'AC Sensing (Pin 2: 1.4V / Pin 22: 2.5V) ➔ Su-Kam Microprocessor Core (5V VCC / 2.4V Crystal) ➔ Switching Drive (Pin 27/28: 1.8V) ➔ Charging PWM (Pin 26: 2V) ➔ Relays (Pin 11/23: 4.9V)',
+
+      importantNote:
+        'Su-Kam Shark SMD/DIP board mein Pin 27 aur Pin 28 dono ka output voltage barabar (1.8V DC) hona zaroori hai. Agar ek pin 1.8V aur dusri 0V ho to MOSFET blast ho sakte hain.',
+
+      diagnosis:
+        'Pin 20 = 5V, Pin 1 = 5V, Pin 9/10 = 2.4V confirm karein. Inverter mode mein Pin 27 & 28 par 1.8V aur Mains mode mein Pin 26 par 2V aana chahiye.',
+    },
+  },
 };
 
 // ─────────────────────────────────────────────────────────────────────────────

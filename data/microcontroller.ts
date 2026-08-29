@@ -28,9 +28,18 @@ export const microcontrollerDocs: Record<string, MicrocontrollerDoc> = {
       require('@/assets/microcontroller/microtek/microtek_mc_pindetails_page_1.png'),
     ],
   },
+
+  'sukam-shark-inverter': {
+    inverterId: 'sukam-shark-inverter',
+    chipName: 'Su-Kam Microcontroller (28-Pin)',
+    title: 'Su-Kam Shark SMD / DIP Microprocessor Pin Details',
+    subtitle: 'Complete 28-Pin voltage chart across Mains & Inverter modes',
+    pages: [
+      require('@/assets/diagrams/Sukam-Shark-Smd-Dip-Old-Model/Microcontroller.png'),
+    ],
+  },
 };
 
 export function getMicrocontrollerDoc(inverterId: string): MicrocontrollerDoc | undefined {
   return microcontrollerDocs[inverterId];
 }
-

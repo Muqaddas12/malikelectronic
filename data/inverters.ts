@@ -45,4 +45,18 @@ export const inverters: Inverter[] = [
       'charging',
     ],
   },
+
+  {
+    id: 'sukam-shark-inverter',
+    brand: 'Su-Kam',
+    model: 'Shark SMD / DIP (Square Wave)',
+    capacity: '650–1000 VA',
+    batteryVoltage: '12V',
+    type: 'Square Wave Inverter (SMD & DIP)',
+    image: require('@/assets/inverters/generic.png'),
+    pcbImage: null,
+    faults: [
+      'microcontroller-pin-details',
+    ],
+  },
 ];
