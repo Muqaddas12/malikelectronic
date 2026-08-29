@@ -1,33 +1,38 @@
 import React from 'react';
 
 import {
-    Image,
-    Pressable,
-    ScrollView,
-    StatusBar,
-    StyleSheet,
-    Text,
-    View,
+  Image,
+  Pressable,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  View,
 } from 'react-native';
 
 import { SafeAreaView } from 'react-native-safe-area-context';
-
-import {
-    router,
-    useLocalSearchParams,
-} from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 
 import { getInverterFault } from '@/data/inverterfaults';
 import {
-    ComponentDetail,
-    InverterFaultDetail,
+  ComponentDetail,
+  InverterFaultDetail,
 } from '@/types/faultDetail';
+import { useLanguage } from '@/context/LanguageContext';
+import { tr } from '@/data/translations';
 
 const severityColors = {
   low: '#16A34A',
   medium: '#CA8A04',
   high: '#EA580C',
   critical: '#DC2626',
+};
+
+const severityKeys: Record<string, string> = {
+  low: 'lowRisk',
+  medium: 'mediumRisk',
+  high: 'highRisk',
+  critical: 'criticalRisk',
 };
 
 // ─── Generic bullet list section ─────────────────────────────────────────────
@@ -76,7 +81,7 @@ function TechnicalSection({
       <View style={styles.table}>
         {/* Header */}
         <View style={[styles.tableRow, styles.tableHeader]}>
-          <Text style={[styles.tableCellBold, { flex: 1 }]}>
+          <Text style={[styles.tableCellBold, { flex: 1.2 }]}>
             Component
           </Text>
           <Text style={[styles.tableCellBold, { flex: 2 }]}>
@@ -100,7 +105,7 @@ function TechnicalSection({
                 style={[
                   styles.tableCell,
                   styles.componentName,
-                  { flex: 1 },
+                  { flex: 1.2 },
                 ]}
               >
                 {comp.component}
@@ -210,8 +215,10 @@ function ResistorSection({
 
 function CausesSection({
   fault,
+  title,
 }: {
   fault: InverterFaultDetail;
+  title: string;
 }) {
   if (
     !fault.possibleCauses ||
@@ -221,9 +228,7 @@ function CausesSection({
 
   return (
     <View style={styles.card}>
-      <Text style={styles.cardTitle}>
-        Possible Causes
-      </Text>
+      <Text style={styles.cardTitle}>{title}</Text>
       <View style={styles.list}>
         {fault.possibleCauses.map((item, i) => (
           <View key={i} style={styles.causeItem}>
@@ -244,8 +249,10 @@ function CausesSection({
 
 function RepairSection({
   fault,
+  title,
 }: {
   fault: InverterFaultDetail;
+  title: string;
 }) {
   if (
     !fault.repairProcedure ||
@@ -255,9 +262,7 @@ function RepairSection({
 
   return (
     <View style={styles.card}>
-      <Text style={styles.cardTitle}>
-        Repair Procedure
-      </Text>
+      <Text style={styles.cardTitle}>{title}</Text>
       <View style={styles.list}>
         {fault.repairProcedure.map((step) => (
           <View key={step.step} style={styles.stepItem}>
@@ -290,6 +295,7 @@ export default function FaultDetailScreen() {
       faultId: string;
     }>();
 
+  const { language } = useLanguage();
   const fault = getInverterFault(id, faultId);
 
   if (!fault) {
@@ -297,7 +303,7 @@ export default function FaultDetailScreen() {
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.center}>
           <Text style={styles.notFound}>
-            Fault not found
+            {tr(language, 'faultNotFound')}
           </Text>
         </View>
       </SafeAreaView>
@@ -306,6 +312,8 @@ export default function FaultDetailScreen() {
 
   const severityColor =
     severityColors[fault.severity];
+  const severityKey =
+    severityKeys[fault.severity] || 'mediumRisk';
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -318,12 +326,15 @@ export default function FaultDetailScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.content}
       >
-        {/* BACK */}
+        {/* BACK BUTTON */}
         <Pressable
           onPress={() => router.back()}
           style={styles.backButton}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
-          <Text style={styles.backText}>‹ Back</Text>
+          <Text style={styles.backText}>
+            {tr(language, 'back')}
+          </Text>
         </Pressable>
 
         {/* HERO BANNER */}
@@ -349,7 +360,7 @@ export default function FaultDetailScreen() {
             ]}
           >
             <Text style={styles.severityText}>
-              {fault.severity.toUpperCase()} RISK
+              {tr(language, severityKey)}
             </Text>
           </View>
         </View>
@@ -357,45 +368,47 @@ export default function FaultDetailScreen() {
         {/* SAFETY WARNING */}
         <View style={styles.warning}>
           <Text style={styles.warningTitle}>
-            ⚠ Safety First
+            {tr(language, 'safetyFirst')}
           </Text>
           <Text style={styles.warningText}>
-            Disconnect mains and battery before
-            opening the inverter. Work on
-            high-voltage circuits only if properly
-            trained and equipped.
+            {tr(language, 'safetyText')}
           </Text>
         </View>
 
-        {/* PCB DIAGRAM IMAGE */}
+        {/* SPECIFIC PCB CIRCUIT DIAGRAM IMAGE */}
         <View style={styles.diagramCard}>
-          <Text style={styles.diagramLabel}>
-            🔍 PCB Circuit Diagram
-          </Text>
+          <View style={styles.diagramHeaderRow}>
+            <Text style={styles.diagramLabel}>
+              {tr(language, 'pcbDiagram')}
+            </Text>
+            {fault.diagramImage ? (
+              <View style={styles.diagramAvailableBadge}>
+                <Text style={styles.diagramAvailableText}>
+                  LIVE DIAGRAM
+                </Text>
+              </View>
+            ) : null}
+          </View>
 
           {fault.diagramImage ? (
-            <>
+            <View style={styles.diagramImageWrap}>
               <Image
                 source={fault.diagramImage}
                 style={styles.diagramImage}
                 resizeMode="contain"
               />
               <Text style={styles.diagramCaption}>
-                Refer highlighted circuit area for
-                this fault diagnosis
+                {tr(language, 'diagramCaption')}
               </Text>
-            </>
+            </View>
           ) : (
             <View style={styles.noImageContainer}>
-              <Text style={styles.noImageIcon}>
-                🖼️
-              </Text>
+              <Text style={styles.noImageIcon}>🖼️</Text>
               <Text style={styles.noImageTitle}>
-                No Diagram Available
+                {tr(language, 'noDiagramTitle')}
               </Text>
               <Text style={styles.noImageText}>
-                PCB diagram for this inverter model
-                is not available yet.
+                {tr(language, 'noDiagramText')}
               </Text>
             </View>
           )}
@@ -403,13 +416,13 @@ export default function FaultDetailScreen() {
 
         {/* SYMPTOMS */}
         <BulletSection
-          title="Symptoms"
+          title={tr(language, 'symptoms')}
           items={fault.symptoms}
         />
 
         {/* BASIC CHECKS */}
         <BulletSection
-          title="Basic Checks"
+          title={tr(language, 'basicChecks')}
           items={fault.basicChecks}
         />
 
@@ -420,16 +433,22 @@ export default function FaultDetailScreen() {
         <ResistorSection fault={fault} />
 
         {/* POSSIBLE CAUSES */}
-        <CausesSection fault={fault} />
+        <CausesSection
+          fault={fault}
+          title={tr(language, 'possibleCauses')}
+        />
 
         {/* REPAIR PROCEDURE */}
-        <RepairSection fault={fault} />
+        <RepairSection
+          fault={fault}
+          title={tr(language, 'repairProcedure')}
+        />
 
         {/* CIRCUIT FLOW */}
         {fault.circuitFlow ? (
           <View style={styles.flowCard}>
-            <Text style={styles.cardTitle}>
-              Circuit Flow
+            <Text style={styles.cardTitleWhite}>
+              ⚡ {tr(language, 'circuitFlow')}
             </Text>
             <Text style={styles.flowText}>
               {fault.circuitFlow}
@@ -441,7 +460,7 @@ export default function FaultDetailScreen() {
         {fault.importantNote ? (
           <View style={styles.noteCard}>
             <Text style={styles.noteTitle}>
-              📌 Important Note
+              {tr(language, 'importantNote')}
             </Text>
             <Text style={styles.noteText}>
               {fault.importantNote}
@@ -452,8 +471,8 @@ export default function FaultDetailScreen() {
         {/* DIAGNOSIS */}
         {fault.diagnosis ? (
           <View style={styles.diagnosisCard}>
-            <Text style={styles.cardTitle}>
-              🩺 Diagnosis Summary
+            <Text style={styles.diagnosisTitle}>
+              {tr(language, 'diagnosisSummary')}
             </Text>
             <Text style={styles.diagnosisText}>
               {fault.diagnosis}
@@ -516,7 +535,7 @@ const styles = StyleSheet.create({
 
   title: {
     color: '#FFFFFF',
-    fontSize: 26,
+    fontSize: 24,
     fontWeight: '900',
     textAlign: 'center',
   },
@@ -531,7 +550,7 @@ const styles = StyleSheet.create({
 
   severityBadge: {
     borderRadius: 8,
-    paddingHorizontal: 10,
+    paddingHorizontal: 12,
     paddingVertical: 6,
     marginTop: 15,
   },
@@ -540,6 +559,7 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 10,
     fontWeight: '900',
+    letterSpacing: 0.5,
   },
 
   /* SAFETY WARNING */
@@ -575,27 +595,55 @@ const styles = StyleSheet.create({
     marginTop: 16,
     borderWidth: 1,
     borderColor: '#E5E7EB',
+  },
+
+  diagramHeaderRow: {
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
   },
 
   diagramLabel: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '800',
     color: '#111827',
-    marginBottom: 10,
-    alignSelf: 'flex-start',
+  },
+
+  diagramAvailableBadge: {
+    backgroundColor: '#DCFCE7',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+  },
+
+  diagramAvailableText: {
+    color: '#15803D',
+    fontSize: 9,
+    fontWeight: '900',
+    letterSpacing: 0.5,
+  },
+
+  diagramImageWrap: {
+    width: '100%',
+    backgroundColor: '#F8FAFC',
+    borderRadius: 14,
+    padding: 8,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    alignItems: 'center',
   },
 
   diagramImage: {
     width: '100%',
-    height: 220,
-    borderRadius: 12,
+    height: 240,
+    borderRadius: 8,
   },
 
   diagramCaption: {
     fontSize: 12,
     color: '#6B7280',
-    marginTop: 8,
+    marginTop: 10,
     textAlign: 'center',
     fontStyle: 'italic',
   },
@@ -616,6 +664,13 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     color: '#111827',
     marginBottom: 12,
+  },
+
+  cardTitleWhite: {
+    fontSize: 16,
+    fontWeight: '900',
+    color: '#F8FAFC',
+    marginBottom: 10,
   },
 
   /* BULLET LIST */
@@ -782,7 +837,7 @@ const styles = StyleSheet.create({
 
   flowText: {
     color: '#38BDF8',
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '700',
     fontFamily: 'monospace',
     letterSpacing: 0.5,
@@ -824,11 +879,17 @@ const styles = StyleSheet.create({
     marginTop: 14,
   },
 
+  diagnosisTitle: {
+    fontSize: 15,
+    fontWeight: '900',
+    color: '#15803D',
+    marginBottom: 6,
+  },
+
   diagnosisText: {
     color: '#14532D',
     fontSize: 13,
     lineHeight: 20,
-    marginTop: 4,
   },
 
   /* NOT FOUND */

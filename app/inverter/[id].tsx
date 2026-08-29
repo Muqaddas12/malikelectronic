@@ -1,59 +1,43 @@
 import React, { useMemo, useState } from 'react';
 
 import {
-    FlatList,
-    Image,
-    Pressable,
-    StatusBar,
-    StyleSheet,
-    Text,
-    View,
+  FlatList,
+  Image,
+  Pressable,
+  StatusBar,
+  StyleSheet,
+  Text,
+  View,
 } from 'react-native';
 
 import { SafeAreaView } from 'react-native-safe-area-context';
-
-import {
-    router,
-    useLocalSearchParams,
-} from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 
 import FaultCard from '@/components/FaultCard';
 import SearchBar from '@/components/SearchBar';
 
 import { getFaultsForInverter } from '@/data/inverterfaults';
 import { inverters } from '@/data/inverters';
+import { useLanguage } from '@/context/LanguageContext';
+import { tr } from '@/data/translations';
 
 export default function InverterFaultsScreen() {
-  const { id } =
-    useLocalSearchParams<{
-      id: string;
-    }>();
-
+  const { id } = useLocalSearchParams<{ id: string }>();
   const [search, setSearch] = useState('');
+  const { language } = useLanguage();
 
-  const inverter = inverters.find(
-    (item) => item.id === id,
-  );
+  const inverter = inverters.find((item) => item.id === id);
 
   const inverterFaults = useMemo(() => {
     if (!inverter) return [];
 
-    const allFaults = getFaultsForInverter(
-      inverter.id,
-    );
-
-    const query = search
-      .trim()
-      .toLowerCase();
+    const allFaults = getFaultsForInverter(inverter.id);
+    const query = search.trim().toLowerCase();
 
     if (!query) return allFaults;
 
     return allFaults.filter((fault) =>
-      [
-        fault.title,
-        fault.subtitle,
-        ...fault.symptoms,
-      ]
+      [fault.title, fault.subtitle, ...fault.symptoms]
         .join(' ')
         .toLowerCase()
         .includes(query),
@@ -65,7 +49,7 @@ export default function InverterFaultsScreen() {
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.center}>
           <Text style={styles.notFound}>
-            Inverter not found
+            {tr(language, 'inverterNotFound')}
           </Text>
         </View>
       </SafeAreaView>
@@ -87,8 +71,7 @@ export default function InverterFaultsScreen() {
             fault={item}
             onPress={() =>
               router.push({
-                pathname:
-                  '/inverter/fault/[faultId]',
+                pathname: '/inverter/fault/[faultId]',
                 params: {
                   id: inverter.id,
                   faultId: item.id,
@@ -103,15 +86,16 @@ export default function InverterFaultsScreen() {
             <Pressable
               onPress={() => router.back()}
               style={styles.backButton}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             >
               <Text style={styles.backText}>
-                ‹ Back
+                {tr(language, 'back')}
               </Text>
             </Pressable>
 
-            {/* HERO */}
+            {/* HERO BANNER SHOWING INVERTER DETAILS & PCB IMAGE */}
             <View style={styles.hero}>
-              {/* LEFT SIDE */}
+              {/* LEFT SIDE: INVERTER SPECS */}
               <View style={styles.heroInfo}>
                 <Text style={styles.brand}>
                   {inverter.brand}
@@ -122,22 +106,19 @@ export default function InverterFaultsScreen() {
                 </Text>
 
                 <Text style={styles.specs}>
-                  {inverter.capacity} •{' '}
-                  {inverter.batteryVoltage} •{' '}
-                  {inverter.type}
+                  {inverter.capacity} • {inverter.batteryVoltage} • {inverter.type}
                 </Text>
               </View>
 
-              {/* RIGHT SIDE */}
+              {/* RIGHT SIDE: PCB PHOTO */}
               {inverter.pcbImage ? (
-                <View
-                  style={styles.imageContainer}
-                >
+                <View style={styles.imageContainer}>
                   <Image
                     source={inverter.pcbImage}
                     style={styles.pcbImage}
                     resizeMode="contain"
                   />
+                  <Text style={styles.pcbBadge}>PCB</Text>
                 </View>
               ) : null}
             </View>
@@ -146,35 +127,29 @@ export default function InverterFaultsScreen() {
             <SearchBar
               value={search}
               onChangeText={setSearch}
-              placeholder="Search fault..."
+              placeholder={tr(language, 'searchFault')}
             />
 
-            {/* TITLE */}
+            {/* SECTION HEADING */}
             <Text style={styles.sectionTitle}>
-              Troubleshooting
+              {tr(language, 'troubleshooting')}
             </Text>
 
             <Text style={styles.sectionSubtitle}>
-              {inverterFaults.length} fault
-              {inverterFaults.length !== 1
-                ? 's'
-                : ''}{' '}
-              available — tap to view details.
+              {inverterFaults.length} {tr(language, 'selectProblem')}
             </Text>
           </>
         }
         ListEmptyComponent={
           <View style={styles.empty}>
             <Text style={styles.emptyTitle}>
-              No fault found
+              {tr(language, 'noFaultFound')}
             </Text>
           </View>
         }
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
-        ListFooterComponent={
-          <View style={styles.bottomSpacer} />
-        }
+        ListFooterComponent={<View style={styles.bottomSpacer} />}
       />
     </SafeAreaView>
   );
@@ -212,13 +187,11 @@ const styles = StyleSheet.create({
   hero: {
     backgroundColor: '#111827',
     borderRadius: 24,
-    padding: 20,
-    marginBottom: 20,
-
+    padding: 18,
+    marginBottom: 18,
     flexDirection: 'row',
     alignItems: 'center',
-
-    minHeight: 155,
+    minHeight: 150,
   },
 
   heroInfo: {
@@ -235,35 +208,52 @@ const styles = StyleSheet.create({
 
   model: {
     color: '#FFFFFF',
-    fontSize: 27,
+    fontSize: 24,
     fontWeight: '900',
   },
 
   specs: {
     color: '#D1D5DB',
     fontSize: 13,
-    marginTop: 10,
-    lineHeight: 20,
+    marginTop: 8,
+    lineHeight: 19,
   },
 
   /* PCB IMAGE */
 
   imageContainer: {
-    width: 135,
-    height: 120,
+    width: 125,
+    height: 110,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    borderRadius: 16,
+    padding: 4,
+    position: 'relative',
   },
 
   pcbImage: {
-    width: 130,
-    height: 115,
+    width: 115,
+    height: 100,
+  },
+
+  pcbBadge: {
+    position: 'absolute',
+    bottom: 4,
+    right: 6,
+    backgroundColor: '#2563EB',
+    color: '#FFFFFF',
+    fontSize: 9,
+    fontWeight: '900',
+    paddingHorizontal: 5,
+    paddingVertical: 2,
+    borderRadius: 4,
   },
 
   /* SECTION */
 
   sectionTitle: {
-    fontSize: 23,
+    fontSize: 22,
     fontWeight: '900',
     color: '#111827',
   },

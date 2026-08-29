@@ -1,3 +1,4 @@
+import { getDiagramImage } from '@/data/diagrams';
 import { InverterFaultDetail } from '@/types/faultDetail';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -13,6 +14,134 @@ export const inverterFaultsMap: Record<
   // ═══════════════════════════════════════════════════════════════════════════
   'LuminousEcoWatt': {
 
+    'fan': {
+      id: 'fan',
+      title: 'Cooling Fan Problem',
+      subtitle:
+        'Luminous Eco Watt mein fan na chalna ya continuously chalna PIC16F722 ke Pin 6/17 aur ULN2003A driver circuit ki wajah se hota hai.',
+      icon: '🌀',
+      severity: 'medium',
+
+      symptoms: [
+        'Fan bilkul nahi chal raha jab inverter load par hai ya charge ho raha hai',
+        'Inverter thodi der chalne ke baad overheat hokar shut down ho jata hai',
+        'Fan continuous maximum speed par chal raha hai (thanda hone par bhi)',
+        'Fan se ajeeb buzzing/humming aawaz aa rahi hai',
+      ],
+
+      basicChecks: [
+        'Fan Jack par 12V DC multimeter se check karein',
+        'Fan ko directly external 12V supply dekar test karein',
+        'PIC16F722 ke Pin 6 aur Pin 17 par logic voltages check karein',
+        'ULN2003A (GM2247D) ke Pin 5, 6, 11, 12 check karein',
+        'R126 (1001 / 1kΩ), R114, R66 (1001), R46 (1001) resistors check karein',
+        'D8 flyback diode aur C45 (63V 10µF) capacitor check karein',
+        '5050 voltage regulator ke 5V pin se aane wali track check karein',
+      ],
+
+      technicalExplanation: {
+        title: 'Luminous Fan Drive Circuit (Pin 6 & Pin 17 Diagram)',
+        explanation:
+          'Microcontroller PIC16F722 ke Pin 6 se fan control PWM trigger signal generate hota hai jo R126 (1kΩ / 1001) ke through ULN2003A (GM2247D Darlington driver) ke Pin 5 aur 6 par jata hai. ULN2003A ke output Pin 11 aur 12 Fan Jack ke negative (-) terminal ko ground switch karte hain. Positive common line R114, D8 diode aur C45 (63V 10µF) capacitor ke through Fan Jack ke positive (+) terminal ko power deti hai. Pin 17 par 5050 regulator ke 5V rail se R66 (1001) aur R46 (1001) ke through sensing line aati hai.',
+        components: [
+          {
+            component: 'PIC16F722',
+            function: 'Pin 6 se fan ON/OFF PWM trigger signal aur Pin 17 monitoring signal deta hai.',
+            package: '28-pin Microcontroller',
+          },
+          {
+            component: 'ULN2003A / GM2247D',
+            function: 'Darlington transistor array IC. Pins 5,6 input hain aur Pins 11,12 fan jack negative terminal ko ground se switch karte hain.',
+            value: '7-channel NPN Array',
+          },
+          {
+            component: 'R126',
+            function: 'PIC16F722 Pin 6 se ULN2003A input ke beech current limiting resistor.',
+            value: '1kΩ (Marking: 1001)',
+          },
+          {
+            component: 'R114',
+            function: 'Positive common line se fan positive supply connection resistor.',
+            value: 'Pull-up / Supply path',
+          },
+          {
+            component: 'D8',
+            function: 'Flyback protection diode — fan motor ke inductive kickback ko ground par clamp karta hai.',
+            value: 'Diode',
+          },
+          {
+            component: 'C45',
+            function: 'Fan jack ke parallel filter capacitor motor electrical noise suppress karta hai.',
+            value: '10µF / 63V',
+          },
+          {
+            component: 'R66 & R46',
+            function: '5050 IC ki 5V line se Pin 17 microcontroller sensing divider network.',
+            value: '1kΩ each (Marking: 1001)',
+          },
+        ],
+      },
+
+      possibleCauses: [
+        {
+          cause: 'ULN2003A (GM2247D) IC damaged',
+          explanation: 'Driver IC internal transistor open ya short hone par fan run nahi karta ya non-stop chalta hai.',
+        },
+        {
+          cause: 'R126 (1kΩ / 1001) open ya burn',
+          explanation: 'R126 kharab hone par PIC Pin 6 ka trigger pulse ULN2003A tak nahi pahunch pata.',
+        },
+        {
+          cause: 'D8 diode short',
+          explanation: 'D8 diode short hone se fan positive supply ground se short ho jati hai.',
+        },
+        {
+          cause: 'C45 (63V 10µF) capacitor short ya dry',
+          explanation: 'C45 short hone par fan jack par 12V supply collapse ho jati hai.',
+        },
+        {
+          cause: 'PIC16F722 Pin 6 logic output failure',
+          explanation: 'Microcontroller output port damage hone par fan start trigger nahi hota.',
+        },
+        {
+          cause: 'Fan motor jam ya wire disconnected',
+          explanation: 'Cooling fan motor bearing jam ya connector wire cut.',
+        },
+      ],
+
+      repairProcedure: [
+        {
+          step: 1,
+          title: 'Fan Motor Physical & Direct Test',
+          explanation: 'Fan jack nikaal kar external 12V DC battery se test karein. Agar fan nahi chala to fan motor replace karein.',
+        },
+        {
+          step: 2,
+          title: 'Fan Jack Terminal Voltages',
+          explanation: 'Inverter on karke fan jack par multimeter DC voltage measure karein. Positive terminal par 12V milna chahiye.',
+        },
+        {
+          step: 3,
+          title: 'ULN2003A Pin 5/6 & 11/12 Test',
+          explanation: 'PIC Pin 6 se aane wala signal Pin 5/6 par check karein (~3.3V-5V logic high). Pin 11/12 par low 0V switch hona chahiye.',
+        },
+        {
+          step: 4,
+          title: 'R126 & D8 Diode Test',
+          explanation: 'R126 (1kΩ / 1001) resistance check karein aur D8 diode mode par continuity check karein.',
+        },
+        {
+          step: 5,
+          title: '5050 5V Rail & Pin 17 Network',
+          explanation: '5050 regulator se 5V rail aur R66/R46 (1001) resistors ki value confirm karein.',
+        },
+      ],
+
+      circuitFlow: 'PIC16F722 (Pin 6) ➔ R126 (1001 / 1kΩ) ➔ ULN2003A (Pin 5/6 In ➔ Pin 11/12 Out) ➔ Fan Jack (-) ➔ [Fan Motor] ➔ Positive Common Line (via R114, D8, C45 63V10µF)',
+      importantNote: 'Fan band rehne se MOSFETs kuch hi minute mein overheat hokar blast ho sakte hain. Fan driver circuit ka repair high priority par karein.',
+      diagnosis: 'Agar PIC Pin 6 par pulse aa rahi hai lekin Fan Jack par voltage nahi to ULN2003A ya R126 kharab hai. Agar PIC Pin 6 output zero hai to MCU temperature sensing circuit check karein.',
+    },
+
     'low-battery': {
       id: 'low-battery',
       title: 'Battery Low / Overcharge',
@@ -20,8 +149,7 @@ export const inverterFaultsMap: Record<
         'Luminous Eco Watt mein battery low ya overcharge problem battery voltage sensing circuit ke R24 resistor ki wajah se ho sakti hai.',
       icon: '🔋',
       severity: 'high',
-      diagramImage: require('@/assets/pcb/LuminousEcoWattPcb.png'),
-
+      
       symptoms: [
         'Inverter battery low dikha raha hai jabki battery voltage normal hai',
         'Inverter battery ko overcharge kar raha hai',
@@ -220,8 +348,7 @@ export const inverterFaultsMap: Record<
         'Inverter par connected load ki power inverter ki rated capacity se zyada ho gayi hai, jisse protection circuit trip kar gaya hai.',
       icon: '⚡',
       severity: 'high',
-      diagramImage: require('@/assets/pcb/LuminousEcoWattPcb.png'),
-
+      
       symptoms: [
         'Inverter overload LED jal rahi hai ya beep sound aa raha hai',
         'Inverter output band ho jata hai aur mains se switch nahi kar raha',
@@ -317,8 +444,7 @@ export const inverterFaultsMap: Record<
         'Battery bilkul discharge ho gayi hai ya charge nahi le rahi — charging circuit ya battery cells mein problem ho sakti hai.',
       icon: '💀',
       severity: 'critical',
-      diagramImage: require('@/assets/pcb/LuminousEcoWattPcb.png'),
-
+      
       symptoms: [
         'Battery voltage 10.5V se neeche aa gayi hai (12V system)',
         'Inverter charg karne ke bawajood backup nahi de raha',
@@ -420,8 +546,7 @@ export const inverterFaultsMap: Record<
         'Output MOSFETs burn/short ho gaye hain — inverter output nahi de raha ya high current draw kar raha hai.',
       icon: '🔥',
       severity: 'critical',
-      diagramImage: require('@/assets/pcb/LuminousEcoWattPcb.png'),
-
+      
       symptoms: [
         'Inverter se koi output nahi aa raha',
         'Battery se abnormally high current draw ho rahi hai',
@@ -520,8 +645,7 @@ export const inverterFaultsMap: Record<
         'Mains-to-battery changeover relay properly switch nahi kar rahi — inverter mains se battery par ya vapas switch nahi hota.',
       icon: '🔌',
       severity: 'medium',
-      diagramImage: require('@/assets/pcb/LuminousEcoWattPcb.png'),
-
+      
       symptoms: [
         'Power cut ke baad inverter battery par switch nahi karta',
         'Mains aane par inverter mains par wapas nahi aata',
@@ -613,8 +737,7 @@ export const inverterFaultsMap: Record<
         'Inverter ka power switch faulty hai — inverter on ya off nahi ho raha properly.',
       icon: '🔘',
       severity: 'low',
-      diagramImage: require('@/assets/pcb/LuminousEcoWattPcb.png'),
-
+      
       symptoms: [
         'Switch dabane par inverter on nahi hota',
         'Inverter apne aap on/off ho raha hai',
@@ -685,8 +808,7 @@ export const inverterFaultsMap: Record<
         'Inverter ka main fuse blow ho gaya hai — output nahi aa raha ya battery charging nahi ho rahi.',
       icon: '💥',
       severity: 'medium',
-      diagramImage: require('@/assets/pcb/LuminousEcoWattPcb.png'),
-
+      
       symptoms: [
         'Inverter bilkul on nahi ho raha',
         'Battery se koi current nahi ja rahi',
@@ -761,8 +883,7 @@ export const inverterFaultsMap: Record<
         'Battery theek se charge nahi ho rahi ya charging band ho gayi hai — charging circuit mein fault hai.',
       icon: '🔌',
       severity: 'high',
-      diagramImage: require('@/assets/pcb/LuminousEcoWattPcb.png'),
-
+      
       symptoms: [
         'Mains par hone ke bawajood battery charge nahi ho rahi',
         'Charging current zero ya bahut kam hai',
@@ -859,8 +980,7 @@ export const inverterFaultsMap: Record<
       subtitle: 'Output par short circuit detect hua hai — protection circuit ne output band kar diya.',
       icon: '⚠️',
       severity: 'critical',
-      diagramImage: require('@/assets/pcb/LuminousEcoWattPcb.png'),
-
+      
       symptoms: [
         'Inverter output turant band ho gaya',
         'Short circuit LED jal rahi hai ya alarm sound aa raha hai',
@@ -939,8 +1059,7 @@ export const inverterFaultsMap: Record<
       subtitle: 'Inverter ya components bahut zyada garam ho rahe hain — cooling ya load problem ho sakta hai.',
       icon: '🌡️',
       severity: 'high',
-      diagramImage: require('@/assets/pcb/LuminousEcoWattPcb.png'),
-
+      
       symptoms: [
         'Inverter ka case abnormally hot hai',
         'Inverter thermal protection se shut down ho gaya',
@@ -1039,8 +1158,7 @@ export const inverterFaultsMap: Record<
       subtitle: 'Inverter on hai lekin output voltage nahi aa rahi — multiple possible faults hain.',
       icon: '🚫',
       severity: 'critical',
-      diagramImage: require('@/assets/pcb/LuminousEcoWattPcb.png'),
-
+      
       symptoms: [
         'Inverter on indicator jal raha hai lekin load nahi chalta',
         'Output socket par koi voltage nahi hai',
@@ -1140,6 +1258,139 @@ export const inverterFaultsMap: Record<
   // MICROTEK HOME UPS
   // ═══════════════════════════════════════════════════════════════════════════
   'microtek-inverter': {
+
+    'fan': {
+      id: 'fan',
+      title: 'Fan / Overheating Control Problem',
+      subtitle: 'Microtek V4 to V7 model mein fan na chalna ya overheating issue LM324 op-amp heat sensor circuit aur BD139 (Q15) drive transistor se relate karta hai.',
+      icon: '🌀',
+      severity: 'high',
+
+      symptoms: [
+        'Fan bilkul nahi ghum raha jab heatsink garam ho chuka hai',
+        'Inverter kuch hi minute load chalne par Overheat hokar shut down ho jata hai',
+        'Fan continuously full speed par chalta rehta hai (normal temperature par bhi)',
+        'Heat sensor disconnect hone par fan status abnormal rehta hai',
+      ],
+
+      basicChecks: [
+        'Heat Sensor connector par voltages measure karein (Normal: 3.14V, Overheat: >0.74V)',
+        'LM324 op-amp IC ke Pin 1-7 aur Pin 8-14 voltages check karein',
+        'PIC16F72 ke Pin 17 aur Pin 27 par feedback voltages check karein (Normal: 0.79V, Overheat: >3.14V)',
+        'BD139 (Q15) power transistor check karein',
+        'R79 (2201 / 2.2kΩ), R35 (1001 / 1kΩ), R1 (5101 / 5.1kΩ), R9 (8200 / 820Ω), R11 (5101 / 5.1kΩ), R26 (5601 / 5.6kΩ) resistors check karein',
+        'D7 (4148) aur D20 diodes check karein',
+        'Fan Jack par DC voltage check karein',
+      ],
+
+      technicalExplanation: {
+        title: 'Microtek Fan & Heat Sensor Circuit (LM324 + BD139 Diagram)',
+        explanation:
+          'Microtek V4-V7 mein heatsink temperature monitor karne ke liye Heat Sensor (NTC) LM324 quad op-amp ke Comparator Pin 5 aur Pin 6 se connected hota hai. Heat sensor line R1 (5101 / 5.1kΩ) ke through positive common line se pull-up hoti hai (Normal temperature par 3.14V, Overheat hone par >0.74V). LM324 output Pin 7 se signal R35 (1001 / 1kΩ) ke through PIC16F72 ke Pin 27 par jata hai (Normal: 0.79V, Overheat: >3.14V). R9 (8200), R11 (5101) aur D7 (4148) reference create karte hain. Microcontroller Pin 17 se R79 (2201 / 2.2kΩ) ke through BD139 (Q15) NPN power transistor ke Base par pulse bhej kar Fan Jack ko ground switch karta hai. D20 diode fan motor ke protection ke liye laga hai.',
+        components: [
+          {
+            component: 'LM324',
+            function: 'Quad Op-Amp IC — Heat Sensor analog voltage ko reference se compare karke PIC ko overheat signal deta hai.',
+            package: '14-pin DIP / SOIC',
+          },
+          {
+            component: 'BD139 (Q15)',
+            function: 'Medium Power NPN Transistor — Fan Jack ke negative terminal ko ground se switch karta hai.',
+            value: 'BD139 (TO-126)',
+          },
+          {
+            component: 'PIC16F72',
+            function: 'Pin 27 se overheat sensing padhta hai aur Pin 17 se fan drive control pulse generate karta hai.',
+            package: '28-pin DIP',
+          },
+          {
+            component: 'Heat Sensor (NTC)',
+            function: 'Heatsink temperature sense karta hai. Normal: 3.14V, Overheat condition: >0.74V drop.',
+            value: 'Thermistor Sensor',
+          },
+          {
+            component: 'R79',
+            function: 'PIC16F72 Pin 17 se BD139 (Q15) Base drive resistor.',
+            value: '2.2kΩ (Marking: 2201)',
+          },
+          {
+            component: 'R35',
+            function: 'LM324 Pin 7 output se PIC16F72 Pin 27 feedback resistor.',
+            value: '1kΩ (Marking: 1001)',
+          },
+          {
+            component: 'R1 & R11',
+            function: 'Heat sensor pull-up aur LM324 biasing resistors.',
+            value: '5.1kΩ each (Marking: 5101)',
+          },
+          {
+            component: 'R9 & R26',
+            function: 'LM324 reference divider network resistors.',
+            value: 'R9: 820Ω (8200), R26: 5.6kΩ (5601)',
+          },
+          {
+            component: 'D7 & D20',
+            function: 'D7: 1N4148 reference diode, D20: Fan motor flyback protection diode.',
+            value: '1N4148 / Switching Diode',
+          },
+        ],
+      },
+
+      possibleCauses: [
+        {
+          cause: 'BD139 (Q15) transistor open / short',
+          explanation: 'Q15 open hone par fan start nahi hota; short hone par fan continuously full speed par chalta rehta hai.',
+        },
+        {
+          cause: 'LM324 op-amp IC faulty',
+          explanation: 'LM324 internal comparator damage hone par wrong temperature readings MCU tak pahunchti hain.',
+        },
+        {
+          cause: 'Heat Sensor open ya disconnected',
+          explanation: 'Sensor wire break hone par inverter false overheat trip kar sakta hai.',
+        },
+        {
+          cause: 'R79 (2201) ya R35 (1001) open',
+          explanation: 'Base drive resistor burn hone par BD139 trigger nahi hota.',
+        },
+        {
+          cause: 'D20 diode short',
+          explanation: 'D20 short hone par 12V supply ground se short hokar BD139 ko damage kar deti hai.',
+        },
+      ],
+
+      repairProcedure: [
+        {
+          step: 1,
+          title: 'BD139 (Q15) Transistor Test',
+          explanation: 'Multimeter diode mode par BD139 ka Base-Collector aur Base-Emitter junction check karein (~0.65V drop).',
+        },
+        {
+          step: 2,
+          title: 'Heat Sensor Voltage Test',
+          explanation: 'Heat Sensor pin par normal temperature par ~3.14V check karein. Agar 0V ya 5V hai to sensor/R1 check karein.',
+        },
+        {
+          step: 3,
+          title: 'LM324 Output & PIC Pin 27 Voltage',
+          explanation: 'LM324 Pin 7 aur PIC Pin 27 par voltage measure karein (Normal: ~0.79V, Overheat: >3.14V).',
+        },
+        {
+          step: 4,
+          title: 'PIC Pin 17 Fan Trigger Signal',
+          explanation: 'Microcontroller Pin 17 par fan ON hone ke time logic HIGH pulse verify karein.',
+        },
+        {
+          step: 5,
+          title: 'R79 (2201), R35 (1001), D20 Diode Verify',
+          explanation: 'Resistors aur D20 protection diode test karein.',
+        },
+      ],
+
+      circuitFlow: 'Heat Sensor ➔ R1 (5101) ➔ LM324 (Pins 5,6 In ➔ Pin 7 Out) ➔ R35 (1001) ➔ PIC16F72 (Pin 27 Sense) | PIC16F72 (Pin 17 Out) ➔ R79 (2201) ➔ BD139 Q15 (Base) ➔ Fan Jack (-) ➔ Fan Motor (via D20)',
+      importantNote: 'BD139 replace karte waqt uska heatsink tab properly isolate karein agar PCB requirement ho.',
+      diagnosis: 'Agar PIC Pin 17 par high voltage aa rahi hai lekin Fan nahi chal raha to BD139 (Q15) ya R79 kharab hai.',
+    },
 
     'low-battery': {
       id: 'low-battery',
@@ -1490,81 +1741,137 @@ export const inverterFaultsMap: Record<
       diagnosis: 'MOSFET short = D-S or G-S continuity (0Ω). Replace all in the set.',
     },
 
-    'relay': {
+        'relay': {
       id: 'relay',
-      title: 'Relay Problem',
-      subtitle: 'Changeover relay properly operate nahi kar rahi hai.',
+      title: 'Relay Changeover Problem',
+      subtitle: 'Microtek V4 to V7 models mein mains se inverter ya inverter se mains changeover failure PIC16F72 ke Pin 6 / Pin 16 aur Relay-1 / Relay-3 circuit se relate karta hai.',
       icon: '🔌',
-      severity: 'medium',
+      severity: 'high',
 
       symptoms: [
-        'Power cut par switch nahi hota battery par',
-        'Relay chatter sound aa rahi hai',
-        'Output intermittent hai',
+        'Mains aane par bhi inverter mode se switch nahi hota',
+        'Mains jane par output cutoff ho jata hai (changeover failure)',
+        'Relay se continuous buzzing ya chatter ki aawaz aati hai',
+        'Output socket par intermittent / chhatakti hui voltage aati hai',
+        'CN7 connector par 200V / 140V changeover line switch nahi hoti',
       ],
 
       basicChecks: [
-        'Relay coil resistance check',
-        'Relay contact continuity check',
-        'Drive transistor check',
-        'Coil voltage check (12V)',
+        'PIC16F72 ke Pin 6 aur Pin 16 par switching control voltages measure karein',
+        'R78 (2201 / 2.2kΩ) aur Q12 (1F NPN transistor) ko check karein',
+        'R89 (2201), R87 (2201), R88 (2701 / 2.7kΩ) resistors check karein',
+        'Q18 (1F NPN transistor) aur ZD2 zener diode, D30 diode check karein',
+        'RELAY-1 (Mains/Inv changeover) aur RELAY-3 (Output Phase) coils aur contacts test karein',
+        'Positive common line voltage check karein',
       ],
 
       technicalExplanation: {
-        title: 'Relay Changeover',
-        explanation: 'MCU drive transistor ko control karta hai jo relay coil energize karta hai. Contacts mains ya inverter output ko load se connect karte hain.',
+        title: 'Microtek Relay Drive Circuit (Pin 6 & Pin 16 Diagram)',
+        explanation:
+          'Microtek V4 to V7 model mein PIC16F72 microcontroller 2 dedicated pins se changeover relays control karta hai: 1) Pin 16 se R78 (2201 / 2.2kΩ) ke through Q12 (1F NPN transistor) ke Base par drive signal jata hai, jo RELAY-1 coil ko Positive Common Line se switch karta hai (CN7 connector par 200V aur 140V changeover ke liye). 2) Pin 6 se R89 (2201), R87 (2201) aur R88 (2701) network ke through Q18 (1F NPN transistor) drive hota hai, jo RELAY-3 coil ko switch karta hai (ZD2 zener aur D30 protection ke sath) aur Main Line Phase ko Output Pin tak switch karta hai.',
         components: [
           {
-            component: 'Main Relay',
-            function: 'Changeover switch.',
-            value: '12V / 30A',
+            component: 'PIC16F72',
+            function: 'Microcontroller — Pin 16 (Relay-1 Drive) aur Pin 6 (Relay-3 Drive) control pulses generate karta hai.',
+            package: '28-pin DIP',
           },
           {
-            component: 'NPN Transistor',
-            function: 'Relay driver.',
+            component: 'RELAY-1',
+            function: 'Primary Changeover Relay — CN7 connector par 200V aur 140V tapping ko switch karta hai.',
+            value: '12V DC Coil / 30A',
           },
           {
-            component: 'Flyback Diode',
-            function: 'Back-EMF protection.',
+            component: 'RELAY-3',
+            function: 'Output Phase Relay — Main Line Phase ko Output Pin se connect/disconnect karta hai.',
+            value: '12V DC Coil / 30A',
+          },
+          {
+            component: 'Q12 (1F)',
+            function: 'RELAY-1 coil driver NPN transistor (Base driven from Pin 16 via R78).',
+            value: 'NPN Transistor (1F)',
+          },
+          {
+            component: 'Q18 (1F)',
+            function: 'RELAY-3 coil driver NPN transistor (Base driven from Pin 6 via R89/R87).',
+            value: 'NPN Transistor (1F)',
+          },
+          {
+            component: 'R78',
+            function: 'PIC16F72 Pin 16 se Q12 Base resistor.',
+            value: '2.2kΩ (Marking: 2201)',
+          },
+          {
+            component: 'R89 & R87',
+            function: 'PIC16F72 Pin 6 se Q18 Base biasing divider network.',
+            value: '2.2kΩ each (Marking: 2201)',
+          },
+          {
+            component: 'R88',
+            function: 'Positive Common Line se Pin 6 pull-up resistor.',
+            value: '2.7kΩ (Marking: 2701)',
+          },
+          {
+            component: 'ZD2 & D30',
+            function: 'RELAY-3 coil ke parallel protection clamp zener diode aur flyback diode.',
+            value: 'Zener + Switching Diode',
           },
         ],
       },
 
       possibleCauses: [
         {
-          cause: 'Coil open',
-          explanation: 'Relay energize nahi hoti.',
+          cause: 'Q12 ya Q18 transistor (1F) short / open',
+          explanation: 'Driver transistor kharab hone se relay coil energize nahi hoti ya continuously energized rehti hai.',
         },
         {
-          cause: 'Contacts burned',
-          explanation: 'High current arcing.',
+          cause: 'R78 (2201) ya R89/R87/R88 open',
+          explanation: 'Resistor open hone par microcontroller ka switching signal transistor base tak nahi pahunch pata.',
         },
         {
-          cause: 'Driver transistor fail',
-          explanation: 'Coil current path blocked.',
+          cause: 'RELAY-1 / RELAY-3 contact carbonized ya welded',
+          explanation: 'Heavy load ya sparking se relay point burn hokar open ya weld ho jate hain.',
+        },
+        {
+          cause: 'ZD2 / D30 diode short',
+          explanation: 'Protection diode short hone se relay coil supply direct ground ho jati hai.',
+        },
+        {
+          cause: 'PIC16F72 Pin 6 ya Pin 16 output failure',
+          explanation: 'Microcontroller output pin damage hone par relay trigger voltage missing rehti hai.',
         },
       ],
 
       repairProcedure: [
         {
           step: 1,
-          title: 'Coil Resistance',
-          explanation: 'Multimeter: 200-400Ω expected. OL = open coil.',
+          title: 'Relay Coil Resistance Measure',
+          explanation: 'RELAY-1 aur RELAY-3 dono coils ka resistance multimeter se check karein (200Ω–400Ω expected). Open = relay dead.',
         },
         {
           step: 2,
-          title: 'Drive Voltage',
-          explanation: 'Coil terminals par 12V check karein operation mein.',
+          title: 'Q12 & Q18 (1F) Transistors Test',
+          explanation: 'Multimeter diode mode par Q12 aur Q18 transistors ka B-E aur B-C drop (~0.65V) check karein. Short hone par replace karein.',
         },
         {
           step: 3,
-          title: 'Replace',
-          explanation: 'Same spec relay aur/ya drive transistor replace karein.',
+          title: 'R78 (2201), R89 (2201), R88 (2701) Value Check',
+          explanation: 'Resistance mode par R78 (2.2kΩ), R89 (2.2kΩ), R87 (2.2kΩ), R88 (2.7kΩ) confirm karein.',
+        },
+        {
+          step: 4,
+          title: 'ZD2 & D30 Protection Diode Check',
+          explanation: 'ZD2 zener aur D30 flyback diode short circuit test karein.',
+        },
+        {
+          step: 5,
+          title: 'PIC16F72 Pin 6 & Pin 16 Voltage Check',
+          explanation: 'Inverter ON aur Mains ON/OFF state mein Pin 6 aur Pin 16 par 0V / 5V transition observe karein.',
         },
       ],
 
-      importantNote: 'Relay contacts 30A rated honi chahiye output current handle karne ke liye.',
-      diagnosis: 'Coil ok + no click = transistor fault. Coil OL = relay replace.',
+      circuitFlow: 'Pin 16 ➔ R78 (2201) ➔ Q12 (1F Base) ➔ RELAY-1 Coil ➔ CN7 (200V/140V Tap) | Pin 6 ➔ R89/R87 (2201) + R88 (2701) ➔ Q18 (1F Base) ➔ RELAY-3 Coil (ZD2, D30) ➔ Main Line Phase to Output Pin',
+      importantNote: 'Relay replace karte waqt hamesha high quality 30A rated 12V relay use karein. Low quality relay jaldi burn ho jati hai.',
+      diagnosis: 'Agar Q12/Q18 ke base par 0.7V aa raha hai lekin relay click nahi kar rahi to transistor open ya relay coil damaged hai.',
     },
 
     'switch': {
@@ -2018,102 +2325,136 @@ export const inverterFaultsMap: Record<
   // ═══════════════════════════════════════════════════════════════════════════
   'livguard-inverter': {
 
-    'low-battery': {
+        'low-battery': {
       id: 'low-battery',
-      title: 'Battery Low / Overcharge',
-      subtitle: 'Livguard Pure Sine Wave inverter mein battery sensing galat readings de raha hai.',
+      title: 'Battery Low / Overcharge Sensing Problem',
+      subtitle: 'Livguard LG1100 / LG900 / LG700 / LG700E models mein battery low false alarm ya overcharging issue Microcontroller ke Pin 16 aur R27 / R56 / R28 voltage divider network se relate karta hai.',
       icon: '🔋',
       severity: 'high',
 
       symptoms: [
-        'Battery low indication galat waqt',
-        'Overcharge — pani zyada khatam ho raha hai',
-        'Backup time kam ho gaya hai',
-        'Battery warm ho rahi hai charge mein',
+        'Battery full charged hone par bhi inverter false Battery Low indicate karta hai',
+        'Inverter battery ko overcharge karta hai (battery garam hona, acid/pani sukhna)',
+        'Backup time achanak bahut kam dikhana',
+        'Microcontroller Pin 16 par sensing voltage normal threshold (2.86V ya 3.17V) se deviate hona',
       ],
 
       basicChecks: [
-        'Battery OCV check karein',
-        'Charging voltage measure karein (max 14.4V for 12V battery)',
-        'Sensing voltage divider resistors check',
-        'DSP/microcontroller sensing input check',
-        'BMS (Battery Management) signals check',
+        '12V Battery terminal voltage multimeter se check karein (Normal: 12.6V - 13.8V)',
+        'Microcontroller ke Pin 16 par DC voltage measure karein (Expected: 2.86V or 3.17V)',
+        'R27 (1502 / 15kΩ) SMD resistor check karein',
+        'R56 (1002 / 10kΩ) SMD resistor check karein',
+        'R28 (3301 / 3.3kΩ / 33kΩ) to ground resistor check karein',
+        'C21 (1µF / 63V) filter capacitor test karein (leakage ya short check)',
       ],
 
       technicalExplanation: {
-        title: 'Battery Sensing — Livguard DSP-based',
-        explanation: 'Livguard Pure Sine Wave mein advanced DSP controller battery management karta hai. Precision voltage divider network battery voltage accurately measure karta hai.',
+        title: 'Livguard Battery Low Sensing Circuit (LG1100/900/700/700E Pin 16 Diagram)',
+        explanation:
+          'Livguard Pure Sine Wave (LG700E, LG700, LG900, LG1100) models mein 12V Battery line se sensing voltage R27 (1502 / 15kΩ) ke through aati hai. Junction par R56 (1002 / 10kΩ) series resistor aur R28 (3301 / 3.3kΩ) ground resistor voltage divider banate hain. Sensed filtered DC voltage C21 (1µF / 63V capacitor) ke sath Microcontroller ke Pin 16 par deliver hoti hai. Normal operational state mein Pin 16 par exactly 2.86V ya 3.17V voltage honi chahiye. Agar yeh voltage drop hoti hai to microcontroller inverter ko false Battery Low shut down mein daal deta hai; agar voltage high hoti hai to overcharge hota hai.',
         components: [
           {
-            component: 'Precision Voltage Divider',
-            function: 'Battery voltage to safe ADC level.',
-            value: 'R1: 100kΩ 1%, R2: 10kΩ 1%',
+            component: 'Microcontroller (Pin 16)',
+            function: 'Battery voltage sensing ADC input pin. Normal operating voltage: 2.86V or 3.17V.',
+            package: 'LQFP / DIP Microcontroller',
           },
           {
-            component: 'DSP Controller',
-            function: 'Advanced battery management algorithm.',
+            component: 'R27',
+            function: '12V Battery positive line se main high-side sensing input resistor.',
+            value: '15kΩ (Marking: 1502)',
           },
           {
-            component: 'Reference Voltage IC',
-            function: 'Accurate ADC reference.',
-            value: '5V precision reference',
+            component: 'R56',
+            function: 'Sensing junction se Pin 16 microcontroller input series limiting resistor.',
+            value: '10kΩ (Marking: 1002)',
           },
           {
-            component: 'Isolation Optocoupler',
-            function: 'Galvanic isolation for sensing.',
+            component: 'R28',
+            function: 'Sensing node se ground pull-down divider resistor.',
+            value: '3.3kΩ (Marking: 3301)',
+          },
+          {
+            component: 'C21',
+            function: 'Sensing node filter capacitor — battery ripple noise ko ground par filter karta hai.',
+            value: '1µF / 63V',
+          },
+        ],
+      },
+
+      resistorValues: {
+        title: 'Livguard Battery Sensing Resistor Table (Pin 16)',
+        explanation: 'LG1100/900/700/700E models mein precision 1% SMD resistors use hote hain.',
+        values: [
+          {
+            pcb: 'LG Series (12V)',
+            r24: 'R27 = 15kΩ (1502)',
+            marking: '1502',
+            reason: 'High-side battery voltage dropper resistor.',
+          },
+          {
+            pcb: 'LG Series (12V)',
+            r24: 'R56 = 10kΩ (1002)',
+            marking: '1002',
+            reason: 'Pin 16 microcontroller input series feed.',
+          },
+          {
+            pcb: 'LG Series (12V)',
+            r24: 'R28 = 3.3kΩ (3301)',
+            marking: '3301',
+            reason: 'Ground divider network bottom resistor.',
           },
         ],
       },
 
       possibleCauses: [
         {
-          cause: 'Precision resistor drifted',
-          explanation: 'High temperature se 1% tolerance resistor drift ho gaya.',
+          cause: 'R27 (1502 / 15kΩ) value drift ya open',
+          explanation: 'R27 resistance badhne se Pin 16 par voltage drop ho jati hai aur false battery low trigger hota hai.',
         },
         {
-          cause: 'Reference voltage fault',
-          explanation: 'ADC reference inaccurate ho gayi.',
+          cause: 'R56 (1002 / 10kΩ) open',
+          explanation: 'R56 open hone se Pin 16 par 0V milti hai aur inverter turant battery low shutdown deta hai.',
         },
         {
-          cause: 'Optocoupler degraded',
-          explanation: 'CTR (Current Transfer Ratio) decrease se sensing error.',
+          cause: 'R28 (3301 / 3.3kΩ) open ya drifted',
+          explanation: 'R28 open hone par Pin 16 par abnormally high voltage pahunchti hai jisse overcharge condition create hoti hai.',
         },
         {
-          cause: 'Battery age',
-          explanation: 'Old battery mein internal resistance badh gayi, sensing off.',
+          cause: 'C21 (1µF / 63V) leaky ya short',
+          explanation: 'C21 leaky hone par sensing voltage ground leak ho jati hai aur Pin 16 par voltage 2.86V se niche gir jati hai.',
+        },
+        {
+          cause: 'Microcontroller Pin 16 internal ADC input leakage',
+          explanation: 'Pin 16 internal clamping diode short.',
         },
       ],
 
       repairProcedure: [
         {
           step: 1,
-          title: 'Battery Voltage Confirm',
-          explanation: 'Accurate multimeter se OCV measure karein.',
+          title: 'Measure Pin 16 Voltage',
+          explanation: 'Battery connect karke multimeter DC voltage mode par Microcontroller ke Pin 16 par voltage measure karein. Exactly 2.86V ya 3.17V hona chahiye.',
         },
         {
           step: 2,
-          title: 'Charging Voltage Check',
-          explanation: 'Terminals par charging voltage measure karein — max 14.4V.',
+          title: 'R27 (1502 / 15kΩ) SMD Test',
+          explanation: 'Multimeter resistance mode par R27 ki value 15kΩ check karein. Drifted hone par 1% precision SMD replace karein.',
         },
         {
           step: 3,
-          title: 'Sensing Network Inspect',
-          explanation: '1% precision resistors ki value verify karein.',
+          title: 'R56 (1002 / 10kΩ) & R28 (3301 / 3.3kΩ) Test',
+          explanation: 'R56 (10kΩ) aur R28 (3.3kΩ) resistors ki accurate value verify karein.',
         },
         {
           step: 4,
-          title: 'Reference IC Check',
-          explanation: 'Reference voltage output measure karein — 5.0V exact hona chahiye.',
-        },
-        {
-          step: 5,
-          title: 'Replace Faulty Component',
-          explanation: 'Drifted resistors ya faulty reference IC replace karein.',
+          title: 'C21 (1µF / 63V) Capacitor Check',
+          explanation: 'C21 par capacitance aur resistance (leakage) check karein.',
         },
       ],
 
-      importantNote: 'Livguard Pure Sine Wave mein precision components use hote hain. Replace karte waqt exactly same specification ke components use karein.',
-      diagnosis: 'Charging voltage 14.4V se zyada = overcharge circuit fault. Actual voltage aur display mein farq = sensing resistor drift.',
+      circuitFlow: '+12V Battery ➔ R27 (1502 / 15kΩ) ➔ [Junction: R28 (3301 / 3.3kΩ) to GND + C21 (1µF 63V)] ➔ R56 (1002 / 10kΩ) ➔ Microcontroller Pin 16 (Normal: 2.86V or 3.17V)',
+      importantNote: 'Sensing circuit mein replacement ke waqt standard 5% carbon resistor ke badle 1% precision MFR/SMD resistor hi lagayein, warna voltage sensing accurate nahi hogi.',
+      diagnosis: 'Agar battery 12.8V hai lekin Pin 16 par voltage 2.5V se kam hai to R27, R56 ya C21 faulty hai.',
     },
 
     'overload': {
@@ -2531,61 +2872,142 @@ export const inverterFaultsMap: Record<
       diagnosis: 'Fuse open = find and fix cause first.',
     },
 
-    'charging': {
+        'charging': {
       id: 'charging',
-      title: 'Charging Problem',
-      subtitle: 'Livguard battery charging fault.',
-      icon: '🔌',
+      title: 'Charging Circuit Problem',
+      subtitle: 'Livguard LG900 / LG700 / LG1100 / LG700E models mein charging na aana ya high current aana Microcontroller ke Pin 9, Pin 10, MOC3021 optocoupler, Q17 transistor aur Relay-2 AC circuit se relate karta hai.',
+      icon: '⚡',
       severity: 'high',
 
       symptoms: [
-        'Battery not charging on mains',
-        'No charging current',
-        'Charging indicator off',
+        'Mains aane par charging indicator nahi jal raha aur battery charge nahi ho rahi',
+        'Charging current zero ya abnormally high (battery boil hona)',
+        'Mains connected hone par Relay-2 click nahi kar rahi',
+        'MOC3021 optocoupler par trigger pulses missing hain',
+        'Transformer ki 125V wali tapping switch nahi ho rahi',
       ],
 
       basicChecks: [
-        'Transformer secondary',
-        'Rectifier output',
-        'IGBT charging circuit',
-        'DSP charging signals',
+        'Microcontroller ke Pin 10 (SCR trigger) aur Pin 9 (Relay-2 drive) par logic pulses check karein',
+        'R36 (2200 / 220Ω), R37 (1002 / 10kΩ) resistors check karein',
+        'MOC3021 optocoupler IC test karein',
+        'R35 (4700 / 4.7kΩ 1W) aur R39 (5700 / 5.7kΩ 1W) power resistors check karein',
+        'TO-220 Power SCR / Triac / Transistor aur R40 (1001 / 1kΩ) check karein',
+        'R65 (6801 / 6.8kΩ), Q17 (1F NPN transistor) aur Relay-2 (D9 flyback diode) check karein',
+        'AC Section: R38 (470E / 470Ω 1W), C12 (D473K2J) metallized film capacitor aur 125V transformer tap check karein',
       ],
 
       technicalExplanation: {
-        title: 'Smart Charging — Livguard',
-        explanation: 'DSP-controlled 3-stage charging for maximum battery life.',
+        title: 'Livguard Charging Circuit (DC & AC Section Diagram)',
+        explanation:
+          'Livguard LG series mein charging control 2 interconnected sections mein kaam karta hai: 1) DC Section: Microcontroller Pin 10 se R36 (2200 / 220Ω) + R37 (1002 / 10kΩ) divider ke through MOC3021 optocoupler trigger hota hai. MOC3021 ka output R35 (4700 1W) aur R39 (5700 1W) ke through TO-220 switching device ke Gate ko drive karta hai (R40 1001 ke sath). Microcontroller Pin 9 se R65 (6801 / 6.8kΩ) ke through Q17 (1F NPN transistor) drive hota hai jo Relay-2 (D9 diode protection) ko energize karke transformer ki 125V wali tapping ko COM contact se connect karta hai. 2) AC Section: R38 (470E 1W) aur C12 (D473K2J film capacitor) snubber network AC switching spikes ko absorb karta hai.',
         components: [
           {
-            component: 'Charging IGBT',
-            function: 'High-frequency switching for efficient charging.',
+            component: 'Microcontroller',
+            function: 'Pin 10 (Charging PWM trigger) aur Pin 9 (Relay-2 Changeover trigger) signals generate karta hai.',
+            package: 'Microcontroller',
           },
           {
-            component: 'DSP',
-            function: 'Charge profile control.',
+            component: 'MOC3021',
+            function: 'Random-phase optoisolator TRIAC driver IC — DC control aur AC charging section ke beech galvanic isolation deta hai.',
+            value: '6-pin DIP Optocoupler',
           },
           {
-            component: 'Current Transformer',
-            function: 'Charging current feedback.',
+            component: 'Relay-2',
+            function: 'Charging tap selector relay — 125V transformer tapping ko AC line se connect karta hai.',
+            value: '12V DC Coil / 30A',
+          },
+          {
+            component: 'Q17 (1F)',
+            function: 'Relay-2 coil driver NPN transistor (Driven from Pin 9 via R65).',
+            value: 'NPN Transistor (1F)',
+          },
+          {
+            component: 'R35 & R39',
+            function: 'Optocoupler output side gate current limiting high-power resistors.',
+            value: 'R35: 4.7kΩ (4700) 1W, R39: 5.7kΩ (5700) 1W',
+          },
+          {
+            component: 'R36 & R37',
+            function: 'Pin 10 se MOC3021 input LED current limiting divider.',
+            value: 'R36: 220Ω (2200), R37: 10kΩ (1002)',
+          },
+          {
+            component: 'R65',
+            function: 'Pin 9 se Q17 NPN driver Base resistor.',
+            value: '6.8kΩ (Marking: 6801)',
+          },
+          {
+            component: 'R38 & C12 (D473K2J)',
+            function: 'AC Section Snubber Network — R38 (470Ω 1W) aur C12 (0.047µF / 47nF D473K2J) switching arcing suppress karte hain.',
+            value: '470Ω 1W + D473K2J Cap',
+          },
+          {
+            component: 'D9',
+            function: 'Relay-2 coil flyback clamping diode.',
+            value: '1N4007 / 1N4148',
           },
         ],
       },
 
       possibleCauses: [
-        { cause: 'IGBT failed', explanation: 'Charging path blocked.' },
-        { cause: 'DSP fault', explanation: 'No charge profile output.' },
-        { cause: 'Fuse open', explanation: 'Path interrupted.' },
+        {
+          cause: 'MOC3021 optocoupler dead / open',
+          explanation: 'Optocoupler internal LED ya phototriac burn hone par AC charging device trigger nahi hota.',
+        },
+        {
+          cause: 'R35 (4.7kΩ 1W) ya R39 (5.7kΩ 1W) power resistor open',
+          explanation: 'Gate drive resistor open hone se charging gate pulse zero ho jati hai.',
+        },
+        {
+          cause: 'Q17 (1F) transistor faulty ya R65 open',
+          explanation: 'Q17 open hone par Relay-2 click nahi karti aur 125V transformer tapping connect nahi hoti.',
+        },
+        {
+          cause: 'C12 (D473K2J) capacitor burst ya leaky',
+          explanation: 'Snubber capacitor short hone se heavy spark aur resistor R38 burn ho jata hai.',
+        },
+        {
+          cause: 'Relay-2 coil open ya contacts burnt',
+          explanation: 'Relay changeover failure se charging current flow stop ho jata hai.',
+        },
+        {
+          cause: 'Microcontroller Pin 9 ya Pin 10 logic missing',
+          explanation: 'MCU charging output disabled ya damaged.',
+        },
       ],
 
       repairProcedure: [
-        { step: 1, title: 'Fuse Check', explanation: 'Charging fuse continuity.' },
-        { step: 2, title: 'Transformer', explanation: 'Secondary AC voltage.' },
-        { step: 3, title: 'Rectifier', explanation: 'DC output voltage.' },
-        { step: 4, title: 'IGBT Test', explanation: 'Diode test.' },
-        { step: 5, title: 'Replace', explanation: 'Faulty component.' },
+        {
+          step: 1,
+          title: 'Relay-2 & Q17 (1F) Test',
+          explanation: 'Mains connect karke Pin 9 par ~5V aur Q17 transistor ke Collector par low voltage verify karein. Relay-2 click honi chahiye.',
+        },
+        {
+          step: 2,
+          title: 'MOC3021 Optocoupler Test',
+          explanation: 'Pin 1-2 par ~1.2V forward drop aur Pin 4-6 par trigger switching check karein. Sandehaaspad hone par MOC3021 replace karein.',
+        },
+        {
+          step: 3,
+          title: 'Power Resistors R35 (4700 1W) & R39 (5700 1W)',
+          explanation: 'Resistance mode par R35 aur R39 1W resistors check karein. Often high voltage surge se open ho jate hain.',
+        },
+        {
+          step: 4,
+          title: 'AC Snubber C12 (D473K2J) & R38 (470E 1W)',
+          explanation: 'C12 film capacitor aur R38 resistor physically inspect karein aur value measure karein.',
+        },
+        {
+          step: 5,
+          title: '125V Transformer Tapping Test',
+          explanation: 'Transformer secondary se aane wali 125V tapping voltage AC voltmeter se measure karein.',
+        },
       ],
 
-      importantNote: 'Livguard smart charging — only use manufacturer approved batteries for best performance.',
-      diagnosis: 'Systematic check: mains → transformer → rectifier → IGBT → battery.',
+      circuitFlow: 'DC: Pin 10 ➔ R36 (2200) ➔ MOC3021 ➔ R35 (4700 1W) + R39 (5700 1W) ➔ SCR Gate | Pin 9 ➔ R65 (6801) ➔ Q17 (1F) ➔ Relay-2 Coil (D9) ➔ 125V Tapping | AC: R38 (470E 1W) + C12 (D473K2J)',
+      importantNote: 'Charging circuit repair karte waqt Mains disconnected hona chahiye. MOC3021 aur 1W resistors replace karte waqt wattage rating ka khas dhyan rakhein.',
+      diagnosis: 'Agar Relay-2 click ho rahi hai lekin charging start nahi hoti to MOC3021 ya R35/R39 power resistors kharab hain.',
     },
 
     'short-circuit': {
@@ -3546,5 +3968,11 @@ export function getInverterFault(
   inverterId: string,
   faultId: string,
 ): InverterFaultDetail | undefined {
-  return inverterFaultsMap[inverterId]?.[faultId];
+  const fault = inverterFaultsMap[inverterId]?.[faultId];
+  if (!fault) return undefined;
+  const diagram = getDiagramImage(inverterId, faultId);
+  return {
+    ...fault,
+    diagramImage: diagram ?? fault.diagramImage,
+  };
 } 
