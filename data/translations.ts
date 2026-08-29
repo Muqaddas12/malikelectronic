@@ -111,6 +111,12 @@ export const t: Translations = {
     dipPackage: 'DIP Package (Through-Hole)',
     smdPackage: 'SMD Package (SOIC / SOP)',
 
+    // Microcontroller PDF & Details
+    microcontrollerPinDetails: 'Microcontroller Pin Details (PDF)',
+    viewPinDetails: 'View Complete 28-Pin Voltages & Chart →',
+    microcontrollerSubtitle: 'Inspect all pin numbers, voltages, signals & working functions',
+    page: 'Page',
+
     // Sidebar
     language: 'Language',
     english: 'English',
@@ -228,6 +234,12 @@ export const t: Translations = {
     testingTitle: 'मल्टीमीटर टेस्टिंग व वोल्टेज जांच',
     dipPackage: 'DIP पैकेज (Through-Hole)',
     smdPackage: 'SMD पैकेज (SOIC / SOP)',
+
+    // Microcontroller PDF & Details
+    microcontrollerPinDetails: 'माइक्रोकंट्रोलर पिन विवरण (PDF)',
+    viewPinDetails: 'सभी 28 पिनों का वोल्टेज व चार्ट देखें →',
+    microcontrollerSubtitle: 'सभी पिन नंबर, वोल्टेज, सिग्नल्स और कार्यप्रणाली देखें',
+    page: 'पेज',
 
     // Sidebar
     language: 'भाषा (Language)',

@@ -3,9 +3,7 @@ import {
   Dimensions,
   FlatList,
   Image,
-  Modal,
   Pressable,
-  ScrollView,
   StatusBar,
   StyleSheet,
   Text,
@@ -15,16 +13,17 @@ import { useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import AppHeader from '@/components/AppHeader';
+import DiagramViewerModal from '@/components/DiagramViewerModal';
 import FaultCard from '@/components/FaultCard';
+import PdfDocumentViewerModal from '@/components/PdfDocumentViewerModal';
 import SearchBar from '@/components/SearchBar';
 
 import { useLanguage } from '@/context/LanguageContext';
 import { getFaultsForInverter } from '@/data/inverterfaults';
 import { inverters } from '@/data/inverters';
+import { getMicrocontrollerDoc } from '@/data/microcontroller';
 import { tr } from '@/data/translations';
 import { useSafeNavigate } from '@/hooks/useSafeNavigate';
-
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 export default function InverterFaultsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -32,11 +31,14 @@ export default function InverterFaultsScreen() {
   const { language } = useLanguage();
   const { safePush } = useSafeNavigate();
 
-  // Fullscreen interactive zoom state for PCB Image
+  // Fullscreen interactive 2-finger zoom modal for PCB Image
   const [isPcbModalOpen, setIsPcbModalOpen] = useState(false);
-  const [pcbZoomScale, setPcbZoomScale] = useState(1.0);
+
+  // Google Drive Style PDF Document Viewer Modal State
+  const [isMcModalOpen, setIsMcModalOpen] = useState(false);
 
   const inverter = inverters.find((item) => item.id === id);
+  const mcDoc = inverter ? getMicrocontrollerDoc(inverter.id) : undefined;
 
   const inverterFaults = useMemo(() => {
     if (!inverter) return [];
@@ -67,21 +69,6 @@ export default function InverterFaultsScreen() {
     );
   }
 
-  const handleZoomIn = () => {
-    setPcbZoomScale((prev) => Math.min(prev + 0.5, 4.0));
-  };
-
-  const handleZoomOut = () => {
-    setPcbZoomScale((prev) => Math.max(prev - 0.5, 1.0));
-  };
-
-  const handleResetZoom = () => {
-    setPcbZoomScale(1.0);
-  };
-
-  const baseImageWidth = SCREEN_WIDTH - 24;
-  const baseImageHeight = SCREEN_HEIGHT * 0.7;
-
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar
@@ -95,105 +82,21 @@ export default function InverterFaultsScreen() {
         showMenu={true}
       />
 
-      {/* FULLSCREEN INTERACTIVE PCB IMAGE MODAL */}
-      {inverter.pcbImage && (
-        <Modal
-          visible={isPcbModalOpen}
-          transparent={true}
-          animationType="fade"
-          onRequestClose={() => {
-            setIsPcbModalOpen(false);
-            setPcbZoomScale(1.0);
-          }}
-        >
-          <View style={styles.modalBackdrop}>
-            <SafeAreaView style={styles.modalSafeArea}>
-              {/* Modal Top Header with Title and Close Button */}
-              <View style={styles.modalHeader}>
-                <View style={{ flex: 1, paddingRight: 10 }}>
-                  <Text style={styles.modalTitle} numberOfLines={1}>
-                    {inverter.brand} {inverter.model} — PCB Photo
-                  </Text>
-                  <Text style={styles.modalSubtitle}>
-                    {tr(language, 'zoomHint')}
-                  </Text>
-                </View>
+      {/* FULLSCREEN 2-FINGER PINCH-TO-ZOOM PCB IMAGE MODAL */}
+      <DiagramViewerModal
+        visible={isPcbModalOpen}
+        source={inverter.pcbImage}
+        title={`${inverter.brand} ${inverter.model} — PCB Photo`}
+        subtitle={tr(language, 'zoomHint')}
+        onClose={() => setIsPcbModalOpen(false)}
+      />
 
-                <Pressable
-                  onPress={() => {
-                    setIsPcbModalOpen(false);
-                    setPcbZoomScale(1.0);
-                  }}
-                  style={styles.modalCloseButton}
-                  hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-                >
-                  <Text style={styles.modalCloseText}>
-                    {tr(language, 'closeImage')}
-                  </Text>
-                </Pressable>
-              </View>
-
-              {/* On-screen Zoom Control Bar */}
-              <View style={styles.zoomControlBar}>
-                <Pressable
-                  onPress={handleZoomIn}
-                  style={styles.zoomBtn}
-                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                >
-                  <Text style={styles.zoomBtnText}>
-                    ➕ {language === 'hi' ? 'बड़ा करें' : 'Zoom In'}
-                  </Text>
-                </Pressable>
-
-                <View style={styles.zoomBadge}>
-                  <Text style={styles.zoomBadgeText}>
-                    {Math.round(pcbZoomScale * 100)}%
-                  </Text>
-                </View>
-
-                <Pressable
-                  onPress={handleZoomOut}
-                  style={styles.zoomBtn}
-                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                >
-                  <Text style={styles.zoomBtnText}>
-                    ➖ {language === 'hi' ? 'छोटा करें' : 'Zoom Out'}
-                  </Text>
-                </Pressable>
-
-                <Pressable
-                  onPress={handleResetZoom}
-                  style={styles.zoomResetBtn}
-                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                >
-                  <Text style={styles.zoomResetText}>⟲ Reset</Text>
-                </Pressable>
-              </View>
-
-              {/* Two-Way Scrollable Container for Pan and Inspect Traces */}
-              <ScrollView
-                horizontal={true}
-                showsHorizontalScrollIndicator={true}
-                contentContainerStyle={styles.horizontalScrollContent}
-              >
-                <ScrollView
-                  showsVerticalScrollIndicator={true}
-                  contentContainerStyle={styles.verticalScrollContent}
-                >
-                  <Image
-                    source={inverter.pcbImage}
-                    style={{
-                      width: baseImageWidth * pcbZoomScale,
-                      height: baseImageHeight * pcbZoomScale,
-                    }}
-                    resizeMode="contain"
-                  />
-                </ScrollView>
-              </ScrollView>
-            </SafeAreaView>
-          </View>
-        </Modal>
-      )}
+      {/* GOOGLE DRIVE STYLE FULLSCREEN MICROCONTROLLER PDF DOCUMENT VIEWER */}
+      <PdfDocumentViewerModal
+        visible={isMcModalOpen}
+        doc={mcDoc}
+        onClose={() => setIsMcModalOpen(false)}
+      />
 
       <FlatList
         data={inverterFaults}
@@ -231,13 +134,10 @@ export default function InverterFaultsScreen() {
                 </Text>
               </View>
 
-              {/* RIGHT SIDE: PCB PHOTO (CLICKABLE FOR FULLSCREEN ZOOM) */}
+              {/* RIGHT SIDE: PCB PHOTO (CLICKABLE FOR 2-FINGER PINCH-TO-ZOOM) */}
               {inverter.pcbImage ? (
                 <Pressable
-                  onPress={() => {
-                    setPcbZoomScale(1.0);
-                    setIsPcbModalOpen(true);
-                  }}
+                  onPress={() => setIsPcbModalOpen(true)}
                   style={({ pressed }) => [
                     styles.imageContainer,
                     pressed && styles.imagePressed,
@@ -256,7 +156,41 @@ export default function InverterFaultsScreen() {
               ) : null}
             </View>
 
-            {/* SEARCH BAR (NO TROUBLESHOOTING TITLE AS REQUESTED) */}
+            {/* DIRECT MICROCONTROLLER PIN DETAILS PDF / DOCUMENT BUTTON */}
+            {mcDoc && (
+              <Pressable
+                onPress={() => setIsMcModalOpen(true)}
+                style={({ pressed }) => [
+                  styles.mcCard,
+                  pressed && styles.mcCardPressed,
+                ]}
+              >
+                <View style={styles.mcIconBox}>
+                  <Text style={styles.mcIcon}>📟</Text>
+                </View>
+
+                <View style={styles.mcContent}>
+                  <View style={styles.mcHeaderRow}>
+                    <Text style={styles.mcTitle} numberOfLines={1}>
+                      {mcDoc.chipName}
+                    </Text>
+                    <View style={styles.mcBadge}>
+                      <Text style={styles.mcBadgeText}>PDF PIN DETAILS</Text>
+                    </View>
+                  </View>
+
+                  <Text style={styles.mcSubtitle} numberOfLines={1}>
+                    {tr(language, 'microcontrollerSubtitle')}
+                  </Text>
+
+                  <Text style={styles.mcActionText}>
+                    {tr(language, 'viewPinDetails')}
+                  </Text>
+                </View>
+              </Pressable>
+            )}
+
+            {/* SEARCH BAR */}
             <View style={styles.searchWrapper}>
               <SearchBar
                 value={search}
@@ -374,6 +308,89 @@ const styles = StyleSheet.create({
     fontWeight: '900',
   },
 
+  /* MICROCONTROLLER PIN DETAILS CARD */
+
+  mcCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#1E293B',
+    borderRadius: 14,
+    padding: 12,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: '#334155',
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 2,
+  },
+
+  mcCardPressed: {
+    opacity: 0.8,
+    transform: [{ scale: 0.99 }],
+  },
+
+  mcIconBox: {
+    width: 44,
+    height: 44,
+    borderRadius: 10,
+    backgroundColor: '#0F172A',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#38BDF8',
+  },
+
+  mcIcon: {
+    fontSize: 22,
+  },
+
+  mcContent: {
+    flex: 1,
+    marginLeft: 12,
+  },
+
+  mcHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+
+  mcTitle: {
+    fontSize: 14,
+    fontWeight: '900',
+    color: '#FFFFFF',
+    flex: 1,
+  },
+
+  mcBadge: {
+    backgroundColor: '#0284C7',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    marginLeft: 6,
+  },
+
+  mcBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 8,
+    fontWeight: '900',
+    letterSpacing: 0.5,
+  },
+
+  mcSubtitle: {
+    fontSize: 11,
+    color: '#94A3B8',
+    marginTop: 2,
+  },
+
+  mcActionText: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#38BDF8',
+    marginTop: 4,
+  },
+
   searchWrapper: {
     marginBottom: 10,
   },
@@ -409,118 +426,5 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '800',
     color: '#111827',
-  },
-
-  /* MODAL FULLSCREEN PCB VIEWER */
-
-  modalBackdrop: {
-    flex: 1,
-    backgroundColor: '#0A0F1E',
-  },
-
-  modalSafeArea: {
-    flex: 1,
-  },
-
-  modalHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 18,
-    paddingVertical: 12,
-    backgroundColor: '#111827',
-    borderBottomWidth: 1,
-    borderBottomColor: '#1F2937',
-  },
-
-  modalTitle: {
-    color: '#FFFFFF',
-    fontSize: 15,
-    fontWeight: '900',
-  },
-
-  modalSubtitle: {
-    color: '#9CA3AF',
-    fontSize: 11,
-    marginTop: 2,
-  },
-
-  modalCloseButton: {
-    backgroundColor: '#EF4444',
-    paddingHorizontal: 13,
-    paddingVertical: 7,
-    borderRadius: 8,
-  },
-
-  modalCloseText: {
-    color: '#FFFFFF',
-    fontSize: 13,
-    fontWeight: '800',
-  },
-
-  /* ZOOM CONTROLS */
-
-  zoomControlBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    backgroundColor: '#1E293B',
-    paddingVertical: 9,
-    paddingHorizontal: 12,
-  },
-
-  zoomBtn: {
-    backgroundColor: '#2563EB',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
-  },
-
-  zoomBtnText: {
-    color: '#FFFFFF',
-    fontSize: 12,
-    fontWeight: '800',
-  },
-
-  zoomBadge: {
-    backgroundColor: '#0F172A',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#334155',
-  },
-
-  zoomBadgeText: {
-    color: '#38BDF8',
-    fontSize: 12,
-    fontWeight: '900',
-  },
-
-  zoomResetBtn: {
-    backgroundColor: '#334155',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 8,
-  },
-
-  zoomResetText: {
-    color: '#E2E8F0',
-    fontSize: 12,
-    fontWeight: '700',
-  },
-
-  horizontalScrollContent: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-
-  verticalScrollContent: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 10,
   },
 });

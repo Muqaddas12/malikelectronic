@@ -3,19 +3,19 @@ import React, { useState } from 'react';
 import {
   Dimensions,
   Image,
-  Modal,
   Pressable,
   ScrollView,
   StatusBar,
   StyleSheet,
   Text,
-  View,
+  View
 } from 'react-native';
 
 import { useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import AppHeader from '@/components/AppHeader';
+import DiagramViewerModal from '@/components/DiagramViewerModal';
 import { useLanguage } from '@/context/LanguageContext';
 import { getInverterFault } from '@/data/inverterfaults';
 import { tr } from '@/data/translations';
@@ -351,101 +351,14 @@ export default function FaultDetailScreen() {
         backgroundColor="#F7F8FA"
       />
 
-      {/* FULLSCREEN BIG DIAGRAM MODAL WITH INTERACTIVE ZOOM CONTROLS */}
-      {fault.diagramImage && (
-        <Modal
-          visible={isImageModalOpen}
-          transparent={true}
-          animationType="fade"
-          onRequestClose={() => {
-            setIsImageModalOpen(false);
-            setZoomScale(1.0);
-          }}
-        >
-          <View style={styles.modalBackdrop}>
-            <SafeAreaView style={styles.modalSafeArea}>
-              {/* Modal Top Header with Title and Close Button */}
-              <View style={styles.modalHeader}>
-                <View style={{ flex: 1, paddingRight: 10 }}>
-                  <Text style={styles.modalTitle} numberOfLines={1}>
-                    {fault.title}
-                  </Text>
-                  <Text style={styles.modalSubtitle}>
-                    {tr(language, 'zoomHint')}
-                  </Text>
-                </View>
-
-                <Pressable
-                  onPress={() => {
-                    setIsImageModalOpen(false);
-                    setZoomScale(1.0);
-                  }}
-                  style={styles.modalCloseButton}
-                  hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-                >
-                  <Text style={styles.modalCloseText}>
-                    {tr(language, 'closeImage')}
-                  </Text>
-                </Pressable>
-              </View>
-
-              {/* On-screen Zoom Control Bar */}
-              <View style={styles.zoomControlBar}>
-                <Pressable
-                  onPress={handleZoomIn}
-                  style={styles.zoomBtn}
-                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                >
-                  <Text style={styles.zoomBtnText}>➕ {language === 'hi' ? 'बड़ा करें' : 'Zoom In'}</Text>
-                </Pressable>
-
-                <View style={styles.zoomBadge}>
-                  <Text style={styles.zoomBadgeText}>
-                    {Math.round(zoomScale * 100)}%
-                  </Text>
-                </View>
-
-                <Pressable
-                  onPress={handleZoomOut}
-                  style={styles.zoomBtn}
-                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                >
-                  <Text style={styles.zoomBtnText}>➖ {language === 'hi' ? 'छोटा करें' : 'Zoom Out'}</Text>
-                </Pressable>
-
-                <Pressable
-                  onPress={handleResetZoom}
-                  style={styles.zoomResetBtn}
-                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                >
-                  <Text style={styles.zoomResetText}>⟲ Reset</Text>
-                </Pressable>
-              </View>
-
-              {/* Two-Way Scrollable Container for Pan and Inspect Traces */}
-              <ScrollView
-                horizontal={true}
-                showsHorizontalScrollIndicator={true}
-                contentContainerStyle={styles.horizontalScrollContent}
-              >
-                <ScrollView
-                  showsVerticalScrollIndicator={true}
-                  contentContainerStyle={styles.verticalScrollContent}
-                >
-                  <Image
-                    source={fault.diagramImage}
-                    style={{
-                      width: baseImageWidth * zoomScale,
-                      height: baseImageHeight * zoomScale,
-                    }}
-                    resizeMode="contain"
-                  />
-                </ScrollView>
-              </ScrollView>
-            </SafeAreaView>
-          </View>
-        </Modal>
-      )}
+      {/* FULLSCREEN PINCH-TO-ZOOM DIAGRAM MODAL */}
+      <DiagramViewerModal
+        visible={isImageModalOpen}
+        source={fault.diagramImage}
+        title={fault.title}
+        subtitle={tr(language, 'zoomHint')}
+        onClose={() => setIsImageModalOpen(false)}
+      />
 
       {/* HEADER WITH BACK BUTTON, TITLE & SIDEBAR MENU */}
       <AppHeader
