@@ -6,12 +6,13 @@ import {
 
 import { Stack } from 'expo-router';
 
-import {
-  useColorScheme,
-} from 'react-native';
+import { useColorScheme } from 'react-native';
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
+
+  // Screenshot/screen-recording prevention is handled natively
+  // via FLAG_SECURE in MainActivity.kt (Android)
 
   return (
     <ThemeProvider

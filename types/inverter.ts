@@ -28,5 +28,6 @@ export type Inverter = {
   batteryVoltage: string;
   type: string;
   image: any;
+  pcbImage:any;
   faults: string[];
 };

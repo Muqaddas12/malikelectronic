@@ -1,24 +1,26 @@
 import React, { useMemo, useState } from 'react';
 
 import {
-  FlatList,
-  Pressable,
-  SafeAreaView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  View,
+    FlatList,
+    Image,
+    Pressable,
+    StatusBar,
+    StyleSheet,
+    Text,
+    View,
 } from 'react-native';
 
+import { SafeAreaView } from 'react-native-safe-area-context';
+
 import {
-  router,
-  useLocalSearchParams,
+    router,
+    useLocalSearchParams,
 } from 'expo-router';
 
 import FaultCard from '@/components/FaultCard';
 import SearchBar from '@/components/SearchBar';
 
-import { faults } from '@/data/faults';
+import { getFaultsForInverter } from '@/data/inverterfaults';
 import { inverters } from '@/data/inverters';
 
 export default function InverterFaultsScreen() {
@@ -34,29 +36,23 @@ export default function InverterFaultsScreen() {
   );
 
   const inverterFaults = useMemo(() => {
-    if (!inverter) {
-      return [];
-    }
+    if (!inverter) return [];
 
-    const availableFaults = faults.filter(
-      (fault) =>
-        inverter.faults.includes(fault.id),
+    const allFaults = getFaultsForInverter(
+      inverter.id,
     );
 
     const query = search
       .trim()
       .toLowerCase();
 
-    if (!query) {
-      return availableFaults;
-    }
+    if (!query) return allFaults;
 
-    return availableFaults.filter((fault) =>
+    return allFaults.filter((fault) =>
       [
         fault.title,
         fault.subtitle,
         ...fault.symptoms,
-        ...fault.possibleCauses,
       ]
         .join(' ')
         .toLowerCase()
@@ -91,7 +87,8 @@ export default function InverterFaultsScreen() {
             fault={item}
             onPress={() =>
               router.push({
-                pathname: '/inverter/fault/[faultId]',
+                pathname:
+                  '/inverter/fault/[faultId]',
                 params: {
                   id: inverter.id,
                   faultId: item.id,
@@ -100,10 +97,9 @@ export default function InverterFaultsScreen() {
             }
           />
         )}
-        contentContainerStyle={styles.content}
-        showsVerticalScrollIndicator={false}
         ListHeaderComponent={
-          <View>
+          <>
+            {/* BACK BUTTON */}
             <Pressable
               onPress={() => router.back()}
               style={styles.backButton}
@@ -113,36 +109,59 @@ export default function InverterFaultsScreen() {
               </Text>
             </Pressable>
 
+            {/* HERO */}
             <View style={styles.hero}>
-              <Text style={styles.brand}>
-                {inverter.brand}
-              </Text>
+              {/* LEFT SIDE */}
+              <View style={styles.heroInfo}>
+                <Text style={styles.brand}>
+                  {inverter.brand}
+                </Text>
 
-              <Text style={styles.model}>
-                {inverter.model}
-              </Text>
+                <Text style={styles.model}>
+                  {inverter.model}
+                </Text>
 
-              <Text style={styles.specs}>
-                {inverter.capacity} •{' '}
-                {inverter.batteryVoltage} •{' '}
-                {inverter.type}
-              </Text>
+                <Text style={styles.specs}>
+                  {inverter.capacity} •{' '}
+                  {inverter.batteryVoltage} •{' '}
+                  {inverter.type}
+                </Text>
+              </View>
+
+              {/* RIGHT SIDE */}
+              {inverter.pcbImage ? (
+                <View
+                  style={styles.imageContainer}
+                >
+                  <Image
+                    source={inverter.pcbImage}
+                    style={styles.pcbImage}
+                    resizeMode="contain"
+                  />
+                </View>
+              ) : null}
             </View>
 
+            {/* SEARCH */}
             <SearchBar
               value={search}
               onChangeText={setSearch}
               placeholder="Search fault..."
             />
 
+            {/* TITLE */}
             <Text style={styles.sectionTitle}>
               Troubleshooting
             </Text>
 
             <Text style={styles.sectionSubtitle}>
-              Select the problem you are experiencing.
+              {inverterFaults.length} fault
+              {inverterFaults.length !== 1
+                ? 's'
+                : ''}{' '}
+              available — tap to view details.
             </Text>
-          </View>
+          </>
         }
         ListEmptyComponent={
           <View style={styles.empty}>
@@ -150,6 +169,11 @@ export default function InverterFaultsScreen() {
               No fault found
             </Text>
           </View>
+        }
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+        ListFooterComponent={
+          <View style={styles.bottomSpacer} />
         }
       />
     </SafeAreaView>
@@ -163,9 +187,12 @@ const styles = StyleSheet.create({
   },
 
   content: {
-    padding: 18,
-    paddingBottom: 40,
+    paddingHorizontal: 18,
+    paddingTop: 10,
+    paddingBottom: 20,
   },
+
+  /* BACK BUTTON */
 
   backButton: {
     alignSelf: 'flex-start',
@@ -180,24 +207,36 @@ const styles = StyleSheet.create({
     color: '#2563EB',
   },
 
+  /* HERO */
+
   hero: {
     backgroundColor: '#111827',
     borderRadius: 24,
-    padding: 22,
+    padding: 20,
     marginBottom: 20,
+
+    flexDirection: 'row',
+    alignItems: 'center',
+
+    minHeight: 155,
+  },
+
+  heroInfo: {
+    flex: 1,
+    paddingRight: 10,
   },
 
   brand: {
     color: '#93C5FD',
     fontSize: 13,
     fontWeight: '800',
+    marginBottom: 4,
   },
 
   model: {
     color: '#FFFFFF',
-    fontSize: 28,
+    fontSize: 27,
     fontWeight: '900',
-    marginTop: 4,
   },
 
   specs: {
@@ -206,6 +245,22 @@ const styles = StyleSheet.create({
     marginTop: 10,
     lineHeight: 20,
   },
+
+  /* PCB IMAGE */
+
+  imageContainer: {
+    width: 135,
+    height: 120,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  pcbImage: {
+    width: 130,
+    height: 115,
+  },
+
+  /* SECTION */
 
   sectionTitle: {
     fontSize: 23,
@@ -220,6 +275,8 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
 
+  /* EMPTY */
+
   empty: {
     paddingTop: 50,
     alignItems: 'center',
@@ -228,7 +285,16 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 17,
     fontWeight: '800',
+    color: '#111827',
   },
+
+  /* BOTTOM SPACE */
+
+  bottomSpacer: {
+    height: 40,
+  },
+
+  /* NOT FOUND */
 
   center: {
     flex: 1,
@@ -239,5 +305,6 @@ const styles = StyleSheet.create({
   notFound: {
     fontSize: 18,
     fontWeight: '800',
+    color: '#111827',
   },
 });

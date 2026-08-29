@@ -7,10 +7,10 @@ import {
   View,
 } from 'react-native';
 
-import { Fault } from '@/types/inverter';
+import { InverterFaultDetail } from '@/types/faultDetail';
 
 type Props = {
-  fault: Fault;
+  fault: InverterFaultDetail;
   onPress: () => void;
 };
 

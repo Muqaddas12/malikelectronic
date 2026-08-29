@@ -2,13 +2,14 @@ import { Inverter } from '@/types/inverter';
 
 export const inverters: Inverter[] = [
   {
-    id: 'luminous-ecovolt-1650',
+    id: 'LuminousEcoWatt',
     brand: 'Luminous',
-    model: 'EcoVolt 1650',
-    capacity: '1650 VA',
+    model: 'Eco Watt+',
+    capacity: '700-1050 VA',
     batteryVoltage: '12V',
     type: 'Home UPS / Inverter',
-    image: require('@/assets/inverters/luminous-ecovolt.png'),
+    image: require('@/assets/inverters/LuminousEcoWatt.png'),
+    pcbImage:require('@/assets/pcb/LuminousEcoWattPcb.png'),
 
     faults: [
       'overload',
@@ -17,7 +18,7 @@ export const inverters: Inverter[] = [
       'mosfet',
       'relay',
       'switch',
-      'fuse',
+      'fuse', 
       'charging',
       'short-circuit',
       'overheating',
@@ -33,7 +34,7 @@ export const inverters: Inverter[] = [
     batteryVoltage: '12V',
     type: 'Digital Inverter',
     image: require('@/assets/inverters/microtek.png'),
-
+    pcbImage: null,
     faults: [
       'overload',
       'low-battery',
@@ -57,7 +58,7 @@ export const inverters: Inverter[] = [
     batteryVoltage: '12V',
     type: 'Pure Sine Wave Inverter',
     image: require('@/assets/inverters/livguard.png'),
-
+    pcbImage:'',
     faults: [
       'overload',
       'low-battery',
@@ -82,7 +83,7 @@ export const inverters: Inverter[] = [
     batteryVoltage: '12V / 24V',
     type: 'Home UPS',
     image: require('@/assets/inverters/generic.png'),
-
+    pcbImage:'',
     faults: [
       'overload',
       'low-battery',
