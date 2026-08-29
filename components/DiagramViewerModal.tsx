@@ -41,7 +41,10 @@ export default function DiagramViewerModal({
       visible={visible}
       transparent={true}
       animationType="fade"
-      onRequestClose={onClose}
+      onRequestClose={() => {
+        setCurrentScale(1.0);
+        onClose();
+      }}
     >
       <View style={styles.modalBackdrop}>
         <SafeAreaView style={styles.safeArea}>
@@ -57,7 +60,10 @@ export default function DiagramViewerModal({
             </View>
 
             <Pressable
-              onPress={onClose}
+              onPress={() => {
+                setCurrentScale(1.0);
+                onClose();
+              }}
               style={styles.closeBtn}
               hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
             >
@@ -67,26 +73,46 @@ export default function DiagramViewerModal({
             </Pressable>
           </View>
 
-          {/* HINT BAR */}
-          <View style={styles.hintBar}>
-            <Text style={styles.hintText}>
-              🤏 {language === 'hi' ? 'दो उंगलियों से पिंच करके ज़ूम करें • डबल टैप करें' : 'Pinch with two fingers to zoom • Double tap to zoom'}
-            </Text>
-            <View style={styles.scaleBadge}>
-              <Text style={styles.scaleText}>
-                {Math.round(currentScale * 100)}%
-              </Text>
-            </View>
-          </View>
-
-          {/* INTERACTIVE 2-FINGER PINCH & PAN VIEWER */}
+          {/* CANVAS WITH NATIVE HARDWARE PINCH-TO-ZOOM */}
           <View style={styles.viewerCanvas}>
             <InteractiveViewer
               source={source}
-              baseWidth={SCREEN_WIDTH - 16}
-              baseHeight={SCREEN_HEIGHT * 0.76}
+              scaleValue={currentScale}
               onScaleChange={setCurrentScale}
             />
+          </View>
+
+          {/* FLOATING ZOOM HUD CONTROLS */}
+          <View style={styles.bottomHud}>
+            <Pressable
+              onPress={() => setCurrentScale((prev) => Math.min(prev + 0.5, 4.5))}
+              style={styles.hudBtn}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <Text style={styles.hudBtnText}>➕ Zoom</Text>
+            </Pressable>
+
+            <View style={styles.hudBadge}>
+              <Text style={styles.hudBadgeText}>
+                {Math.round(currentScale * 100)}%
+              </Text>
+            </View>
+
+            <Pressable
+              onPress={() => setCurrentScale((prev) => Math.max(prev - 0.5, 1.0))}
+              style={styles.hudBtn}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <Text style={styles.hudBtnText}>➖ Zoom</Text>
+            </Pressable>
+
+            <Pressable
+              onPress={() => setCurrentScale(1.0)}
+              style={styles.hudResetBtn}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <Text style={styles.hudResetText}>⟲ Reset</Text>
+            </Pressable>
           </View>
         </SafeAreaView>
       </View>
@@ -145,39 +171,67 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
 
-  hintBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 6,
-    backgroundColor: '#1E293B',
-  },
-
-  hintText: {
-    color: '#94A3B8',
-    fontSize: 11,
-    fontWeight: '700',
+  viewerCanvas: {
     flex: 1,
   },
 
-  scaleBadge: {
-    backgroundColor: '#0F172A',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 6,
+  /* BOTTOM FLOATING HUD */
+
+  bottomHud: {
+    position: 'absolute',
+    bottom: 20,
+    alignSelf: 'center',
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(17, 24, 39, 0.95)',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 24,
+    gap: 8,
     borderWidth: 1,
-    borderColor: '#334155',
+    borderColor: '#374151',
+    shadowColor: '#000',
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
   },
 
-  scaleText: {
+  hudBtn: {
+    backgroundColor: '#2563EB',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 14,
+  },
+
+  hudBtnText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '800',
+  },
+
+  hudBadge: {
+    backgroundColor: '#0F172A',
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    borderRadius: 10,
+  },
+
+  hudBadgeText: {
     color: '#38BDF8',
     fontSize: 11,
     fontWeight: '900',
   },
 
-  viewerCanvas: {
-    flex: 1,
+  hudResetBtn: {
+    backgroundColor: '#374151',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 14,
+  },
+
+  hudResetText: {
+    color: '#E5E7EB',
+    fontSize: 11,
+    fontWeight: '700',
   },
 });
-

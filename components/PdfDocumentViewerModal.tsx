@@ -125,8 +125,7 @@ export default function PdfDocumentViewerModal({
               <InteractiveViewer
                 key={`${doc.chipName}-page-${activePageIndex}`}
                 source={doc.pages[activePageIndex]}
-                baseWidth={basePageWidth}
-                baseHeight={basePageHeight}
+                scaleValue={zoomScale}
                 onScaleChange={setZoomScale}
               />
             </View>

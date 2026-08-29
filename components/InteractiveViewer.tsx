@@ -1,15 +1,13 @@
-import React, { useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import {
   Animated,
-  Dimensions,
   Image,
   ImageSourcePropType,
   PanResponder,
   StyleSheet,
+  useWindowDimensions,
   View,
 } from 'react-native';
-
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 type Props = {
   source: ImageSourcePropType;
@@ -17,56 +15,101 @@ type Props = {
   baseHeight?: number;
   minScale?: number;
   maxScale?: number;
+  scaleValue?: number; // External scale control
   onScaleChange?: (scale: number) => void;
 };
 
+/**
+ * Pure Native React Native Interactive Viewer with Dynamic Orientation Support
+ * Features:
+ *  - Supports both Portrait and Landscape orientations dynamically
+ *  - 2-Finger Fluid Pinch-to-Zoom using native animated transforms
+ *  - 1-Finger Pan / Drag when zoomed in with boundary protection
+ *  - Double-Tap quick zoom (1.0x <-> 2.6x)
+ *  - 60/120 FPS hardware-accelerated animations (useNativeDriver: true)
+ */
 export default function InteractiveViewer({
   source,
-  baseWidth = SCREEN_WIDTH - 24,
-  baseHeight = SCREEN_HEIGHT * 0.72,
+  baseWidth: propWidth,
+  baseHeight: propHeight,
   minScale = 1.0,
   maxScale = 5.0,
+  scaleValue,
   onScaleChange,
 }: Props) {
+  const { width: windowWidth, height: windowHeight } = useWindowDimensions();
+
+  // Dynamic responsive dimensions for portrait and landscape
+  const baseWidth = propWidth ?? (windowWidth - 24);
+  const baseHeight = propHeight ?? (windowHeight * (windowWidth > windowHeight ? 0.85 : 0.72));
+
   const pan = useRef(new Animated.ValueXY({ x: 0, y: 0 })).current;
   const scale = useRef(new Animated.Value(1.0)).current;
 
-  // Track values imperatively
+  // Imperative state for gesture calculations
   const currentScale = useRef(1.0);
   const currentPan = useRef({ x: 0, y: 0 });
-  const initialDistance = useRef<number | null>(null);
-  const scaleAtPinchStart = useRef(1.0);
-  const panAtPinchStart = useRef({ x: 0, y: 0 });
-  const initialCenter = useRef<{ x: number; y: number } | null>(null);
+  const initialPinchDist = useRef<number | null>(null);
+  const pinchStartScale = useRef(1.0);
+  const pinchStartPan = useRef({ x: 0, y: 0 });
+  const pinchStartCenter = useRef<{ x: number; y: number } | null>(null);
   const lastTapTime = useRef(0);
 
-  const getDistance = (touches: any[]) => {
-    const [t1, t2] = touches;
+  // Sync external scale changes if provided
+  useEffect(() => {
+    if (scaleValue !== undefined && Math.abs(scaleValue - currentScale.current) > 0.05) {
+      currentScale.current = scaleValue;
+      if (scaleValue <= 1.05) {
+        currentPan.current = { x: 0, y: 0 };
+        Animated.parallel([
+          Animated.spring(scale, {
+            toValue: scaleValue,
+            useNativeDriver: true,
+            friction: 7,
+          }),
+          Animated.spring(pan, {
+            toValue: { x: 0, y: 0 },
+            useNativeDriver: true,
+            friction: 7,
+          }),
+        ]).start();
+      } else {
+        Animated.spring(scale, {
+          toValue: scaleValue,
+          useNativeDriver: true,
+          friction: 7,
+        }).start();
+      }
+    }
+  }, [scaleValue]);
+
+  const calcDistance = (t1: any, t2: any) => {
     const dx = t1.pageX - t2.pageX;
     const dy = t1.pageY - t2.pageY;
     return Math.hypot(dx, dy);
   };
 
-  const getCenter = (touches: any[]) => {
-    const [t1, t2] = touches;
-    return {
-      x: (t1.pageX + t2.pageX) / 2,
-      y: (t1.pageY + t2.pageY) / 2,
-    };
-  };
+  const calcCenter = (t1: any, t2: any) => ({
+    x: (t1.pageX + t2.pageX) / 2,
+    y: (t1.pageY + t2.pageY) / 2,
+  });
 
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
       onMoveShouldSetPanResponder: () => true,
       onStartShouldSetPanResponderCapture: () => false,
-      onMoveShouldSetPanResponderCapture: (evt) => evt.nativeEvent.touches.length >= 2,
+      onMoveShouldSetPanResponderCapture: (evt) => {
+        return evt.nativeEvent.touches.length >= 2;
+      },
 
       onPanResponderGrant: (evt) => {
-        // Handle double-tap
+        const touches = evt.nativeEvent.touches;
+
+        // Double-tap handler
         const now = Date.now();
-        if (now - lastTapTime.current < 300) {
-          const targetScale = currentScale.current > 1.4 ? 1.0 : 2.5;
+        if (touches.length === 1 && now - lastTapTime.current < 300) {
+          const targetScale = currentScale.current > 1.3 ? 1.0 : 2.6;
           currentScale.current = targetScale;
           currentPan.current = { x: 0, y: 0 };
 
@@ -75,11 +118,13 @@ export default function InteractiveViewer({
               toValue: targetScale,
               useNativeDriver: true,
               friction: 6,
+              tension: 40,
             }),
             Animated.spring(pan, {
               toValue: { x: 0, y: 0 },
               useNativeDriver: true,
               friction: 6,
+              tension: 40,
             }),
           ]).start();
 
@@ -89,11 +134,11 @@ export default function InteractiveViewer({
         }
         lastTapTime.current = now;
 
-        if (evt.nativeEvent.touches.length === 2) {
-          initialDistance.current = getDistance(evt.nativeEvent.touches);
-          scaleAtPinchStart.current = currentScale.current;
-          initialCenter.current = getCenter(evt.nativeEvent.touches);
-          panAtPinchStart.current = { ...currentPan.current };
+        if (touches.length === 2) {
+          initialPinchDist.current = calcDistance(touches[0], touches[1]);
+          pinchStartScale.current = currentScale.current;
+          pinchStartCenter.current = calcCenter(touches[0], touches[1]);
+          pinchStartPan.current = { ...currentPan.current };
         } else {
           pan.setOffset({
             x: currentPan.current.x,
@@ -106,29 +151,29 @@ export default function InteractiveViewer({
       onPanResponderMove: (evt, gestureState) => {
         const touches = evt.nativeEvent.touches;
 
-        // TWO-FINGER PINCH TO ZOOM & PAN
+        // TWO-FINGER PINCH-TO-ZOOM
         if (touches.length === 2) {
-          const distance = getDistance(touches);
+          const dist = calcDistance(touches[0], touches[1]);
 
-          if (!initialDistance.current || initialDistance.current <= 0) {
-            initialDistance.current = distance;
-            scaleAtPinchStart.current = currentScale.current;
-            initialCenter.current = getCenter(touches);
-            panAtPinchStart.current = { ...currentPan.current };
+          if (!initialPinchDist.current || initialPinchDist.current <= 0) {
+            initialPinchDist.current = dist;
+            pinchStartScale.current = currentScale.current;
+            pinchStartCenter.current = calcCenter(touches[0], touches[1]);
+            pinchStartPan.current = { ...currentPan.current };
           } else {
-            const factor = distance / initialDistance.current;
-            let newScale = scaleAtPinchStart.current * factor;
-            newScale = Math.max(0.8, Math.min(newScale, maxScale));
+            const factor = dist / initialPinchDist.current;
+            let newScale = pinchStartScale.current * factor;
+            newScale = Math.max(0.75, Math.min(newScale, maxScale));
             currentScale.current = newScale;
             scale.setValue(newScale);
 
-            if (initialCenter.current) {
-              const currentCenter = getCenter(touches);
-              const dx = currentCenter.x - initialCenter.current.x;
-              const dy = currentCenter.y - initialCenter.current.y;
+            if (pinchStartCenter.current) {
+              const currentCenter = calcCenter(touches[0], touches[1]);
+              const dx = currentCenter.x - pinchStartCenter.current.x;
+              const dy = currentCenter.y - pinchStartCenter.current.y;
               pan.setValue({
-                x: panAtPinchStart.current.x + dx,
-                y: panAtPinchStart.current.y + dy,
+                x: pinchStartPan.current.x + dx,
+                y: pinchStartPan.current.y + dy,
               });
             }
 
@@ -137,8 +182,8 @@ export default function InteractiveViewer({
         }
         // SINGLE-FINGER DRAG WHEN ZOOMED IN
         else if (touches.length === 1) {
-          initialDistance.current = null;
-          initialCenter.current = null;
+          initialPinchDist.current = null;
+          pinchStartCenter.current = null;
 
           if (currentScale.current > 1.05) {
             pan.setValue({ x: gestureState.dx, y: gestureState.dy });
@@ -153,10 +198,10 @@ export default function InteractiveViewer({
         // @ts-ignore
         const finalY = pan.y._value ?? 0;
         currentPan.current = { x: finalX, y: finalY };
-        initialDistance.current = null;
-        initialCenter.current = null;
+        initialPinchDist.current = null;
+        pinchStartCenter.current = null;
 
-        // Auto snap-back if zoomed out beyond 1.0
+        // Auto bounce back if scale went below minScale
         if (currentScale.current < minScale) {
           currentScale.current = minScale;
           Animated.spring(scale, {
@@ -167,9 +212,9 @@ export default function InteractiveViewer({
           if (onScaleChange) onScaleChange(minScale);
         }
 
-        // Keep inside screen bounds
-        const maxPanX = Math.max(0, (baseWidth * (currentScale.current - 1)) / 2 + 40);
-        const maxPanY = Math.max(0, (baseHeight * (currentScale.current - 1)) / 2 + 60);
+        // Limit pan bounds to prevent losing image off screen
+        const maxPanX = Math.max(0, (baseWidth * (currentScale.current - 1)) / 2 + 50);
+        const maxPanY = Math.max(0, (baseHeight * (currentScale.current - 1)) / 2 + 80);
 
         let boundedX = currentPan.current.x;
         let boundedY = currentPan.current.y;
