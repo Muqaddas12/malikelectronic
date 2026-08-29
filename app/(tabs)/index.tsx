@@ -10,7 +10,6 @@ import {
 } from 'react-native';
 
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
 
 import InverterCard from '@/components/InverterCard';
 import SearchBar from '@/components/SearchBar';
@@ -20,11 +19,13 @@ import Sidebar from '@/components/Sidebar';
 import { useLanguage } from '@/context/LanguageContext';
 import { tr } from '@/data/translations';
 import { inverters } from '@/data/inverters';
+import { useSafeNavigate } from '@/hooks/useSafeNavigate';
 
 export default function TabOneScreen() {
   const [search, setSearch] = useState('');
   const [sidebarVisible, setSidebarVisible] = useState(false);
   const { language } = useLanguage();
+  const { safePush } = useSafeNavigate();
 
   const filteredInverters = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -67,7 +68,7 @@ export default function TabOneScreen() {
           <InverterCard
             inverter={item}
             onPress={() =>
-              router.push({
+              safePush({
                 pathname: '/inverter/[id]',
                 params: {
                   id: item.id,

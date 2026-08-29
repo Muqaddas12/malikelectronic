@@ -9,6 +9,8 @@ import {
 } from 'react-native';
 
 import { Inverter } from '@/types/inverter';
+import { useLanguage } from '@/context/LanguageContext';
+import { tr } from '@/data/translations';
 
 type Props = {
   inverter: Inverter;
@@ -19,6 +21,8 @@ export default function InverterCard({
   inverter,
   onPress,
 }: Props) {
+  const { language } = useLanguage();
+
   return (
     <Pressable
       onPress={onPress}
@@ -47,7 +51,7 @@ export default function InverterCard({
         <View style={styles.infoRow}>
           <View style={styles.info}>
             <Text style={styles.label}>
-              Capacity
+              {tr(language, 'capacity')}
             </Text>
 
             <Text style={styles.value}>
@@ -57,7 +61,7 @@ export default function InverterCard({
 
           <View style={styles.info}>
             <Text style={styles.label}>
-              Battery
+              {tr(language, 'battery')}
             </Text>
 
             <Text style={styles.value}>
@@ -67,7 +71,7 @@ export default function InverterCard({
         </View>
 
         <Text style={styles.faultCount}>
-          {inverter.faults.length} troubleshooting topics
+          {inverter.faults.length} {tr(language, 'troubleshootingTopics')}
         </Text>
       </View>
 
@@ -82,15 +86,10 @@ const styles = StyleSheet.create({
   card: {
     flexDirection: 'row',
     alignItems: 'center',
-
     backgroundColor: '#FFFFFF',
-
     borderRadius: 20,
-
     marginBottom: 16,
-
     padding: 14,
-
     shadowColor: '#000',
     shadowOpacity: 0.08,
     shadowRadius: 10,
@@ -98,7 +97,6 @@ const styles = StyleSheet.create({
       width: 0,
       height: 4,
     },
-
     elevation: 3,
   },
 
@@ -114,14 +112,10 @@ const styles = StyleSheet.create({
   imageContainer: {
     width: 115,
     height: 105,
-
     borderRadius: 16,
-
     backgroundColor: '#F4F6F8',
-
     alignItems: 'center',
     justifyContent: 'center',
-
     overflow: 'hidden',
   },
 

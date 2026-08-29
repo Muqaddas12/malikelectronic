@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router, useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 
 import FaultCard from '@/components/FaultCard';
 import SearchBar from '@/components/SearchBar';
@@ -20,11 +20,13 @@ import { getFaultsForInverter } from '@/data/inverterfaults';
 import { inverters } from '@/data/inverters';
 import { useLanguage } from '@/context/LanguageContext';
 import { tr } from '@/data/translations';
+import { useSafeNavigate } from '@/hooks/useSafeNavigate';
 
 export default function InverterFaultsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const [search, setSearch] = useState('');
   const { language } = useLanguage();
+  const { safePush, safeBack } = useSafeNavigate();
 
   const inverter = inverters.find((item) => item.id === id);
 
@@ -70,7 +72,7 @@ export default function InverterFaultsScreen() {
           <FaultCard
             fault={item}
             onPress={() =>
-              router.push({
+              safePush({
                 pathname: '/inverter/fault/[faultId]',
                 params: {
                   id: inverter.id,
@@ -84,7 +86,7 @@ export default function InverterFaultsScreen() {
           <>
             {/* BACK BUTTON */}
             <Pressable
-              onPress={() => router.back()}
+              onPress={() => safeBack()}
               style={styles.backButton}
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             >

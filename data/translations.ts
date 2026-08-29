@@ -17,6 +17,9 @@ export const t: Translations = {
     searchModelOrBrand: 'Search model or brand...',
     noInverterFound: 'No inverter found',
     tryAnotherBrand: 'Try another brand or model name.',
+    capacity: 'Capacity',
+    battery: 'Battery',
+    troubleshootingTopics: 'troubleshooting topics',
 
     // Inverter detail screen
     troubleshooting: 'Troubleshooting',
@@ -27,11 +30,11 @@ export const t: Translations = {
     tapToTroubleshoot: 'Tap to troubleshoot →',
 
     // Fault detail screen
-    safetyFirst: '⚠ Safety First',
-    safetyText:
-      'Disconnect mains and battery before opening the inverter. Work on high-voltage circuits only if properly trained and equipped.',
     pcbDiagram: '🔍 Circuit Diagram',
-    diagramCaption: 'Refer highlighted circuit area for this fault diagnosis',
+    diagramCaption: 'Tap image to view in full screen',
+    tapToZoom: '🔍 Tap to view large diagram',
+    closeImage: '✕ Close',
+    zoomHint: 'Pinch or scroll to inspect circuit traces & component values',
     noDiagramTitle: 'No Diagram Available',
     noDiagramText: 'Circuit diagram for this fault is not available yet.',
     symptoms: 'Symptoms',
@@ -39,6 +42,8 @@ export const t: Translations = {
     possibleCauses: 'Possible Causes',
     repairProcedure: 'Repair Procedure',
     circuitFlow: 'Circuit Flow',
+    componentsTable: 'Component & Technical Specifications',
+    resistorValues: 'Resistor Values Table',
     importantNote: '📌 Important Note',
     diagnosisSummary: '🩺 Diagnosis Summary',
     faultNotFound: 'Fault not found',
@@ -47,6 +52,10 @@ export const t: Translations = {
     criticalRisk: 'CRITICAL RISK',
     mediumRisk: 'MEDIUM RISK',
     lowRisk: 'LOW RISK',
+    component: 'Component',
+    function: 'Function',
+    value: 'Value',
+    pcbType: 'PCB Type',
 
     // Sidebar
     language: 'Language',
@@ -72,6 +81,9 @@ export const t: Translations = {
     searchModelOrBrand: 'मॉडल या ब्रांड खोजें...',
     noInverterFound: 'कोई इन्वर्टर नहीं मिला',
     tryAnotherBrand: 'कोई दूसरा ब्रांड या मॉडल नाम आज़माएं।',
+    capacity: 'क्षमता',
+    battery: 'बैटरी',
+    troubleshootingTopics: 'समस्या निवारण विषय',
 
     // Inverter detail screen
     troubleshooting: 'समस्या निवारण',
@@ -82,26 +94,32 @@ export const t: Translations = {
     tapToTroubleshoot: 'सुधारने के लिए टैप करें →',
 
     // Fault detail screen
-    safetyFirst: '⚠ पहले सुरक्षा',
-    safetyText:
-      'इन्वर्टर खोलने से पहले मेन और बैटरी दोनों disconnect करें। हाई-वोल्टेज सर्किट पर केवल trained व्यक्ति ही काम करें।',
     pcbDiagram: '🔍 सर्किट डायग्राम',
-    diagramCaption: 'इस खराबी की जांच के लिए highlighted सर्किट area देखें',
+    diagramCaption: 'बड़ी स्क्रीन में देखने के लिए इमेज पर टैप करें',
+    tapToZoom: '🔍 बड़ा डायग्राम देखने के लिए टैप करें',
+    closeImage: '✕ बंद करें',
+    zoomHint: 'सर्किट ट्रैक्स और कंपोनेंट वैल्यू देखने के लिए ज़ूम करें',
     noDiagramTitle: 'डायग्राम उपलब्ध नहीं',
     noDiagramText: 'इस खराबी का सर्किट डायग्राम अभी उपलब्ध नहीं है।',
-    symptoms: 'लक्षण',
-    basicChecks: 'बुनियादी जांच',
-    possibleCauses: 'संभावित कारण',
-    repairProcedure: 'मरम्मत प्रक्रिया',
-    circuitFlow: 'सर्किट फ्लो',
+    symptoms: 'लक्षण (Symptoms)',
+    basicChecks: 'बुनियादी जांच (Basic Checks)',
+    possibleCauses: 'संभावित कारण (Possible Causes)',
+    repairProcedure: 'मरम्मत प्रक्रिया (Repair Procedure)',
+    circuitFlow: 'सर्किट फ्लो (Circuit Flow)',
+    componentsTable: 'कंपोनेंट और तकनीकी विवरण',
+    resistorValues: 'रेजिस्टेंस वैल्यू टेबल',
     importantNote: '📌 महत्वपूर्ण नोट',
-    diagnosisSummary: '🩺 निदान सारांश',
+    diagnosisSummary: '🩺 निदान सारांश (Diagnosis)',
     faultNotFound: 'खराबी नहीं मिली',
     inverterNotFound: 'इन्वर्टर नहीं मिला',
     highRisk: 'उच्च जोखिम',
     criticalRisk: 'गंभीर जोखिम',
     mediumRisk: 'मध्यम जोखिम',
     lowRisk: 'कम जोखिम',
+    component: 'कंपोनेंट',
+    function: 'कार्य',
+    value: 'मान / वैल्यू',
+    pcbType: 'पीसीबी प्रकार',
 
     // Sidebar
     language: 'भाषा',

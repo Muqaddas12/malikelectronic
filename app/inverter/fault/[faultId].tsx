@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 import {
+  Dimensions,
   Image,
+  Modal,
   Pressable,
   ScrollView,
   StatusBar,
@@ -11,7 +13,7 @@ import {
 } from 'react-native';
 
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router, useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 
 import { getInverterFault } from '@/data/inverterfaults';
 import {
@@ -20,6 +22,10 @@ import {
 } from '@/types/faultDetail';
 import { useLanguage } from '@/context/LanguageContext';
 import { tr } from '@/data/translations';
+import { useSafeNavigate } from '@/hooks/useSafeNavigate';
+
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } =
+  Dimensions.get('window');
 
 const severityColors = {
   low: '#16A34A',
@@ -64,15 +70,25 @@ function BulletSection({
 
 function TechnicalSection({
   fault,
+  title,
+  compTitle,
+  funcTitle,
+  valTitle,
 }: {
   fault: InverterFaultDetail;
+  title: string;
+  compTitle: string;
+  funcTitle: string;
+  valTitle: string;
 }) {
   const tech = fault.technicalExplanation;
   if (!tech) return null;
 
   return (
     <View style={styles.card}>
-      <Text style={styles.cardTitle}>{tech.title}</Text>
+      <Text style={styles.cardTitle}>
+        🔧 {tech.title || title}
+      </Text>
       <Text style={styles.explanationText}>
         {tech.explanation}
       </Text>
@@ -82,13 +98,13 @@ function TechnicalSection({
         {/* Header */}
         <View style={[styles.tableRow, styles.tableHeader]}>
           <Text style={[styles.tableCellBold, { flex: 1.2 }]}>
-            Component
+            {compTitle}
           </Text>
           <Text style={[styles.tableCellBold, { flex: 2 }]}>
-            Function
+            {funcTitle}
           </Text>
           <Text style={[styles.tableCellBold, { flex: 1 }]}>
-            Value
+            {valTitle}
           </Text>
         </View>
 
@@ -140,15 +156,21 @@ function TechnicalSection({
 
 function ResistorSection({
   fault,
+  pcbTypeTitle,
+  valTitle,
 }: {
   fault: InverterFaultDetail;
+  pcbTypeTitle: string;
+  valTitle: string;
 }) {
   const rv = fault.resistorValues;
   if (!rv) return null;
 
   return (
     <View style={styles.card}>
-      <Text style={styles.cardTitle}>{rv.title}</Text>
+      <Text style={styles.cardTitle}>
+        📊 {rv.title}
+      </Text>
       <Text style={styles.explanationText}>
         {rv.explanation}
       </Text>
@@ -158,12 +180,12 @@ function ResistorSection({
           <Text
             style={[styles.tableCellBold, { flex: 1 }]}
           >
-            PCB Type
+            {pcbTypeTitle}
           </Text>
           <Text
             style={[styles.tableCellBold, { flex: 1 }]}
           >
-            R24 Value
+            {valTitle}
           </Text>
           <Text
             style={[styles.tableCellBold, { flex: 1 }]}
@@ -228,7 +250,9 @@ function CausesSection({
 
   return (
     <View style={styles.card}>
-      <Text style={styles.cardTitle}>{title}</Text>
+      <Text style={styles.cardTitle}>
+        🔍 {title}
+      </Text>
       <View style={styles.list}>
         {fault.possibleCauses.map((item, i) => (
           <View key={i} style={styles.causeItem}>
@@ -262,7 +286,9 @@ function RepairSection({
 
   return (
     <View style={styles.card}>
-      <Text style={styles.cardTitle}>{title}</Text>
+      <Text style={styles.cardTitle}>
+        🛠️ {title}
+      </Text>
       <View style={styles.list}>
         {fault.repairProcedure.map((step) => (
           <View key={step.step} style={styles.stepItem}>
@@ -296,6 +322,9 @@ export default function FaultDetailScreen() {
     }>();
 
   const { language } = useLanguage();
+  const { safeBack } = useSafeNavigate();
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+
   const fault = getInverterFault(id, faultId);
 
   if (!fault) {
@@ -322,13 +351,65 @@ export default function FaultDetailScreen() {
         backgroundColor="#F7F8FA"
       />
 
+      {/* FULLSCREEN BIG DIAGRAM MODAL */}
+      {fault.diagramImage && (
+        <Modal
+          visible={isImageModalOpen}
+          transparent={true}
+          animationType="fade"
+          onRequestClose={() => setIsImageModalOpen(false)}
+        >
+          <View style={styles.modalBackdrop}>
+            <SafeAreaView style={styles.modalSafeArea}>
+              {/* Modal Top Header with Title and Close Button */}
+              <View style={styles.modalHeader}>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.modalTitle}>
+                    {fault.title}
+                  </Text>
+                  <Text style={styles.modalSubtitle}>
+                    {tr(language, 'zoomHint')}
+                  </Text>
+                </View>
+
+                <Pressable
+                  onPress={() => setIsImageModalOpen(false)}
+                  style={styles.modalCloseButton}
+                  hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+                >
+                  <Text style={styles.modalCloseText}>
+                    {tr(language, 'closeImage')}
+                  </Text>
+                </Pressable>
+              </View>
+
+              {/* Scrollable / Zoomable High-Res Diagram Container */}
+              <ScrollView
+                maximumZoomScale={4.0}
+                minimumZoomScale={1.0}
+                showsHorizontalScrollIndicator={false}
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={styles.modalImageScroll}
+                centerContent={true}
+              >
+                <Image
+                  source={fault.diagramImage}
+                  style={styles.modalBigImage}
+                  resizeMode="contain"
+                />
+              </ScrollView>
+            </SafeAreaView>
+          </View>
+        </Modal>
+      )}
+
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.content}
       >
         {/* BACK BUTTON */}
         <Pressable
-          onPress={() => router.back()}
+          onPress={() => safeBack()}
           style={styles.backButton}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
@@ -365,17 +446,13 @@ export default function FaultDetailScreen() {
           </View>
         </View>
 
-        {/* SAFETY WARNING */}
-        <View style={styles.warning}>
-          <Text style={styles.warningTitle}>
-            {tr(language, 'safetyFirst')}
-          </Text>
-          <Text style={styles.warningText}>
-            {tr(language, 'safetyText')}
-          </Text>
-        </View>
+        {/* 1. SYMPTOMS (FIRST SECTION) */}
+        <BulletSection
+          title={tr(language, 'symptoms')}
+          items={fault.symptoms}
+        />
 
-        {/* SPECIFIC PCB CIRCUIT DIAGRAM IMAGE */}
+        {/* 2. SPECIFIC PCB CIRCUIT DIAGRAM IMAGE (WITH TAP TO VIEW BIG IMAGE) */}
         <View style={styles.diagramCard}>
           <View style={styles.diagramHeaderRow}>
             <Text style={styles.diagramLabel}>
@@ -384,23 +461,31 @@ export default function FaultDetailScreen() {
             {fault.diagramImage ? (
               <View style={styles.diagramAvailableBadge}>
                 <Text style={styles.diagramAvailableText}>
-                  LIVE DIAGRAM
+                  LIVE SCHEMATIC
                 </Text>
               </View>
             ) : null}
           </View>
 
           {fault.diagramImage ? (
-            <View style={styles.diagramImageWrap}>
+            <Pressable
+              onPress={() => setIsImageModalOpen(true)}
+              style={({ pressed }) => [
+                styles.diagramImageWrap,
+                pressed && styles.diagramPressed,
+              ]}
+            >
               <Image
                 source={fault.diagramImage}
                 style={styles.diagramImage}
                 resizeMode="contain"
               />
-              <Text style={styles.diagramCaption}>
-                {tr(language, 'diagramCaption')}
-              </Text>
-            </View>
+              <View style={styles.zoomTapBadge}>
+                <Text style={styles.zoomTapText}>
+                  {tr(language, 'tapToZoom')}
+                </Text>
+              </View>
+            </Pressable>
           ) : (
             <View style={styles.noImageContainer}>
               <Text style={styles.noImageIcon}>🖼️</Text>
@@ -414,37 +499,19 @@ export default function FaultDetailScreen() {
           )}
         </View>
 
-        {/* SYMPTOMS */}
-        <BulletSection
-          title={tr(language, 'symptoms')}
-          items={fault.symptoms}
-        />
-
-        {/* BASIC CHECKS */}
-        <BulletSection
-          title={tr(language, 'basicChecks')}
-          items={fault.basicChecks}
-        />
-
-        {/* TECHNICAL EXPLANATION + COMPONENT TABLE */}
-        <TechnicalSection fault={fault} />
-
-        {/* RESISTOR VALUE TABLE */}
-        <ResistorSection fault={fault} />
-
-        {/* POSSIBLE CAUSES */}
+        {/* 3. POSSIBLE CAUSES (DIRECTLY AFTER DIAGRAM) */}
         <CausesSection
           fault={fault}
           title={tr(language, 'possibleCauses')}
         />
 
-        {/* REPAIR PROCEDURE */}
+        {/* 4. REPAIR PROCEDURE */}
         <RepairSection
           fault={fault}
           title={tr(language, 'repairProcedure')}
         />
 
-        {/* CIRCUIT FLOW */}
+        {/* 5. CIRCUIT FLOW */}
         {fault.circuitFlow ? (
           <View style={styles.flowCard}>
             <Text style={styles.cardTitleWhite}>
@@ -455,6 +522,30 @@ export default function FaultDetailScreen() {
             </Text>
           </View>
         ) : null}
+
+        {/* 6. OTHER THINGS */}
+
+        {/* BASIC CHECKS */}
+        <BulletSection
+          title={tr(language, 'basicChecks')}
+          items={fault.basicChecks}
+        />
+
+        {/* RESISTOR VALUE TABLE */}
+        <ResistorSection
+          fault={fault}
+          pcbTypeTitle={tr(language, 'pcbType')}
+          valTitle={tr(language, 'value')}
+        />
+
+        {/* TECHNICAL EXPLANATION + COMPONENT TABLE */}
+        <TechnicalSection
+          fault={fault}
+          title={tr(language, 'componentsTable')}
+          compTitle={tr(language, 'component')}
+          funcTitle={tr(language, 'function')}
+          valTitle={tr(language, 'value')}
+        />
 
         {/* IMPORTANT NOTE */}
         {fault.importantNote ? (
@@ -468,7 +559,7 @@ export default function FaultDetailScreen() {
           </View>
         ) : null}
 
-        {/* DIAGNOSIS */}
+        {/* DIAGNOSIS SUMMARY */}
         {fault.diagnosis ? (
           <View style={styles.diagnosisCard}>
             <Text style={styles.diagnosisTitle}>
@@ -497,7 +588,7 @@ const styles = StyleSheet.create({
     paddingBottom: 60,
   },
 
-  /* BACK */
+  /* BACK BUTTON */
 
   backButton: {
     alignSelf: 'flex-start',
@@ -519,6 +610,7 @@ const styles = StyleSheet.create({
     borderRadius: 26,
     padding: 22,
     alignItems: 'center',
+    marginBottom: 6,
   },
 
   iconCircle: {
@@ -562,37 +654,13 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
 
-  /* SAFETY WARNING */
-
-  warning: {
-    backgroundColor: '#FFF7ED',
-    borderWidth: 1,
-    borderColor: '#FED7AA',
-    borderRadius: 18,
-    padding: 16,
-    marginTop: 16,
-  },
-
-  warningTitle: {
-    fontSize: 15,
-    fontWeight: '900',
-    color: '#C2410C',
-  },
-
-  warningText: {
-    color: '#7C2D12',
-    fontSize: 13,
-    lineHeight: 20,
-    marginTop: 6,
-  },
-
-  /* PCB DIAGRAM */
+  /* PCB DIAGRAM CARD */
 
   diagramCard: {
     backgroundColor: '#FFFFFF',
     borderRadius: 20,
     padding: 16,
-    marginTop: 16,
+    marginTop: 14,
     borderWidth: 1,
     borderColor: '#E5E7EB',
   },
@@ -605,8 +673,8 @@ const styles = StyleSheet.create({
   },
 
   diagramLabel: {
-    fontSize: 15,
-    fontWeight: '800',
+    fontSize: 16,
+    fontWeight: '900',
     color: '#111827',
   },
 
@@ -629,23 +697,96 @@ const styles = StyleSheet.create({
     backgroundColor: '#F8FAFC',
     borderRadius: 14,
     padding: 8,
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: '#E2E8F0',
     alignItems: 'center',
+    overflow: 'hidden',
+  },
+
+  diagramPressed: {
+    opacity: 0.85,
+    borderColor: '#2563EB',
   },
 
   diagramImage: {
     width: '100%',
-    height: 240,
+    height: 220,
     borderRadius: 8,
   },
 
-  diagramCaption: {
-    fontSize: 12,
-    color: '#6B7280',
+  zoomTapBadge: {
     marginTop: 10,
-    textAlign: 'center',
-    fontStyle: 'italic',
+    backgroundColor: '#EFF6FF',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#BFDBFE',
+  },
+
+  zoomTapText: {
+    color: '#1D4ED8',
+    fontSize: 12,
+    fontWeight: '800',
+  },
+
+  /* MODAL FULLSCREEN VIEWER */
+
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: '#0A0F1E',
+  },
+
+  modalSafeArea: {
+    flex: 1,
+  },
+
+  modalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+    backgroundColor: '#111827',
+    borderBottomWidth: 1,
+    borderBottomColor: '#1F2937',
+  },
+
+  modalTitle: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '900',
+  },
+
+  modalSubtitle: {
+    color: '#9CA3AF',
+    fontSize: 11,
+    marginTop: 2,
+  },
+
+  modalCloseButton: {
+    backgroundColor: '#EF4444',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 10,
+  },
+
+  modalCloseText: {
+    color: '#FFFFFF',
+    fontSize: 13,
+    fontWeight: '800',
+  },
+
+  modalImageScroll: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 10,
+  },
+
+  modalBigImage: {
+    width: SCREEN_WIDTH - 20,
+    height: SCREEN_HEIGHT * 0.78,
   },
 
   /* SHARED CARD */
@@ -660,7 +801,7 @@ const styles = StyleSheet.create({
   },
 
   cardTitle: {
-    fontSize: 17,
+    fontSize: 16,
     fontWeight: '900',
     color: '#111827',
     marginBottom: 12,
