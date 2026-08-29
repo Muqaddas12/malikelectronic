@@ -9,9 +9,12 @@ export const inverters: Inverter[] = [
     batteryVoltage: '12V',
     type: 'Home UPS / Inverter',
     image: require('@/assets/inverters/LuminousEcoWatt.png'),
-    pcbImage: require('@/assets/pcb/LuminousEcoWattPcb.png'),
+    pcbImage: require('@/assets/diagrams/LuminousEcoWatt+/PCB IMAGE.jpg'),
     faults: [
       'fan',
+      'low-battery',
+      'main-feedback',
+      'relay',
     ],
   },
 
@@ -27,6 +30,7 @@ export const inverters: Inverter[] = [
     faults: [
       'fan',
       'relay',
+      'changeover',
       'no-output',
     ],
   },

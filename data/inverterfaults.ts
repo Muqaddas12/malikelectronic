@@ -341,6 +341,246 @@ export const inverterFaultsMap: Record<
         'Agar actual battery voltage normal hai lekin inverter battery low ya overcharge show kar raha hai, to battery sensing/feedback circuit check karein — especially R24, R16, R31, C13, C16 aur unki PCB tracks/soldering.',
     },
 
+    'main-feedback': {
+      id: 'main-feedback',
+      title: 'Main Feedback (mFB) / Pin 5 Sensing Fault',
+      subtitle:
+        'Luminous Eco Watt mein Mains Feedback sensing signal mFB terminal, D8 (M7 diode), R32 (7.5kΩ), R39 (2.4kΩ), C19 (0.1µF), R18 (1kΩ) se hokar PIC16F722 ke Pin 5 par jata hai.',
+      icon: '⚡',
+      severity: 'high',
+
+      symptoms: [
+        'Mains connect hone par bhi inverter mains sense nahi kar raha ya charging start nahi ho rahi',
+        'Inverter bar-bar mains connect aur disconnect kar raha hai (mFB hunting problem)',
+        'Mains aane par display LED hunt/flicker kar rahi hai',
+        'PIC16F722 ke Pin 5 par feedback voltage missing ya drop hai',
+      ],
+
+      basicChecks: [
+        'mFB connector terminal par multimeter se AC input feedback check karein',
+        'D8 (M7 SMD diode) diode mode par test karein',
+        'R32 resistor (Marking: 7501 = 7.5kΩ) resistance check karein',
+        'R39 resistor (Marking: 2401 = 2.4kΩ) resistance check karein',
+        'C19 (0.1µF) aur C12 filter capacitors par short ya leakage check karein',
+        'R18 resistor (Marking: 1001 = 1kΩ) check karein',
+        'PIC16F722 ke Pin 5 par DC sensing voltage measure karein',
+      ],
+
+      technicalExplanation: {
+        title: 'Luminous Eco Watt Main Feedback (mFB) Pin 5 Circuit Diagram',
+        explanation:
+          'mFB terminal se aane wala AC feedback signal D8 (M7 diode) ke through rectify hokar R32 (7501 = 7.5kΩ) par jata hai. Uske baad R39 (2401 = 2.4kΩ) aur C19 (0.1µF) parallel ground divider network voltage ko safe level mein convert karta hai. C12 filter capacitor ke baad R18 (1001 = 1kΩ) ke through yeh signal PIC16F722 microcontroller ke Pin 5 par ADC sensing input banta hai.',
+        components: [
+          {
+            component: 'D8 (M7)',
+            function: 'mFB AC signal half-wave rectification diode.',
+            value: 'M7 (1N4007 SMD)',
+          },
+          {
+            component: 'R32',
+            function: 'Main feedback upper sensing voltage dropper resistor.',
+            value: '7.5kΩ (Marking: 7501)',
+          },
+          {
+            component: 'R39 & C19',
+            function: 'Ground divider network and high-frequency spike filter.',
+            value: 'R39: 2.4kΩ (2401), C19: 0.1µF',
+          },
+          {
+            component: 'C12',
+            function: 'DC smoothing filter capacitor to ground.',
+            value: 'SMD Filter Capacitor',
+          },
+          {
+            component: 'R18',
+            function: 'PIC16F722 Pin 5 input buffer/current limiting resistor.',
+            value: '1kΩ (Marking: 1001)',
+          },
+          {
+            component: 'PIC16F722',
+            function: 'Pin 5 par mFB signal read karke mains synchronization aur inverter/mains status control karta hai.',
+            package: '28-Pin Microcontroller',
+          },
+        ],
+      },
+
+      possibleCauses: [
+        {
+          cause: 'D8 (M7) diode open ya short',
+          explanation: 'Diode open hone par mFB signal Pin 5 tak nahi pahunchta aur inverter mains sense nahi karta.',
+        },
+        {
+          cause: 'R32 (7501 / 7.5kΩ) open ya value drift',
+          explanation: 'R32 open hone se Pin 5 par 0V milti hai.',
+        },
+        {
+          cause: 'R39 (2401 / 2.4kΩ) ya C19 short',
+          explanation: 'Signal ground se short hone par false mains cutoff hota hai.',
+        },
+        {
+          cause: 'R18 (1001 / 1kΩ) open',
+          explanation: 'MCU Pin 5 ADC input disconnect ho jata hai.',
+        },
+      ],
+
+      repairProcedure: [
+        {
+          step: 1,
+          title: 'mFB Terminal & D8 Diode Test',
+          explanation: 'mFB connector par AC sense check karein aur D8 (M7) diode ka forward drop (~0.6V) measure karein.',
+        },
+        {
+          step: 2,
+          title: 'R32 (7.5kΩ) & R39 (2.4kΩ) Resistors Check',
+          explanation: 'Resistance mode par R32 (7501 = 7.5kΩ) aur R39 (2401 = 2.4kΩ) ki exact value confirm karein.',
+        },
+        {
+          step: 3,
+          title: 'C19 & C12 Capacitors Test',
+          explanation: 'Capacitor leakage ya short check karein.',
+        },
+        {
+          step: 4,
+          title: 'R18 (1kΩ) & PIC Pin 5 Voltage Measure',
+          explanation: 'R18 (1001) test karein aur PIC16F722 Pin 5 par DC sensing voltage measure karein.',
+        },
+      ],
+
+      circuitFlow:
+        'mFB Connector ➔ D8 (M7) ➔ R32 (7501 / 7.5kΩ) ➔ R39 (2401 / 2.4kΩ) || C19 (0.1µF) ➔ C12 Filter ➔ R18 (1001 / 1kΩ) ➔ PIC16F722 (Pin 5)',
+
+      importantNote:
+        'R32 (7.5kΩ) aur R39 (2.4kΩ) ki value bilkul accurate honi chahiye. Inme 5% se zyada drift hone par inverter mains mode mein hunting shuru kar deta hai.',
+
+      diagnosis:
+        'Agar mFB par AC signal hai lekin PIC Pin 5 par voltage 0V hai to D8, R32 (7501), R39 (2401) ya R18 (1001) open/damaged hai.',
+    },
+
+    'relay': {
+      id: 'relay',
+      title: 'Changeover & Mains Sensing Fault (Pin 1 & Pin 7)',
+      subtitle:
+        'Luminous Eco Watt mein mains detection aur changeover TV31B02 transformer, D1-D4 (M7) bridge, Q32 (1F) aur Q7 (1F) se hokar PIC16F722 ke Pin 1 aur Pin 7 se control hota hai.',
+      icon: '🔌',
+      severity: 'high',
+      
+      symptoms: [
+        'Power cut hone par inverter battery backup par switch nahi hota',
+        'Mains line aane par inverter mains mode par wapas nahi aata (Changeover failure)',
+        'Changeover relay continuously chattering ya click-click karti hai',
+        'PIC16F722 ke Pin 1 ya Pin 7 par switching voltage missing hai',
+      ],
+
+      basicChecks: [
+        'Mains L, N input line par R10 (100kΩ) aur R11 (100kΩ) resistors check karein',
+        'TV31B02 transformer primary aur secondary (R43 10kΩ) check karein',
+        'D1, D2, D3, D4 (M7 SMD) bridge rectifier diodes check karein',
+        'R22 (27kΩ) aur 3.9kΩ pull-down resistors check karein',
+        'Q32 (1F NPN transistor) aur R5 (22kΩ), R119 (22kΩ) check karein',
+        'Q7 (1F NPN transistor), R1 (10kΩ), R14 (10kΩ), C51 check karein',
+        'Pin 1 line par R34 (10kΩ), R131 (1kΩ) aur Pin 7 line par R4 (10kΩ), R19 (10kΩ) check karein',
+      ],
+
+      technicalExplanation: {
+        title: 'Luminous Changeover & Mains Sensing Circuit (Pin 1 & Pin 7 Diagram)',
+        explanation:
+          'AC Input (L, N) se R10 (100kΩ) aur R11 (100kΩ) ke through TV31B02 sense transformer ko AC drive milti hai (secondary par R43 10kΩ). Iske baad D1, D2, D3, D4 (M7) bridge rectifier se rectified DC banti hai. Circuit do parts mein divide hota hai: 1) R5 (22kΩ) se Q32 (1F NPN) transistor drive hota hai jo R119 (22kΩ) ke sath ground reference switch karta hai. 2) R1 (10kΩ) aur R14 (10kΩ) + C51 se Q7 (1F NPN) transistor drive hota hai. Q7 Collector R34 (10kΩ) aur R131 (1kΩ) ke through Pin 1 se connected hai aur Emitter R4 (10kΩ) aur R19 (10kΩ) ke through Pin 7 se connected hai.',
+        components: [
+          {
+            component: 'TV31B02',
+            function: 'AC Mains line isolation & sensing transformer.',
+            value: 'Sense Transformer',
+          },
+          {
+            component: 'R10 & R11',
+            function: 'Mains high-voltage AC current limiting resistors.',
+            value: '100kΩ each (Marking: 1003)',
+          },
+          {
+            component: 'D1, D2, D3, D4 (M7)',
+            function: 'Full wave bridge rectifier diodes.',
+            value: 'M7 (1N4007 SMD)',
+          },
+          {
+            component: 'Q32 & Q7 (1F)',
+            function: 'Mains detection & changeover driver NPN SMD transistors.',
+            value: 'NPN Transistor (1F)',
+          },
+          {
+            component: 'R5, R119, R22',
+            function: 'Q32 drive and divider resistors.',
+            value: 'R5: 22kΩ, R119: 22kΩ, R22: 27kΩ',
+          },
+          {
+            component: 'R1, R14, R34, R131',
+            function: 'Q7 drive and Pin 1 sensing line network.',
+            value: 'R1: 10kΩ, R14: 10kΩ, R34: 10kΩ, R131: 1kΩ',
+          },
+          {
+            component: 'R4 & R19',
+            function: 'Pin 7 changeover trigger sensing network.',
+            value: '10kΩ each',
+          },
+          {
+            component: 'PIC16F722',
+            function: 'Pin 1 (Reset/Sync) aur Pin 7 (Changeover Sense) se mains status monitor karke changeover relay switch karta hai.',
+            package: '28-Pin Microcontroller',
+          },
+        ],
+      },
+
+      possibleCauses: [
+        {
+          cause: 'R10 ya R11 (100kΩ) open',
+          explanation: 'Mains transformer TV31B02 tak AC voltage nahi pahunchti, jisse inverter mains sense nahi karta.',
+        },
+        {
+          cause: 'D1-D4 bridge rectifier diode short / open',
+          explanation: 'Bridge fail hone se Q32/Q7 transistor ko DC trigger pulse nahi milti.',
+        },
+        {
+          cause: 'Q7 ya Q32 (1F) transistor damaged',
+          explanation: 'Transistor kharab hone se Pin 1 aur Pin 7 par changeover signal pass nahi hota.',
+        },
+        {
+          cause: 'R131 (1kΩ) ya R19 (10kΩ) open',
+          explanation: 'Microcontroller pins tak voltage nahi pahunchti.',
+        },
+      ],
+
+      repairProcedure: [
+        {
+          step: 1,
+          title: 'R10 & R11 Mains Resistors Test',
+          explanation: 'Power OFF karke R10 aur R11 (100kΩ each) ki resistance multimeter se check karein.',
+        },
+        {
+          step: 2,
+          title: 'TV31B02 & D1-D4 Bridge Diodes Test',
+          explanation: 'TV31B02 secondary par AC voltage aur D1-D4 M7 diodes ka diode drop (~0.6V) measure karein.',
+        },
+        {
+          step: 3,
+          title: 'Q32 & Q7 (1F) Transistors Test',
+          explanation: 'Multimeter diode mode par Q32 aur Q7 ka Base-Emitter aur Base-Collector drop check karein.',
+        },
+        {
+          step: 4,
+          title: 'Pin 1 & Pin 7 Voltage Verification',
+          explanation: 'Mains ON hone par Pin 1 (via R131 1kΩ) aur Pin 7 (via R19 10kΩ) par transition observe karein.',
+        },
+      ],
+
+      circuitFlow:
+        'AC Line (L, N) ➔ R10, R11 (100kΩ) ➔ TV31B02 ➔ D1-D4 (M7 Bridge) ➔ Q32 (1F) / Q7 (1F) ➔ Pin 1 (via R34/R131) & Pin 7 (via R4/R19) ➔ PIC16F722 Changeover Logic',
+
+      importantNote:
+        'TV31B02 transformer ke input resistors (R10, R11 100kΩ) high-voltage spike se aksar open ho jaate hain. Changeover issue mein pehle inhi ko check karein.',
+
+      diagnosis:
+        'Agar mains present hai lekin TV31B02 ke input par AC nahi to R10/R11 open hain. Agar TV31B02 secondary par AC hai lekin Pin 1/Pin 7 par logic nahi to D1-D4 ya Q7/Q32 (1F) kharab hai.',
+    },
+
     'overload': {
       id: 'overload',
       title: 'Overload Protection',
@@ -636,98 +876,6 @@ export const inverterFaultsMap: Record<
       importantNote: 'MOSFET replace karte waqt heatsink ko achhe se clean karein aur fresh thermal paste lagaein. All MOSFETs ek saath replace karna better hai.',
 
       diagnosis: 'Power-off state mein MOSFET Drain-Source short (0 ohm) = failed. Gate-Source short bhi failure indicate karta hai.',
-    },
-
-    'relay': {
-      id: 'relay',
-      title: 'Relay Problem',
-      subtitle:
-        'Mains-to-battery changeover relay properly switch nahi kar rahi — inverter mains se battery par ya vapas switch nahi hota.',
-      icon: '🔌',
-      severity: 'medium',
-      
-      symptoms: [
-        'Power cut ke baad inverter battery par switch nahi karta',
-        'Mains aane par inverter mains par wapas nahi aata',
-        'Relay clicking sound baar baar aa rahi hai',
-        'Output intermittent hai ya relay chatter ho rahi hai',
-      ],
-
-      basicChecks: [
-        'Relay coil resistance check karein (multimeter)',
-        'Relay coil ko 12V supply deke contacts check karein',
-        'Relay drive transistor check karein',
-        'Relay coil voltage check karein operation ke waqt',
-        'Relay contacts clean ya corroded hain check karein',
-        'Freewheeling diode check karein relay coil ke parallel',
-      ],
-
-      technicalExplanation: {
-        title: 'Changeover Relay Circuit',
-        explanation:
-          'Ek main relay mains aur inverter output ke beech switch karta hai. PIC16F722 relay drive transistor ko control karta hai jab mains fail ya restore ho.',
-        components: [
-          {
-            component: 'Main Relay',
-            function: 'Mains se battery (inverter) par changeover karta hai.',
-            value: '12V coil, 30A contacts',
-          },
-          {
-            component: 'Drive Transistor',
-            function: 'PIC signal se relay coil energize karta hai.',
-          },
-          {
-            component: 'Freewheeling Diode',
-            function: 'Relay coil ke back-EMF se transistor protect karta hai.',
-          },
-        ],
-      },
-
-      possibleCauses: [
-        {
-          cause: 'Relay coil open',
-          explanation: 'Relay coil break ho gayi hai, energize nahi ho sakti.',
-        },
-        {
-          cause: 'Contacts welded',
-          explanation: 'High current arcing se relay contacts weld ho gaye hain.',
-        },
-        {
-          cause: 'Drive transistor fault',
-          explanation: 'Transistor fail ho gaya hai, relay coil ko current nahi milta.',
-        },
-        {
-          cause: 'Insufficient coil voltage',
-          explanation: 'Supply voltage kam hone se relay properly operate nahi karta.',
-        },
-      ],
-
-      repairProcedure: [
-        {
-          step: 1,
-          title: 'Relay Coil Resistance Check',
-          explanation: 'Multimeter se relay coil resistance check karein. Typical 12V relay: 200-400Ω. OL = open coil.',
-        },
-        {
-          step: 2,
-          title: 'Relay Drive Voltage Check',
-          explanation: 'Relay coil terminals par voltage check karein — 12V hona chahiye jab energized ho.',
-        },
-        {
-          step: 3,
-          title: 'Drive Transistor Test',
-          explanation: 'Transistor B-E, B-C junction check karein multimeter diode mode par.',
-        },
-        {
-          step: 4,
-          title: 'Relay Replace Karein',
-          explanation: 'Same spec relay lagaein — coil voltage aur contact current rating same honi chahiye.',
-        },
-      ],
-
-      importantNote: 'Relay replace karte waqt same coil voltage aur contact rating wali relay use karein. Freewheeling diode ka direction check karein.',
-
-      diagnosis: 'Relay coil OL (infinite resistance) = coil open, replace karein. 0 Ω = shorted. Contacts stuck = replace.',
     },
 
     'switch': {
@@ -1872,6 +2020,136 @@ export const inverterFaultsMap: Record<
       circuitFlow: 'Pin 16 ➔ R78 (2201) ➔ Q12 (1F Base) ➔ RELAY-1 Coil ➔ CN7 (200V/140V Tap) | Pin 6 ➔ R89/R87 (2201) + R88 (2701) ➔ Q18 (1F Base) ➔ RELAY-3 Coil (ZD2, D30) ➔ Main Line Phase to Output Pin',
       importantNote: 'Relay replace karte waqt hamesha high quality 30A rated 12V relay use karein. Low quality relay jaldi burn ho jati hai.',
       diagnosis: 'Agar Q12/Q18 ke base par 0.7V aa raha hai lekin relay click nahi kar rahi to transistor open ya relay coil damaged hai.',
+    },
+
+    'changeover': {
+      id: 'changeover',
+      title: 'Mains Changeover Fault (Pin 4 & Pin 28)',
+      subtitle:
+        'Microtek V4 to V7 model mein Mains Sensing aur Changeover failure TV31B02 transformer, D16, D17, D19, D22 bridge diodes, Q13 (Pin 4) aur Q7 (Pin 28) circuit se relate karta hai.',
+      icon: '🔄',
+      severity: 'high',
+
+      symptoms: [
+        'Mains line aane par bhi inverter backup mode se switch nahi karta (Changeover fail)',
+        'Mains connect karne par inverter tripping ya continuously restart hota hai',
+        'Microcontroller ke Pin 4 ya Pin 28 par sensing logic missing hai',
+        'Q13 ya Q7 transistor overheat ya short hone par changeover ruk jata hai',
+      ],
+
+      basicChecks: [
+        'Mains N & L line par R58 (1003 = 100kΩ) aur R66 (1003 = 100kΩ) check karein',
+        'TV31B02 sense transformer secondary 1002 (10kΩ) resistor check karein',
+        'D16, D17, D19, D22 (M7) bridge rectifier diodes check karein',
+        'R62 (2702 = 27kΩ), R67 (3901 = 3.9kΩ), R63 (1002 = 10kΩ), R64 (1002 = 10kΩ) check karein',
+        'Q13 (1F NPN) transistor aur R68 (1002 = 10kΩ) Pin 4 line check karein',
+        'Q7 (1F NPN) transistor aur R57 (1001 = 1kΩ) Pin 28 line check karein',
+        'C20 aur C22 filter capacitors par leakage ya short check karein',
+      ],
+
+      technicalExplanation: {
+        title: 'Microtek Changeover Circuit (Pin 4 & Pin 28 Diagram)',
+        explanation:
+          'Mains AC line N & L se R58 (1003 = 100kΩ) aur R66 (1003 = 100kΩ) ke through TV31B02 sense transformer ko AC input milti hai. Secondary par D16, D17, D19, D22 (M7) full-wave bridge rectifier laga hai. Rectified DC do alag-alag control paths mein divide hoti hai: 1) R62 (2702 = 27kΩ), R67 (3901 = 3.9kΩ), R64 (1002), C22, R72 (1002), C20 se filter hokar Q13 (1F NPN) transistor ke through Microcontroller ke Pin 4 (Micro ki pin number 4) tak direct sensing signal deliver hota hai. 2) Q7 (1F NPN) transistor R57 (1001 = 1kΩ) ke through Microcontroller ke Pin 28 (Pin 28 Se Direct Connected) se drive hokar Positive supply line se changeover synchronization control karta hai.',
+        components: [
+          {
+            component: 'TV31B02',
+            function: 'AC Mains line isolation & sensing step-down transformer.',
+            value: 'Sense Transformer',
+          },
+          {
+            component: 'R58 & R66',
+            function: 'Mains high-voltage AC drop input resistors.',
+            value: '100kΩ each (Marking: 1003)',
+          },
+          {
+            component: 'D16, D17, D19, D22 (M7)',
+            function: 'Full-wave bridge rectifier diodes.',
+            value: 'M7 (1N4007 SMD)',
+          },
+          {
+            component: 'Q13 (1F)',
+            function: 'Pin 4 direct mains sensing drive NPN transistor.',
+            value: 'NPN Transistor (1F)',
+          },
+          {
+            component: 'Q7 (1F)',
+            function: 'Pin 28 direct synchronization drive NPN transistor (via R57 1kΩ).',
+            value: 'NPN Transistor (1F)',
+          },
+          {
+            component: 'R62, R67, R63, R64, R72, R68',
+            function: 'Filter divider and transistor biasing resistor network.',
+            value: 'R62: 27kΩ (2702), R67: 3.9kΩ (3901), Others: 10kΩ (1002)',
+          },
+          {
+            component: 'R57',
+            function: 'Pin 28 microcontroller drive series resistor.',
+            value: '1kΩ (Marking: 1001)',
+          },
+          {
+            component: 'C20 & C22',
+            function: 'DC sensing filter capacitors to ground.',
+            value: 'SMD Filter Capacitors',
+          },
+          {
+            component: 'PIC16F72',
+            function: 'Pin 4 (Mains Presence Sense) aur Pin 28 (Zero Cross / Sync) se mains status read karta hai.',
+            package: '28-Pin Microcontroller',
+          },
+        ],
+      },
+
+      possibleCauses: [
+        {
+          cause: 'R58 ya R66 (100kΩ / 1003) open',
+          explanation: 'TV31B02 transformer primary par AC cut hone se sensing voltage generate nahi hoti.',
+        },
+        {
+          cause: 'D16-D22 bridge diodes short ya open',
+          explanation: 'DC sensing pulse ground ho jati hai ya interrupt ho jati hai.',
+        },
+        {
+          cause: 'Q13 ya Q7 (1F) transistor faulty',
+          explanation: 'Transistor kharab hone se Pin 4 ya Pin 28 par switching voltage nahi pahunchti.',
+        },
+        {
+          cause: 'R57 (1kΩ / 1001) ya R68 (10kΩ / 1002) open',
+          explanation: 'Microcontroller pins tak signal path cut ho jata hai.',
+        },
+      ],
+
+      repairProcedure: [
+        {
+          step: 1,
+          title: 'R58 & R66 (100kΩ) Resistors Check',
+          explanation: 'Mains N aur L line ke series 100kΩ (1003) resistors ko multimeter se test karein.',
+        },
+        {
+          step: 2,
+          title: 'TV31B02 Transformer & D16-D22 Bridge Test',
+          explanation: 'TV31B02 secondary par AC aur D16-D22 bridge diodes ka forward voltage (~0.6V) measure karein.',
+        },
+        {
+          step: 3,
+          title: 'Q13 (1F) & Pin 4 Voltage Verification',
+          explanation: 'Q13 transistor test karein aur Pin 4 par DC sensing level confirm karein.',
+        },
+        {
+          step: 4,
+          title: 'Q7 (1F), R57 (1kΩ) & Pin 28 Verification',
+          explanation: 'Q7 transistor, R57 (1001) resistor aur Pin 28 line test karein.',
+        },
+      ],
+
+      circuitFlow:
+        'Mains AC (N, L) ➔ R58, R66 (1003 / 100kΩ) ➔ TV31B02 ➔ Bridge Diodes (D16, D17, D19, D22 M7) ➔ Branch 1: Q13 (1F) ➔ Microcontroller Pin 4 | Branch 2: Q7 (1F) + R57 (1001 / 1kΩ) ➔ Microcontroller Pin 28',
+
+      importantNote:
+        'Microtek changeover failure mein R58, R66 (100kΩ) aur TV31B02 ke bridge diodes 90% common fault hote hain. Inhe sabse pehle check karein.',
+
+      diagnosis:
+        'Agar TV31B02 ke secondary par AC voltage aa rahi hai lekin Pin 4 aur Pin 28 par logic change nahi ho raha to bridge diodes M7 ya Q13/Q7 (1F) badlein.',
     },
 
     'switch': {
