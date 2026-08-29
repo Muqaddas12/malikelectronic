@@ -1,17 +1,16 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
-  Animated,
-  Dimensions,
-  Image,
-  StyleSheet,
-  Text,
-  View,
+    Animated,
+    Dimensions,
+    StyleSheet,
+    Text,
+    View
 } from 'react-native';
 
 import {
-  DarkTheme,
-  DefaultTheme,
-  ThemeProvider,
+    DarkTheme,
+    DefaultTheme,
+    ThemeProvider,
 } from '@react-navigation/native';
 
 import { Stack } from 'expo-router';
@@ -185,6 +184,14 @@ export default function RootLayout() {
           />
           <Stack.Screen
             name="inverter/fault/[faultId]"
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="tools/smd-calculator"
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="tools/dip-calculator"
             options={{ headerShown: false }}
           />
         </Stack>

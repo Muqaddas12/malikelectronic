@@ -11,6 +11,20 @@ export const t: Translations = {
     appDescription:
       'Select your inverter model to find faults, symptoms and troubleshooting information.',
 
+    // Navigation & Sidebar
+    homepage: 'Homepage',
+    tools: 'Electronics Tools',
+    toolsSubtitle: 'SMD & DIP Resistor Calculators',
+    support: 'Support & Help',
+    supportModalTitle: 'Technical Support & Help',
+    supportModalDesc:
+      'For inverter repair assistance, spare parts, and PCB troubleshooting queries, contact MaliK Electronic.',
+    phone: 'Phone / Call',
+    whatsapp: 'WhatsApp Support',
+    address: 'Shop Address',
+    addressText: 'MaliK Electronic Repair & Spares, Main Market',
+    phoneNum: '+91 98765 43210',
+
     // Home screen
     selectInverter: 'Select Inverter',
     modelsAvailable: 'models available',
@@ -57,13 +71,34 @@ export const t: Translations = {
     value: 'Value',
     pcbType: 'PCB Type',
 
+    // Calculators
+    smdTitle: 'SMD Resistor Calculator',
+    smdSubtitle: '3-Digit, 4-Digit & EIA-96 SMD Code Decoder',
+    dipTitle: 'DIP Color Code Calculator',
+    dipSubtitle: '4-Band & 5-Band Through-Hole Resistor Decoder',
+    enterSmdCode: 'Enter SMD Code',
+    smdPlaceholder: 'e.g. 103, 472, 1001, 5601, 4R7, 01C',
+    calculate: 'Calculate Value',
+    clear: 'Clear',
+    calculatedResistance: 'Calculated Resistance',
+    standardValue: 'Standard Value',
+    codeFormat: 'Code Format',
+    multiplierVal: 'Multiplier',
+    band1: '1st Band (Digit 1)',
+    band2: '2nd Band (Digit 2)',
+    band3: '3rd Band (Digit 3)',
+    multiplierBand: 'Multiplier Band',
+    toleranceBand: 'Tolerance Band',
+    selectColor: 'Select color band',
+    quickExamples: 'Popular SMD Codes in Inverters',
+
     // Sidebar
     language: 'Language',
     english: 'English',
     hindi: 'हिंदी (Hindi)',
     version: 'Version 1.0.0',
     sidebarTitle: 'MaliK Electronic',
-    sidebarSubtitle: 'Inverter Repair Guide',
+    sidebarSubtitle: 'Inverter Repair Guide & Tools',
     settings: 'Settings',
     close: 'Close',
   },
@@ -74,6 +109,20 @@ export const t: Translations = {
     appTagline: 'इन्वर्टर ट्रबलशूटर',
     appDescription:
       'अपना इन्वर्टर मॉडल चुनें — खराबी, लक्षण और मरम्मत की जानकारी पाएं।',
+
+    // Navigation & Sidebar
+    homepage: 'होम पेज (Home)',
+    tools: 'इलेक्ट्रॉनिक्स टूल्स (Tools)',
+    toolsSubtitle: 'SMD और DIP रेजिस्टेंस कैलकुलेटर',
+    support: 'सहायता और संपर्क (Support)',
+    supportModalTitle: 'तकनीकी सहायता और संपर्क',
+    supportModalDesc:
+      'इन्वर्टर रिपेयर, पार्ट्स और तकनीकी जानकारी के लिए मालिक इलेक्ट्रॉनिक से संपर्क करें।',
+    phone: 'फोन कॉल',
+    whatsapp: 'व्हाट्सएप सपोर्ट',
+    address: 'दुकान का पता',
+    addressText: 'मालिक इलेक्ट्रॉनिक रिपेयर और स्पेयर पार्ट्स, मेन मार्केट',
+    phoneNum: '+91 98765 43210',
 
     // Home screen
     selectInverter: 'इन्वर्टर चुनें',
@@ -121,13 +170,34 @@ export const t: Translations = {
     value: 'मान / वैल्यू',
     pcbType: 'पीसीबी प्रकार',
 
+    // Calculators
+    smdTitle: 'SMD रेजिस्टेंस कैलकुलेटर',
+    smdSubtitle: '3-डिजिट, 4-डिजिट और EIA-96 SMD कोड डिकोडर',
+    dipTitle: 'DIP कलर कोड कैलकुलेटर',
+    dipSubtitle: '4-बैंड और 5-बैंड रेजिस्टेंस डिकोडर',
+    enterSmdCode: 'SMD कोड दर्ज करें',
+    smdPlaceholder: 'उदा. 103, 472, 1001, 5601, 4R7, 01C',
+    calculate: 'मान निकालें',
+    clear: 'साफ करें',
+    calculatedResistance: 'निकाला गया रेजिस्टेंस मान',
+    standardValue: 'मानक मान',
+    codeFormat: 'कोड प्रारूप',
+    multiplierVal: 'मल्टीप्लायर',
+    band1: 'पहला बैंड (डिजिट 1)',
+    band2: 'दूसरा बैंड (डिजिट 2)',
+    band3: 'तीसरा बैंड (डिजिट 3)',
+    multiplierBand: 'मल्टीप्लायर बैंड',
+    toleranceBand: 'टॉलरेंस बैंड',
+    selectColor: 'रंग बैंड चुनें',
+    quickExamples: 'इन्वर्टर में इस्तेमाल होने वाले मुख्य SMD कोड्स',
+
     // Sidebar
-    language: 'भाषा',
+    language: 'भाषा (Language)',
     english: 'English',
     hindi: 'हिंदी (Hindi)',
     version: 'संस्करण 1.0.0',
     sidebarTitle: 'मालिक इलेक्ट्रॉनिक',
-    sidebarSubtitle: 'इन्वर्टर मरम्मत गाइड',
+    sidebarSubtitle: 'इन्वर्टर मरम्मत गाइड और टूल्स',
     settings: 'सेटिंग्स',
     close: 'बंद करें',
   },
