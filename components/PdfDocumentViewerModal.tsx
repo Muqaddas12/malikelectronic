@@ -1,10 +1,7 @@
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
 import {
-    Animated,
     Dimensions,
-    Image,
     Modal,
-    PanResponder,
     Pressable,
     ScrollView,
     StyleSheet,
@@ -13,6 +10,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import InteractiveViewer from '@/components/InteractiveViewer';
 import { useLanguage } from '@/context/LanguageContext';
 import { MicrocontrollerDoc } from '@/data/microcontroller';
 import { tr } from '@/data/translations';
@@ -34,128 +32,11 @@ export default function PdfDocumentViewerModal({
   const [activePageIndex, setActivePageIndex] = useState(0);
   const [zoomScale, setZoomScale] = useState(1.0);
 
-  const scaleAnim = useRef(new Animated.Value(1.0)).current;
-  const panAnim = useRef(new Animated.ValueXY({ x: 0, y: 0 })).current;
-  const currentScale = useRef(1.0);
-  const currentPan = useRef({ x: 0, y: 0 });
-  const initialDistance = useRef<number | null>(null);
-  const scaleAtPinchStart = useRef(1.0);
-  const lastTapTime = useRef(0);
-  const scrollViewRef = useRef<ScrollView>(null);
-
   if (!doc) return null;
 
   const totalPages = doc.pages.length;
   const basePageWidth = SCREEN_WIDTH - 20;
-  const basePageHeight = (SCREEN_WIDTH - 20) * 1.33; // Standard 4:3 / A4 aspect ratio
-
-  const getDistance = (touches: any[]) => {
-    const [t1, t2] = touches;
-    const dx = t1.pageX - t2.pageX;
-    const dy = t1.pageY - t2.pageY;
-    return Math.sqrt(dx * dx + dy * dy);
-  };
-
-  const applyScale = (newScale: number) => {
-    const clamped = Math.max(1.0, Math.min(newScale, 4.0));
-    currentScale.current = clamped;
-    setZoomScale(clamped);
-    Animated.spring(scaleAnim, {
-      toValue: clamped,
-      useNativeDriver: true,
-      friction: 7,
-    }).start();
-  };
-
-  const panResponder = PanResponder.create({
-    onStartShouldSetPanResponder: () => true,
-    onMoveShouldSetPanResponder: () => true,
-
-    onPanResponderGrant: (evt) => {
-      // Double tap to toggle zoom
-      const now = Date.now();
-      if (now - lastTapTime.current < 300) {
-        const target = currentScale.current > 1.3 ? 1.0 : 2.5;
-        applyScale(target);
-        currentPan.current = { x: 0, y: 0 };
-        Animated.spring(panAnim, {
-          toValue: { x: 0, y: 0 },
-          useNativeDriver: true,
-        }).start();
-        lastTapTime.current = 0;
-        return;
-      }
-      lastTapTime.current = now;
-
-      if (evt.nativeEvent.touches.length === 2) {
-        initialDistance.current = getDistance(evt.nativeEvent.touches);
-        scaleAtPinchStart.current = currentScale.current;
-      } else {
-        panAnim.setOffset({
-          x: currentPan.current.x,
-          y: currentPan.current.y,
-        });
-        panAnim.setValue({ x: 0, y: 0 });
-      }
-    },
-
-    onPanResponderMove: (evt, gestureState) => {
-      // TWO-FINGER PINCH
-      if (evt.nativeEvent.touches.length === 2) {
-        const dist = getDistance(evt.nativeEvent.touches);
-        if (initialDistance.current && initialDistance.current > 0) {
-          const factor = dist / initialDistance.current;
-          let calculated = scaleAtPinchStart.current * factor;
-          calculated = Math.max(0.8, Math.min(calculated, 4.5));
-          currentScale.current = calculated;
-          scaleAnim.setValue(calculated);
-          setZoomScale(calculated);
-        }
-      }
-      // SINGLE-FINGER PAN WHEN ZOOMED IN
-      else if (evt.nativeEvent.touches.length === 1 && currentScale.current > 1.0) {
-        panAnim.setValue({ x: gestureState.dx, y: gestureState.dy });
-      }
-    },
-
-    onPanResponderRelease: () => {
-      panAnim.flattenOffset();
-      // @ts-ignore
-      currentPan.current = { x: panAnim.x._value || 0, y: panAnim.y._value || 0 };
-      initialDistance.current = null;
-
-      if (currentScale.current < 1.0) {
-        applyScale(1.0);
-      }
-
-      if (currentScale.current <= 1.0) {
-        currentPan.current = { x: 0, y: 0 };
-        Animated.spring(panAnim, {
-          toValue: { x: 0, y: 0 },
-          useNativeDriver: true,
-        }).start();
-      }
-    },
-  });
-
-  const handleScroll = (event: any) => {
-    const offsetY = event.nativeEvent.contentOffset.y;
-    const pageIndex = Math.min(
-      Math.max(0, Math.floor((offsetY + 100) / (basePageHeight + 24))),
-      totalPages - 1,
-    );
-    if (pageIndex !== activePageIndex) {
-      setActivePageIndex(pageIndex);
-    }
-  };
-
-  const scrollToPage = (idx: number) => {
-    setActivePageIndex(idx);
-    scrollViewRef.current?.scrollTo({
-      y: idx * (basePageHeight + 24),
-      animated: true,
-    });
-  };
+  const basePageHeight = SCREEN_HEIGHT * 0.74;
 
   return (
     <Modal
@@ -174,10 +55,10 @@ export default function PdfDocumentViewerModal({
               </View>
               <View style={{ flex: 1, marginLeft: 10 }}>
                 <Text style={styles.docTitle} numberOfLines={1}>
-                  {doc.title}.pdf
+                  {doc.chipName} — {language === 'hi' ? 'पिन विवरण' : 'Pin Details'}
                 </Text>
                 <Text style={styles.docSubtitle} numberOfLines={1}>
-                  {doc.chipName} • {totalPages} {totalPages === 1 ? 'page' : 'pages'}
+                  {doc.title}.pdf
                 </Text>
               </View>
             </View>
@@ -205,7 +86,7 @@ export default function PdfDocumentViewerModal({
           {totalPages > 1 && (
             <View style={styles.pageStrip}>
               <Text style={styles.pageStripLabel}>
-                📄 Jump to:
+                📄 {tr(language, 'page')}:
               </Text>
               <ScrollView
                 horizontal={true}
@@ -215,7 +96,10 @@ export default function PdfDocumentViewerModal({
                 {doc.pages.map((_, idx) => (
                   <Pressable
                     key={idx}
-                    onPress={() => scrollToPage(idx)}
+                    onPress={() => {
+                      setActivePageIndex(idx);
+                      setZoomScale(1.0);
+                    }}
                     style={[
                       styles.stripBtn,
                       activePageIndex === idx && styles.stripBtnActive,
@@ -235,64 +119,37 @@ export default function PdfDocumentViewerModal({
             </View>
           )}
 
-          {/* MAIN PDF CANVAS — GOOGLE DRIVE CONTINUOUS FEED WITH PINCH TO ZOOM */}
-          <View style={styles.canvas} {...panResponder.panHandlers}>
-            <ScrollView
-              ref={scrollViewRef}
-              style={styles.scrollCanvas}
-              contentContainerStyle={styles.scrollCanvasContent}
-              showsVerticalScrollIndicator={true}
-              onScroll={handleScroll}
-              scrollEventThrottle={16}
-              scrollEnabled={currentScale.current <= 1.05}
-            >
-              <Animated.View
-                style={[
-                  styles.animatedFeed,
-                  {
-                    transform: [
-                      { scale: scaleAnim },
-                      { translateX: panAnim.x },
-                      { translateY: panAnim.y },
-                    ],
-                  },
-                ]}
-              >
-                {doc.pages.map((pageSource, index) => (
-                  <View key={index} style={styles.pageSheetWrapper}>
-                    {/* Page Divider Label */}
-                    <View style={styles.sheetHeader}>
-                      <Text style={styles.sheetHeaderText}>
-                        PAGE {index + 1} OF {totalPages}
-                      </Text>
-                    </View>
-
-                    {/* Realistic White PDF Paper with Elevation Shadow */}
-                    <View style={styles.paperSheet}>
-                      <Image
-                        source={pageSource}
-                        style={{
-                          width: basePageWidth,
-                          height: basePageHeight,
-                        }}
-                        resizeMode="contain"
-                      />
-                    </View>
-                  </View>
-                ))}
-              </Animated.View>
-            </ScrollView>
+          {/* TWO-FINGER PINCH-TO-ZOOM CANVAS */}
+          <View style={styles.canvasWrapper}>
+            <View style={styles.paperShadowWrapper}>
+              <InteractiveViewer
+                key={`${doc.chipName}-page-${activePageIndex}`}
+                source={doc.pages[activePageIndex]}
+                baseWidth={basePageWidth}
+                baseHeight={basePageHeight}
+                onScaleChange={setZoomScale}
+              />
+            </View>
           </View>
 
           {/* FLOATING ZOOM CONTROLS (Google Drive Style Bottom HUD) */}
           <View style={styles.bottomHud}>
-            <Pressable
-              onPress={() => applyScale(currentScale.current + 0.5)}
-              style={styles.hudBtn}
-              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-            >
-              <Text style={styles.hudBtnText}>➕ Zoom</Text>
-            </Pressable>
+            {/* Prev Page Button if Multi-Page */}
+            {totalPages > 1 && (
+              <Pressable
+                disabled={activePageIndex === 0}
+                onPress={() => {
+                  setActivePageIndex((prev) => Math.max(0, prev - 1));
+                  setZoomScale(1.0);
+                }}
+                style={[
+                  styles.navPageBtn,
+                  activePageIndex === 0 && styles.navPageBtnDisabled,
+                ]}
+              >
+                <Text style={styles.navPageBtnText}>◀</Text>
+              </Pressable>
+            )}
 
             <View style={styles.hudBadge}>
               <Text style={styles.hudBadgeText}>
@@ -300,28 +157,28 @@ export default function PdfDocumentViewerModal({
               </Text>
             </View>
 
-            <Pressable
-              onPress={() => applyScale(currentScale.current - 0.5)}
-              style={styles.hudBtn}
-              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-            >
-              <Text style={styles.hudBtnText}>➖ Zoom</Text>
-            </Pressable>
+            <View style={styles.hudHint}>
+              <Text style={styles.hudHintText}>
+                🤏 {language === 'hi' ? 'दो उंगलियों से ज़ूम करें' : 'Pinch with 2 fingers'}
+              </Text>
+            </View>
 
-            <Pressable
-              onPress={() => {
-                applyScale(1.0);
-                currentPan.current = { x: 0, y: 0 };
-                Animated.spring(panAnim, {
-                  toValue: { x: 0, y: 0 },
-                  useNativeDriver: true,
-                }).start();
-              }}
-              style={styles.hudResetBtn}
-              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-            >
-              <Text style={styles.hudResetText}>⟲ Fit Page</Text>
-            </Pressable>
+            {/* Next Page Button if Multi-Page */}
+            {totalPages > 1 && (
+              <Pressable
+                disabled={activePageIndex === totalPages - 1}
+                onPress={() => {
+                  setActivePageIndex((prev) => Math.min(totalPages - 1, prev + 1));
+                  setZoomScale(1.0);
+                }}
+                style={[
+                  styles.navPageBtn,
+                  activePageIndex === totalPages - 1 && styles.navPageBtnDisabled,
+                ]}
+              >
+                <Text style={styles.navPageBtnText}>▶</Text>
+              </Pressable>
+            )}
           </View>
         </SafeAreaView>
       </View>
@@ -332,7 +189,7 @@ export default function PdfDocumentViewerModal({
 const styles = StyleSheet.create({
   viewerContainer: {
     flex: 1,
-    backgroundColor: '#1E2228', // Google Drive PDF dark canvas background
+    backgroundColor: '#1E2228', // Google Drive dark canvas background
   },
 
   safeArea: {
@@ -426,7 +283,7 @@ const styles = StyleSheet.create({
   pageStrip: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1A1D21',
+    backgroundColor: '#16191D',
     paddingHorizontal: 14,
     paddingVertical: 6,
     borderBottomWidth: 1,
@@ -472,52 +329,18 @@ const styles = StyleSheet.create({
 
   /* CANVAS */
 
-  canvas: {
+  canvasWrapper: {
     flex: 1,
     backgroundColor: '#202124',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 
-  scrollCanvas: {
+  paperShadowWrapper: {
     flex: 1,
-  },
-
-  scrollCanvasContent: {
+    width: '100%',
     alignItems: 'center',
-    paddingVertical: 14,
-    paddingBottom: 70,
-  },
-
-  animatedFeed: {
-    alignItems: 'center',
-  },
-
-  pageSheetWrapper: {
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-
-  sheetHeader: {
-    marginBottom: 6,
-  },
-
-  sheetHeaderText: {
-    color: '#9AA0A6',
-    fontSize: 10,
-    fontWeight: '800',
-    letterSpacing: 1,
-  },
-
-  /* REALISTIC PDF PAPER SHEET */
-
-  paperSheet: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 4,
-    overflow: 'hidden',
-    shadowColor: '#000000',
-    shadowOpacity: 0.35,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 8,
+    justifyContent: 'center',
   },
 
   /* BOTTOM HUD CONTROLS */
@@ -529,10 +352,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: 'rgba(32, 33, 36, 0.95)',
-    paddingVertical: 6,
-    paddingHorizontal: 10,
+    paddingVertical: 7,
+    paddingHorizontal: 14,
     borderRadius: 24,
-    gap: 8,
+    gap: 10,
     borderWidth: 1,
     borderColor: '#3C4043',
     shadowColor: '#000',
@@ -541,24 +364,29 @@ const styles = StyleSheet.create({
     elevation: 6,
   },
 
-  hudBtn: {
+  navPageBtn: {
     backgroundColor: '#1A73E8',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 14,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 12,
   },
 
-  hudBtnText: {
+  navPageBtnDisabled: {
+    backgroundColor: '#3C4043',
+    opacity: 0.5,
+  },
+
+  navPageBtnText: {
     color: '#FFFFFF',
     fontSize: 12,
-    fontWeight: '800',
+    fontWeight: '900',
   },
 
   hudBadge: {
     backgroundColor: '#303134',
     paddingHorizontal: 8,
-    paddingVertical: 5,
-    borderRadius: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
   },
 
   hudBadgeText: {
@@ -567,17 +395,13 @@ const styles = StyleSheet.create({
     fontWeight: '900',
   },
 
-  hudResetBtn: {
-    backgroundColor: '#3C4043',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 14,
+  hudHint: {
+    paddingHorizontal: 4,
   },
 
-  hudResetText: {
-    color: '#E8EAED',
+  hudHintText: {
+    color: '#9AA0A6',
     fontSize: 11,
-    fontWeight: '700',
+    fontWeight: '600',
   },
 });
-
