@@ -1,24 +1,24 @@
 import React, { useMemo, useState } from 'react';
 
 import {
-  FlatList,
-  Image,
-  Pressable,
-  StatusBar,
-  StyleSheet,
-  Text,
-  View,
+    FlatList,
+    Image,
+    Pressable,
+    StatusBar,
+    StyleSheet,
+    Text,
+    View,
 } from 'react-native';
 
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams } from 'expo-router';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import FaultCard from '@/components/FaultCard';
 import SearchBar from '@/components/SearchBar';
 
+import { useLanguage } from '@/context/LanguageContext';
 import { getFaultsForInverter } from '@/data/inverterfaults';
 import { inverters } from '@/data/inverters';
-import { useLanguage } from '@/context/LanguageContext';
 import { tr } from '@/data/translations';
 import { useSafeNavigate } from '@/hooks/useSafeNavigate';
 
@@ -33,7 +33,7 @@ export default function InverterFaultsScreen() {
   const inverterFaults = useMemo(() => {
     if (!inverter) return [];
 
-    const allFaults = getFaultsForInverter(inverter.id);
+    const allFaults = getFaultsForInverter(inverter.id, language);
     const query = search.trim().toLowerCase();
 
     if (!query) return allFaults;
@@ -44,7 +44,7 @@ export default function InverterFaultsScreen() {
         .toLowerCase()
         .includes(query),
     );
-  }, [inverter, search]);
+  }, [inverter, search, language]);
 
   if (!inverter) {
     return (

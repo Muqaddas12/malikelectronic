@@ -27,20 +27,6 @@ import { useSafeNavigate } from '@/hooks/useSafeNavigate';
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } =
   Dimensions.get('window');
 
-const severityColors = {
-  low: '#16A34A',
-  medium: '#CA8A04',
-  high: '#EA580C',
-  critical: '#DC2626',
-};
-
-const severityKeys: Record<string, string> = {
-  low: 'lowRisk',
-  medium: 'mediumRisk',
-  high: 'highRisk',
-  critical: 'criticalRisk',
-};
-
 // ─── Generic bullet list section ─────────────────────────────────────────────
 
 function BulletSection({
@@ -323,9 +309,12 @@ export default function FaultDetailScreen() {
 
   const { language } = useLanguage();
   const { safeBack } = useSafeNavigate();
-  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
 
-  const fault = getInverterFault(id, faultId);
+  // Fullscreen interactive zoom state
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+  const [zoomScale, setZoomScale] = useState(1.0);
+
+  const fault = getInverterFault(id, faultId, language);
 
   if (!fault) {
     return (
@@ -339,10 +328,20 @@ export default function FaultDetailScreen() {
     );
   }
 
-  const severityColor =
-    severityColors[fault.severity];
-  const severityKey =
-    severityKeys[fault.severity] || 'mediumRisk';
+  const handleZoomIn = () => {
+    setZoomScale((prev) => Math.min(prev + 0.5, 4.0));
+  };
+
+  const handleZoomOut = () => {
+    setZoomScale((prev) => Math.max(prev - 0.5, 1.0));
+  };
+
+  const handleResetZoom = () => {
+    setZoomScale(1.0);
+  };
+
+  const baseImageWidth = SCREEN_WIDTH - 24;
+  const baseImageHeight = SCREEN_HEIGHT * 0.7;
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -351,20 +350,23 @@ export default function FaultDetailScreen() {
         backgroundColor="#F7F8FA"
       />
 
-      {/* FULLSCREEN BIG DIAGRAM MODAL */}
+      {/* FULLSCREEN BIG DIAGRAM MODAL WITH INTERACTIVE ZOOM CONTROLS */}
       {fault.diagramImage && (
         <Modal
           visible={isImageModalOpen}
           transparent={true}
           animationType="fade"
-          onRequestClose={() => setIsImageModalOpen(false)}
+          onRequestClose={() => {
+            setIsImageModalOpen(false);
+            setZoomScale(1.0);
+          }}
         >
           <View style={styles.modalBackdrop}>
             <SafeAreaView style={styles.modalSafeArea}>
               {/* Modal Top Header with Title and Close Button */}
               <View style={styles.modalHeader}>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.modalTitle}>
+                <View style={{ flex: 1, paddingRight: 10 }}>
+                  <Text style={styles.modalTitle} numberOfLines={1}>
                     {fault.title}
                   </Text>
                   <Text style={styles.modalSubtitle}>
@@ -373,7 +375,10 @@ export default function FaultDetailScreen() {
                 </View>
 
                 <Pressable
-                  onPress={() => setIsImageModalOpen(false)}
+                  onPress={() => {
+                    setIsImageModalOpen(false);
+                    setZoomScale(1.0);
+                  }}
                   style={styles.modalCloseButton}
                   hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
                 >
@@ -383,20 +388,58 @@ export default function FaultDetailScreen() {
                 </Pressable>
               </View>
 
-              {/* Scrollable / Zoomable High-Res Diagram Container */}
+              {/* On-screen Zoom Control Bar */}
+              <View style={styles.zoomControlBar}>
+                <Pressable
+                  onPress={handleZoomIn}
+                  style={styles.zoomBtn}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                >
+                  <Text style={styles.zoomBtnText}>➕ {language === 'hi' ? 'बड़ा करें' : 'Zoom In'}</Text>
+                </Pressable>
+
+                <View style={styles.zoomBadge}>
+                  <Text style={styles.zoomBadgeText}>
+                    {Math.round(zoomScale * 100)}%
+                  </Text>
+                </View>
+
+                <Pressable
+                  onPress={handleZoomOut}
+                  style={styles.zoomBtn}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                >
+                  <Text style={styles.zoomBtnText}>➖ {language === 'hi' ? 'छोटा करें' : 'Zoom Out'}</Text>
+                </Pressable>
+
+                <Pressable
+                  onPress={handleResetZoom}
+                  style={styles.zoomResetBtn}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                >
+                  <Text style={styles.zoomResetText}>⟲ Reset</Text>
+                </Pressable>
+              </View>
+
+              {/* Two-Way Scrollable Container for Pan and Inspect Traces */}
               <ScrollView
-                maximumZoomScale={4.0}
-                minimumZoomScale={1.0}
-                showsHorizontalScrollIndicator={false}
-                showsVerticalScrollIndicator={false}
-                contentContainerStyle={styles.modalImageScroll}
-                centerContent={true}
+                horizontal={true}
+                showsHorizontalScrollIndicator={true}
+                contentContainerStyle={styles.horizontalScrollContent}
               >
-                <Image
-                  source={fault.diagramImage}
-                  style={styles.modalBigImage}
-                  resizeMode="contain"
-                />
+                <ScrollView
+                  showsVerticalScrollIndicator={true}
+                  contentContainerStyle={styles.verticalScrollContent}
+                >
+                  <Image
+                    source={fault.diagramImage}
+                    style={{
+                      width: baseImageWidth * zoomScale,
+                      height: baseImageHeight * zoomScale,
+                    }}
+                    resizeMode="contain"
+                  />
+                </ScrollView>
               </ScrollView>
             </SafeAreaView>
           </View>
@@ -407,43 +450,21 @@ export default function FaultDetailScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.content}
       >
-        {/* BACK BUTTON */}
-        <Pressable
-          onPress={() => safeBack()}
-          style={styles.backButton}
-          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-        >
-          <Text style={styles.backText}>
-            {tr(language, 'back')}
-          </Text>
-        </Pressable>
-
-        {/* HERO BANNER */}
-        <View style={styles.hero}>
-          <View style={styles.iconCircle}>
-            <Text style={styles.icon}>
-              {fault.icon}
+        {/* TOP BAR WITH BACK BUTTON & CLEAN TITLE (HERO CARD REMOVED AS REQUESTED) */}
+        <View style={styles.topBar}>
+          <Pressable
+            onPress={() => safeBack()}
+            style={styles.backButton}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <Text style={styles.backText}>
+              {tr(language, 'back')}
             </Text>
-          </View>
+          </Pressable>
 
-          <Text style={styles.title}>
+          <Text style={styles.faultHeaderTitle}>
             {fault.title}
           </Text>
-
-          <Text style={styles.subtitle}>
-            {fault.subtitle}
-          </Text>
-
-          <View
-            style={[
-              styles.severityBadge,
-              { backgroundColor: severityColor },
-            ]}
-          >
-            <Text style={styles.severityText}>
-              {tr(language, severityKey)}
-            </Text>
-          </View>
         </View>
 
         {/* 1. SYMPTOMS (FIRST SECTION) */}
@@ -469,7 +490,10 @@ export default function FaultDetailScreen() {
 
           {fault.diagramImage ? (
             <Pressable
-              onPress={() => setIsImageModalOpen(true)}
+              onPress={() => {
+                setZoomScale(1.0);
+                setIsImageModalOpen(true);
+              }}
               style={({ pressed }) => [
                 styles.diagramImageWrap,
                 pressed && styles.diagramPressed,
@@ -584,17 +608,22 @@ const styles = StyleSheet.create({
   },
 
   content: {
-    padding: 18,
+    paddingHorizontal: 18,
+    paddingTop: 10,
     paddingBottom: 60,
   },
 
-  /* BACK BUTTON */
+  /* TOP BAR */
+
+  topBar: {
+    marginBottom: 12,
+  },
 
   backButton: {
     alignSelf: 'flex-start',
     paddingVertical: 6,
     paddingRight: 15,
-    marginBottom: 12,
+    marginBottom: 6,
   },
 
   backText: {
@@ -603,55 +632,12 @@ const styles = StyleSheet.create({
     color: '#2563EB',
   },
 
-  /* HERO */
-
-  hero: {
-    backgroundColor: '#111827',
-    borderRadius: 26,
-    padding: 22,
-    alignItems: 'center',
-    marginBottom: 6,
-  },
-
-  iconCircle: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    backgroundColor: '#FFFFFF',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 14,
-  },
-
-  icon: { fontSize: 34 },
-
-  title: {
-    color: '#FFFFFF',
-    fontSize: 24,
+  faultHeaderTitle: {
+    fontSize: 22,
     fontWeight: '900',
-    textAlign: 'center',
-  },
-
-  subtitle: {
-    color: '#D1D5DB',
-    fontSize: 13,
-    textAlign: 'center',
-    marginTop: 7,
-    lineHeight: 20,
-  },
-
-  severityBadge: {
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    marginTop: 15,
-  },
-
-  severityText: {
-    color: '#FFFFFF',
-    fontSize: 10,
-    fontWeight: '900',
-    letterSpacing: 0.5,
+    color: '#111827',
+    marginTop: 2,
+    lineHeight: 28,
   },
 
   /* PCB DIAGRAM CARD */
@@ -745,8 +731,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 14,
+    paddingHorizontal: 18,
+    paddingVertical: 12,
     backgroundColor: '#111827',
     borderBottomWidth: 1,
     borderBottomColor: '#1F2937',
@@ -754,7 +740,7 @@ const styles = StyleSheet.create({
 
   modalTitle: {
     color: '#FFFFFF',
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '900',
   },
 
@@ -766,9 +752,9 @@ const styles = StyleSheet.create({
 
   modalCloseButton: {
     backgroundColor: '#EF4444',
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 10,
+    paddingHorizontal: 13,
+    paddingVertical: 7,
+    borderRadius: 8,
   },
 
   modalCloseText: {
@@ -777,16 +763,70 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
 
-  modalImageScroll: {
+  /* ZOOM CONTROLS */
+
+  zoomControlBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: '#1E293B',
+    paddingVertical: 9,
+    paddingHorizontal: 12,
+  },
+
+  zoomBtn: {
+    backgroundColor: '#2563EB',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+
+  zoomBtnText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '800',
+  },
+
+  zoomBadge: {
+    backgroundColor: '#0F172A',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#334155',
+  },
+
+  zoomBadgeText: {
+    color: '#38BDF8',
+    fontSize: 12,
+    fontWeight: '900',
+  },
+
+  zoomResetBtn: {
+    backgroundColor: '#334155',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+
+  zoomResetText: {
+    color: '#E2E8F0',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+
+  horizontalScrollContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  verticalScrollContent: {
     flexGrow: 1,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 10,
-  },
-
-  modalBigImage: {
-    width: SCREEN_WIDTH - 20,
-    height: SCREEN_HEIGHT * 0.78,
   },
 
   /* SHARED CARD */

@@ -3950,29 +3950,36 @@ export const inverterFaultsMap: Record<
 // Helper functions
 // ─────────────────────────────────────────────────────────────────────────────
 
+import { getTranslatedFault } from '@/data/faultTranslationsHi';
+
 /**
  * Get all faults for a given inverter as an array (for list rendering).
  */
 export function getFaultsForInverter(
   inverterId: string,
+  language = 'en',
 ): InverterFaultDetail[] {
   const map = inverterFaultsMap[inverterId];
   if (!map) return [];
-  return Object.values(map);
+  return Object.values(map).map((f) =>
+    getTranslatedFault(inverterId, f, language),
+  );
 }
 
 /**
- * Get a single fault by inverter + fault ID.
+ * Get a single fault by inverter + fault ID with optional language translation.
  */
 export function getInverterFault(
   inverterId: string,
   faultId: string,
+  language = 'en',
 ): InverterFaultDetail | undefined {
   const fault = inverterFaultsMap[inverterId]?.[faultId];
   if (!fault) return undefined;
   const diagram = getDiagramImage(inverterId, faultId);
-  return {
+  const faultWithDiagram = {
     ...fault,
     diagramImage: diagram ?? fault.diagramImage,
   };
+  return getTranslatedFault(inverterId, faultWithDiagram, language);
 } 
