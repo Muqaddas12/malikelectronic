@@ -13,9 +13,9 @@ type LanguageContextType = {
 };
 
 const LanguageContext = createContext<LanguageContextType>({
-  language: 'en',
+  language: 'hi',
   setLanguage: () => {},
-  isHindi: false,
+  isHindi: true,
 });
 
 export function LanguageProvider({
@@ -24,7 +24,7 @@ export function LanguageProvider({
   children: React.ReactNode;
 }) {
   const [language, setLanguage] =
-    useState<Language>('en');
+    useState<Language>('hi');
 
   return (
     <LanguageContext.Provider

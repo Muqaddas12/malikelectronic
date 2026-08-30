@@ -23,11 +23,13 @@ export type Fault = {
 export type Inverter = {
   id: string;
   brand: string;
+  brandHi?: string;
   model: string;
   capacity: string;
   batteryVoltage: string;
   type: string;
+  typeHi?: string;
   image: any;
-  pcbImage:any;
+  pcbImage: any;
   faults: string[];
 };

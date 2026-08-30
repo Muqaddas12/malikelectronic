@@ -38,7 +38,7 @@ export default function InverterFaultsScreen() {
   const [isMcModalOpen, setIsMcModalOpen] = useState(false);
 
   const inverter = inverters.find((item) => item.id === id);
-  const mcDoc = inverter ? getMicrocontrollerDoc(inverter.id) : undefined;
+  const mcDoc = inverter ? getMicrocontrollerDoc(inverter.id, language) : undefined;
 
   const inverterFaults = useMemo(() => {
     if (!inverter) return [];
@@ -86,7 +86,7 @@ export default function InverterFaultsScreen() {
       <DiagramViewerModal
         visible={isPcbModalOpen}
         source={inverter.pcbImage}
-        title={`${inverter.brand} ${inverter.model} — PCB Photo`}
+        title={`${language === 'hi' ? (inverter.brandHi ?? inverter.brand) : inverter.brand} ${inverter.model} — ${language === 'hi' ? 'पीसीबी फोटो' : 'PCB Photo'}`}
         subtitle={tr(language, 'zoomHint')}
         onClose={() => setIsPcbModalOpen(false)}
       />
@@ -122,15 +122,15 @@ export default function InverterFaultsScreen() {
               {/* LEFT SIDE: INVERTER SPECS */}
               <View style={styles.heroInfo}>
                 <Text style={styles.brand}>
-                  {inverter.brand}
+                  {language === 'hi' ? (inverter.brandHi ?? inverter.brand) : inverter.brand}
                 </Text>
 
                 <Text style={styles.model} numberOfLines={1}>
                   {inverter.model}
                 </Text>
 
-                <Text style={styles.specs}>
-                  {inverter.capacity} • {inverter.batteryVoltage}
+                <Text style={styles.specs} numberOfLines={1}>
+                  {inverter.capacity} • {inverter.batteryVoltage} • {language === 'hi' ? (inverter.typeHi ?? inverter.type) : inverter.type}
                 </Text>
               </View>
 
@@ -150,7 +150,7 @@ export default function InverterFaultsScreen() {
                     resizeMode="contain"
                   />
                   <View style={styles.pcbBadge}>
-                    <Text style={styles.pcbBadgeText}>🔍 PCB</Text>
+                    <Text style={styles.pcbBadgeText}>🔍 {language === 'hi' ? 'पीसीबी' : 'PCB'}</Text>
                   </View>
                 </Pressable>
               ) : null}
@@ -175,12 +175,14 @@ export default function InverterFaultsScreen() {
                       {mcDoc.chipName}
                     </Text>
                     <View style={styles.mcBadge}>
-                      <Text style={styles.mcBadgeText}>PDF PIN DETAILS</Text>
+                      <Text style={styles.mcBadgeText}>
+                        {language === 'hi' ? 'पिन विवरण (PDF)' : 'PDF PIN DETAILS'}
+                      </Text>
                     </View>
                   </View>
 
                   <Text style={styles.mcSubtitle} numberOfLines={1}>
-                    {tr(language, 'microcontrollerSubtitle')}
+                    {mcDoc.subtitle || tr(language, 'microcontrollerSubtitle')}
                   </Text>
 
                   <Text style={styles.mcActionText}>

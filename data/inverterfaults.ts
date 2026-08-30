@@ -1540,105 +1540,218 @@ export const inverterFaultsMap: Record<
       diagnosis: 'Agar PIC Pin 17 par high voltage aa rahi hai lekin Fan nahi chal raha to BD139 (Q15) ya R79 kharab hai.',
     },
 
-    'low-battery': {
-      id: 'low-battery',
-      title: 'Battery Low / Overcharge',
+    'microcontroller-pin-details': {
+      id: 'microcontroller-pin-details',
+      title: 'Microtek EB 900 Sine Wave Microcontroller 28-Pin Details',
       subtitle:
-        'Microtek Home UPS mein battery voltage sensing circuit mein fault hai jisse galat battery status indicate ho raha hai.',
-      icon: '🔋',
+        'Microtek EB 900 Sine Wave Inverter (EBHB-SGP-V3R3) complete 28-Pin operating voltages across Mains Mode and Inverter Mode with dedicated pin functions.',
+      icon: '🎛️',
       severity: 'high',
 
       symptoms: [
-        'Battery low indicator ghalat waqt jal raha hai',
-        'Inverter battery ko overcharge kar raha hai',
-        'Battery pani jaldi khatam ho raha hai',
-        'Battery voltage normal hone ke bawajood low show ho raha hai',
+        'Inverter completely dead hai ya display par koi response nahi',
+        'Mains mode se Inverter mode switching fail',
+        'Charging current control nahi ho raha ya gate pulse missing hai',
+        'Switching outputs (Pins 12, 22, 23, 24) abnormal hain',
       ],
 
       basicChecks: [
-        'Battery terminal voltage multimeter se check karein',
-        'Charging voltage measure karein (14V se zyada nahi hona chahiye)',
-        'Voltage sensing divider resistors check karein',
-        'Microcontroller sensing pin voltage check karein',
-        'PCB tracks mein dry solder check karein',
+        'Pin 20 (+5V VCC Supply) aur Pin 8, Pin 19 (Ground) check karein',
+        'Pin 1 (Master Clear / Reset: 5.0V Mains / 5.0V Inv) check karein',
+        'Pin 9 & 10 Crystal Oscillator voltages (Pin 9: 2.15V, Pin 10: 1.84V–1.92V) verify karein',
+        'Pin 2 (Feedback Sense: 1.5V Mains / 2.6V Inv) check karein',
+        'Pin 5 (Battery Level Sense: 3.9V Mains / 3.3V Inv) check karein',
+        'Pin 4 (Mains Sense: 1.5V Mains / 0V Inv) & Pin 28 (Mains Sense: 3.2V Mains / 5.0V Inv) check karein',
+        'Switching Gate Pulses: Pin 12 & 23 (High Side: 0V Mains / 2.87V Inv), Pin 22 & 24 (Low Side: 0.67V Mains / 2.05V Inv) check karein',
       ],
 
       technicalExplanation: {
-        title: 'Battery Sensing Circuit — Microtek',
+        title: 'Microtek EB 900 / V4–V7 Pin Details (EBHB-SGP-V3R3)',
         explanation:
-          'Microtek mein ek voltage divider network battery voltage ko microcontroller ke ADC input ke liye scale karta hai. Yeh resistors tolerant hone chahiye.',
+          'Microtek EB 900 Pure Sine Wave model mein 28-pin microcontroller sabhi critical functions monitor aur drive karta hai. Yahan sabhi 28 pins ke exact operating voltages (Mains Mode aur Inverter Mode) listed hain:',
         components: [
-          {
-            component: 'Ra (Upper Divider)',
-            function: 'Battery voltage ko scale down karta hai.',
-            value: '100kΩ (typical)',
-          },
-          {
-            component: 'Rb (Lower Divider)',
-            function: 'ADC reference set karta hai.',
-            value: '10kΩ (typical)',
-          },
-          {
-            component: 'MCU (STC/PIC)',
-            function: 'Sensed voltage se battery level calculate karta hai.',
-          },
-          {
-            component: 'Filter Capacitor',
-            function: 'Noise remove karta hai sensing line se.',
-            value: '0.1µF',
-          },
+          { component: 'Pin 1: MASTER CLEAR / RESET', function: 'MCU Master Reset pin', value: '5.0V (5.0V)' },
+          { component: 'Pin 2: FEED BACK SENSE', function: 'AC output feedback sensing', value: '1.5V (2.6V)' },
+          { component: 'Pin 3: CHARGING CURRENT SENSE', function: 'Current sensing during charging', value: '0.8V (0.4V)' },
+          { component: 'Pin 4: MAINS SENSE INPUT', function: 'Mains line presence sense', value: '1.5V (0.0V)' },
+          { component: 'Pin 5: BATTERY LEVEL SENSE', function: 'Battery voltage sensing line', value: '3.9V (3.3V)' },
+          { component: 'Pin 6: RELAY-3 DRIVE OUTPUT', function: 'Output phase relay control', value: '0.0V (4.9V)' },
+          { component: 'Pin 7: OVERLOAD SENSE INPUT', function: 'Load overcurrent monitoring', value: '0.0V (0.0V)' },
+          { component: 'Pin 8: GROUND PIN', function: 'Circuit Ground', value: '0.0V (0.0V)' },
+          { component: 'Pin 9: CRYSTAL OSCILLATOR PIN-1', function: 'Clock oscillator input 1', value: '2.15V (2.15V)' },
+          { component: 'Pin 10: CRYSTAL OSCILLATOR PIN-2', function: 'Clock oscillator input 2', value: '1.84V (1.92V)' },
+          { component: 'Pin 11: CHARGING INDICATOR', function: 'Charging LED output drive', value: '4.6V–0.0V (0.0V)' },
+          { component: 'Pin 12: SWITCHING HIGH SIDE "B"', function: 'High side B MOSFET gate drive', value: '0.0V (2.87V)' },
+          { component: 'Pin 13: MAINS INDICATOR OUTPUT', function: 'Mains present LED drive', value: '4.7V (0.0V)' },
+          { component: 'Pin 14: BATTERY LOW INDICATOR', function: 'Low battery warning LED drive', value: '0.0V (0.0V)' },
+          { component: 'Pin 15: OVERLOAD INDICATOR', function: 'Overload warning LED drive', value: '0.0V (0.0V)' },
+          { component: 'Pin 16: RELAY-1 DRIVE OUTPUT', function: 'Charging & 200V/140V changeover relay drive', value: '4.92V (0.0V)' },
+          { component: 'Pin 17: FAN DRIVE OUTPUT', function: 'Cooling fan trigger control', value: '0.0V (0.0V)' },
+          { component: 'Pin 18: UPS / NORMAL MODE SELECTOR', function: 'Mode selection switch input', value: '5.0V Mains (5.0V UPS / 0V Normal)' },
+          { component: 'Pin 19: GROUND PIN', function: 'Circuit Ground', value: '0.0V (0.0V)' },
+          { component: 'Pin 20: +5V SUPPLY PIN (VCC)', function: 'Main regulated +5V power supply', value: '5.0V (5.0V)' },
+          { component: 'Pin 21: OVERLOAD / SHORT CIRCUIT', function: 'Fast short circuit protection input', value: '5.0V (5.0V)' },
+          { component: 'Pin 22: SWITCHING LOW SIDE "B"', function: 'Low side B MOSFET gate drive', value: '0.67V (2.04V)' },
+          { component: 'Pin 23: SWITCHING HIGH SIDE "A"', function: 'High side A MOSFET gate drive', value: '0.0V (2.87V)' },
+          { component: 'Pin 24: SWITCHING LOW SIDE "A"', function: 'Low side A MOSFET gate drive', value: '0.67V (2.05V)' },
+          { component: 'Pin 25: BUZZER DRIVE OUTPUT', function: 'Alarm buzzer trigger', value: '0.0V (0.0V)' },
+          { component: 'Pin 26: ON / OFF SWITCH (SW)', function: 'Front panel power switch sensing', value: '5.0V (5.0V)' },
+          { component: 'Pin 27: TEMPERATURE SENSE', function: 'Heat sensor comparator input (LM324)', value: '0.73V (0.73V)' },
+          { component: 'Pin 28: MAINS SENSE INPUT', function: 'Mains AC zero-cross / presence sense', value: '3.2V (5.0V)' },
         ],
       },
 
       possibleCauses: [
         {
-          cause: 'Voltage divider resistor changed value',
-          explanation: 'Heat ya aging ki wajah se resistor value drift ho gayi.',
+          cause: 'Pin 20 (+5V) missing ya drop',
+          explanation: '7805 regulator ya filter capacitor damage hone se microcontroller on nahi hota.',
         },
         {
-          cause: 'Filter capacitor leaky',
-          explanation: 'Sensing voltage unstable ho gayi hai.',
+          cause: 'Pin 9/10 Crystal fail',
+          explanation: 'Crystal dead hone par clock pulse band ho jati hai aur MOSFET switching signal nahi banta.',
         },
         {
-          cause: 'Bad battery connection',
-          explanation: 'Loose terminal se voltage drop aur wrong sensing.',
-        },
-        {
-          cause: 'MCU calibration off',
-          explanation: 'Factory calibration data corrupt ho gayi.',
+          cause: 'Pin 1 Reset voltage drop (<4.8V)',
+          explanation: 'Microcontroller continuous reset mode mein chala jata hai.',
         },
       ],
 
       repairProcedure: [
         {
           step: 1,
-          title: 'Battery Voltage Check',
-          explanation: 'Directly battery terminals par multimeter se voltage measure karein.',
+          title: 'VCC (+5V) & Reset Test',
+          explanation: 'Pin 20 par 5.0V aur Pin 1 par 5.0V confirm karein.',
         },
         {
           step: 2,
-          title: 'Sensing Resistors Check',
-          explanation: 'Power off karke Ra aur Rb resistors ki resistance measure karein.',
+          title: 'Crystal Oscillator Check',
+          explanation: 'Pin 9 (2.15V) aur Pin 10 (1.84V–1.92V) par clock signal verify karein.',
         },
         {
           step: 3,
-          title: 'MCU Input Check',
-          explanation: 'MCU ADC pin par voltage check karein aur calculate karein ki yeh correct hai ya nahi.',
+          title: 'Switching Gate Drive Test',
+          explanation: 'Inverter mode mein Pin 12 & 23 (2.87V) aur Pin 22 & 24 (2.05V) measure karein.',
         },
         {
           step: 4,
-          title: 'Connections Tighten',
-          explanation: 'Battery terminals aur PCB connections tight karein.',
-        },
-        {
-          step: 5,
-          title: 'Faulty Components Replace',
-          explanation: 'Drift hue resistors ya leaky capacitor replace karein.',
+          title: 'Mains Sensing & Relay Test',
+          explanation: 'Mains on karne par Pin 4 (1.5V), Pin 28 (3.2V) aur Pin 16 Relay drive (4.92V) check karein.',
         },
       ],
 
-      importantNote: 'Microtek models mein voltage sensing circuit location different ho sakta hai. PCB diagram carefully dekh ke components identify karein.',
-      diagnosis: 'Actual battery voltage aur displayed voltage mein farq = sensing circuit fault. Charging voltage 14.4V se zyada = overcharge protection fault.',
+      circuitFlow:
+        'Mains Sense (Pins 4, 28) + Battery Sense (Pin 5) ➔ Microcontroller (PIC16F72 5V/Crystal) ➔ Gate Drives (Pins 12, 22, 23, 24) ➔ Relays (Pins 6, 16) ➔ Display/Buzzer (Pins 11-15, 25)',
+      importantNote:
+        'Voltages Mains Mode (Inverter Mode) format mein diye gaye hain. Testing ke waqt common ground terminal se multimeter probe connect karein.',
+      diagnosis:
+        'VCC 5V + Crystal OK hone par agar switching pins (12, 22, 23, 24) par 2.0V–2.87V nahi aa rahi to MCU IC ya driving circuit badlein.',
+    },
+
+    'low-battery': {
+      id: 'low-battery',
+      title: 'Battery Low & Overcharge Voltage Sensing (Pin 5)',
+      subtitle:
+        'Microtek EB 900 / V4–V7 series mein battery voltage sensing line: +12V (D18 Anode) ➔ D18 Diode (12V Pass) ➔ R56 (51kΩ) ➔ Sensing Node (3.36V, divider via R34 20kΩ to GND) ➔ R36 (1kΩ) ➔ PIC16F72 Pin 5.',
+      icon: '🔋',
+      severity: 'high',
+
+      symptoms: [
+        'Battery full charge hone ke bawajood inverter par Battery Low alarm / LED activate ho jati hai',
+        'Inverter battery ko overcharge karta hai (cutoff threshold miss hone par)',
+        'Pin 5 par expected sensing voltage (3.36V DC) ki jagah abnormal voltage aati hai',
+        'Battery line connect karne par inverter falsely shutdown ho jata hai',
+      ],
+
+      basicChecks: [
+        '+12V Battery line par D18 diode ke Anode aur Cathode voltages check karein (12V)',
+        'R56 (51kΩ) resistor ki resistance measure karein',
+        'R34 (20kΩ to Ground) resistor ki resistance measure karein',
+        'R56 aur R34 ke junction node par exactly 3.36V DC voltage measure karein',
+        'R36 (1kΩ) series resistor check karein jo Microcontroller ke Pin 5 tak jata hai',
+        'Microcontroller Pin 5 par voltage confirm karein (Normal: 3.36V DC / 3.9V Mains, 3.3V Backup)',
+      ],
+
+      technicalExplanation: {
+        title: 'Microtek EB 900 Battery Sensing Circuit (Pin 5 Diagram)',
+        explanation:
+          'Microtek EB 900 Sine Wave aur V4–V7 series mein battery voltage monitoring D18 diode ke through positive 12V supply se shuru hoti hai. D18 diode 12V DC pass karta hai, jo R56 (51kΩ) aur R34 (20kΩ) ke precision voltage divider network mein feed hoti hai. Voltage divider ka output formula Vout = 12V × 20k / (51k + 20k) ≈ 3.36V calculate hota hai. Yeh 3.36V DC node R36 (1kΩ) series resistor ke through Microcontroller PIC16F72 ke Pin 5 (Battery Level Sense Pin) tak pahunchti hai jisse microcontroller battery charging status aur low battery threshold accurately monitor karta hai.',
+        components: [
+          {
+            component: 'D18 Diode',
+            function: '12V Battery positive pass diode.',
+            value: '12V DC Pass',
+          },
+          {
+            component: 'R56 (51kΩ)',
+            function: 'Upper voltage divider resistor (12V se 3.36V node drop).',
+            value: '51kΩ Resistor',
+          },
+          {
+            component: 'R34 (20kΩ)',
+            function: 'Lower voltage divider resistor to Ground.',
+            value: '20kΩ to GND',
+          },
+          {
+            component: 'R36 (1kΩ)',
+            function: 'Series protection resistor to Microcontroller Pin 5.',
+            value: '1kΩ Resistor',
+          },
+          {
+            component: 'PIC16F72 Pin 5',
+            function: 'Battery Level Sense Input Pin on Microcontroller.',
+            value: 'Pin 5 (ADC Input)',
+          },
+        ],
+      },
+
+      possibleCauses: [
+        {
+          cause: 'R56 (51kΩ) resistor value drift / open',
+          explanation: 'R56 value badhne se node voltage 3.36V se gir jati hai jisse inverter false Battery Low indicate karta hai.',
+        },
+        {
+          cause: 'R34 (20kΩ) resistor short / leaky to ground',
+          explanation: 'R34 short hone par Pin 5 par 0V milti hai aur inverter low battery shutdown kar deta hai.',
+        },
+        {
+          cause: 'D18 diode open ya dry solder',
+          explanation: 'D18 open hone par sensing line par 12V positive supply cut ho jati hai.',
+        },
+        {
+          cause: 'R36 (1kΩ) series resistor open',
+          explanation: 'Signal MCU ke Pin 5 tak nahi pahunchta.',
+        },
+      ],
+
+      repairProcedure: [
+        {
+          step: 1,
+          title: 'D18 Diode Voltage Test',
+          explanation: 'Multimeter DC mode par D18 ke Cathode par +12V DC confirm karein.',
+        },
+        {
+          step: 2,
+          title: 'Divider Node Voltage (3.36V) Check',
+          explanation: 'R56 aur R34 ke beech wale node par probe lagakar 3.36V DC measure karein.',
+        },
+        {
+          step: 3,
+          title: 'R36 & PIC Pin 5 Voltage Measure',
+          explanation: 'Microcontroller ke Pin 5 par direct 3.36V DC verify karein.',
+        },
+        {
+          step: 4,
+          title: 'Resistors Replace Karein',
+          explanation: 'Agar node par wrong voltage hai to R56 (51kΩ) ya R34 (20kΩ) ko precision 1% resistor se replace karein.',
+        },
+      ],
+
+      circuitFlow:
+        '+12V (D18 Anode) ➔ D18 Diode (12V Pass) ➔ R56 (51kΩ) ➔ Sensing Node (3.36V, R34 20kΩ to GND) ➔ R36 (1kΩ) ➔ PIC16F72 Pin 5',
+      importantNote:
+        'Voltage Divider formula: Vout = 12V × 20k / (51k + 20k) ≈ 3.36V. Resistor replace karte waqt accurate 1% tolerance resistors hi use karein.',
+      diagnosis:
+        'Battery 12V hone par agar Pin 5 par 3.36V nahi aa rahi to R56 (51kΩ), R34 (20kΩ) ya D18 diode faulty hai.',
     },
 
     'overload': {
@@ -4457,6 +4570,448 @@ export const inverterFaultsMap: Record<
 
       diagnosis:
         'Pin 20 = 5V, Pin 1 = 5V, Pin 9/10 = 2.4V confirm karein. Inverter mode mein Pin 27 & 28 par 1.8V aur Mains mode mein Pin 26 par 2V aana chahiye.',
+    },
+  },
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // MICROTEK 24x7 HYBRID SERIES
+  // ═══════════════════════════════════════════════════════════════════════════
+  'microtek-24x7': {
+    'microcontroller-pin-details': {
+      id: 'microcontroller-pin-details',
+      title: 'Microtek 24x7 Microcontroller 20-Pin Details & Voltage Guide',
+      subtitle:
+        'Microtek 24x7 Hybrid Inverter (20 Pin Non-SMD DIP IC) complete pin functions and live operating voltages across Backup & Mains modes.',
+      icon: '🎛️',
+      severity: 'high',
+
+      symptoms: [
+        'Inverter on nahi ho raha ya front display bilkul dead hai',
+        'Mains aane par charging indicator nahi chalta ya changeover fail hota hai',
+        'MOSFET drive pulses (Pins 7, 8, 19, 20) missing hone par output zero rehti hai',
+        'False overload ya low battery alarm continuously trigger hota hai',
+      ],
+
+      basicChecks: [
+        'Pin 5 (+VCC: 5.0V) aur Pin 3 (+VCC LM317: 4.9V) supply check karein',
+        'Pin 4 (Ground: 0V) continuity check karein',
+        'Pin 1 (Reset Volt: 5.0V in Backup / 2.5V in Mains) check karein',
+        'Pin 10 (Battery Level Sense: 4.0V) check karein',
+        'Pin 18 (Mains Sense: 2.5V in Mains mode) check karein',
+        'Pin 13 (Chg Current Sense: 0.9V in Mains mode) check karein',
+        'MOSFET Gate Drive Voltages: Pins 7 & 8 (1.5V Backup) aur Pins 19 & 20 (3.5V Backup) check karein',
+      ],
+
+      technicalExplanation: {
+        title: 'Microtek 24x7 20-Pin DIP IC Pinout & Voltage Chart',
+        explanation:
+          'Microtek 24x7 Hybrid inverter mein 20-pin dual inline package (DIP) IC use hota hai. Sabhi pins ke live operating voltages Backup Mode aur Mains Mode mein niche table mein diye gaye hain:',
+        components: [
+          { component: 'Pin 1: RESET VOLT', function: 'Microcontroller reset and startup monitoring', value: '5.0V Backup / 2.5V Mains' },
+          { component: 'Pin 2: FAN SUPPLY', function: 'Cooling fan speed and on/off drive signal', value: '0.5V (Both modes)' },
+          { component: 'Pin 3: +VCC SUPPLY (LM317)', function: 'Regulated LM317 analog supply rail', value: '4.9V (Both modes)' },
+          { component: 'Pin 4: GROUND', function: 'Common Circuit Ground', value: '0.0V (Both modes)' },
+          { component: 'Pin 5: +VCC SUPPLY', function: 'Main digital 5V power rail', value: '5.0V (Both modes)' },
+          { component: 'Pin 6: RANGE SELECTION', function: 'Wide / Narrow input voltage range selection switch', value: '4.9V / 0V (Both modes)' },
+          { component: 'Pin 7: MOSFET DRIVE', function: 'Low side MOSFET channel 1 gate drive pulse', value: '1.5V (Backup mode)' },
+          { component: 'Pin 8: MOSFET DRIVE', function: 'Low side MOSFET channel 2 gate drive pulse', value: '1.5V (Backup mode)' },
+          { component: 'Pin 9: CHG. HIGH/LOW SELECTION', function: 'Battery charging current high/low selector switch', value: '5.0V / 0V (Both modes)' },
+          { component: 'Pin 10: BATTERY LEVEL SENSE', function: 'Battery DC voltage monitoring line', value: '4.0V (Both modes)' },
+          { component: 'Pin 11: OVERLOAD LED', function: 'Overload warning LED drive', value: '4.5V (Backup mode)' },
+          { component: 'Pin 12: LOW BATTERY LED', function: 'Battery low warning LED drive', value: '4.5V (Backup mode)' },
+          { component: 'Pin 13: CHG. CURRENT SENSE', function: 'Battery charging current shunt sense', value: '0.9V (Mains mode)' },
+          { component: 'Pin 14: OVERLOAD SENSE (LM358)', function: 'Op-amp LM358 current sensing feedback', value: '4.5V (Backup mode)' },
+          { component: 'Pin 15: CHG. LED', function: 'Mains charging status LED drive', value: '4.5V (Mains mode)' },
+          { component: 'Pin 16: UPS LED / RELAY DRIVE', function: 'Changeover relay driver signal', value: '4.5V (Backup mode)' },
+          { component: 'Pin 17: OVERLOAD SENSE', function: 'Fast peak current overload monitoring', value: '4.5V (Backup mode)' },
+          { component: 'Pin 18: MAINS SENSE', function: 'Mains AC presence sensing input', value: '2.5V (Mains mode)' },
+          { component: 'Pin 19: MOSFET DRIVE', function: 'High side MOSFET channel 1 gate drive pulse', value: '3.5V (Backup mode)' },
+          { component: 'Pin 20: MOSFET DRIVE', function: 'High side MOSFET channel 2 gate drive pulse', value: '3.5V (Backup mode)' },
+        ],
+      },
+
+      possibleCauses: [
+        {
+          cause: 'Pin 3 / Pin 5 VCC supply drop (<4.5V)',
+          explanation: 'LM317 ya 7805 regulator faulty hone se microcontroller properly initiate nahi hota.',
+        },
+        {
+          cause: 'Pin 7, 8 (1.5V) ya Pin 19, 20 (3.5V) drive missing',
+          explanation: 'Gate drive transistor short hone se switching signal ground ho jata hai.',
+        },
+        {
+          cause: 'Pin 18 Mains sense missing (<2.0V)',
+          explanation: 'Mains sensing transformer ya divider resistors open hone se inverter mains detect nahi karta.',
+        },
+      ],
+
+      repairProcedure: [
+        {
+          step: 1,
+          title: 'VCC Power Rails Verification',
+          explanation: 'Pin 5 par 5.0V aur Pin 3 par 4.9V check karein.',
+        },
+        {
+          step: 2,
+          title: 'MOSFET Drive Pulses Test',
+          explanation: 'Backup mode mein Pin 7 & 8 par 1.5V DC aur Pin 19 & 20 par 3.5V DC measure karein.',
+        },
+        {
+          step: 3,
+          title: 'Battery & Mains Sensing Check',
+          explanation: 'Pin 10 par 4.0V battery sense aur Pin 18 par 2.5V mains sense confirm karein.',
+        },
+        {
+          step: 4,
+          title: 'Relay & LED Outputs Test',
+          explanation: 'Pin 16 relay drive (4.5V) aur display LED pins (11, 12, 15) verify karein.',
+        },
+      ],
+
+      circuitFlow:
+        'LM317 / 5V Reg ➔ VCC (Pins 3, 5: 5V) ➔ Sensing (Pin 10 Batt: 4V, Pin 18 Mains: 2.5V) ➔ Micro IC ➔ Gate Drives (Pins 7, 8: 1.5V / Pins 19, 20: 3.5V) ➔ Relay Drive (Pin 16: 4.5V)',
+      importantNote:
+        'Microtek 24x7 20-Pin DIP IC mein high-side aur low-side gate voltages alag hoti hain (1.5V vs 3.5V). Dono pairs match hone chahiye.',
+      diagnosis:
+        'Power Rails OK hone par agar backup mode mein Pin 7/8 par 1.5V aur Pin 19/20 par 3.5V na mile to Micro IC ya gate driver transistors check karein.',
+    },
+  },
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // MICROTEK SQUARE WAVE (JM1250 / CLASSIC SERIES)
+  // ═══════════════════════════════════════════════════════════════════════════
+  'microtek-square-wave': {
+    'microcontroller-pin-details': {
+      id: 'microcontroller-pin-details',
+      title: 'Microtek Square Wave Inverter Micro IC 28-Pin Details',
+      subtitle:
+        'Microtek Square Wave Inverter (JM1250 / Classic Series) 28-Pin Micro IC complete operating voltages and pin functions in Mains and Inverter modes.',
+      icon: '🎛️',
+      severity: 'high',
+
+      symptoms: [
+        'Inverter start nahi hota ya output bilkul dead hai',
+        'Switching outputs (Pins 27 & 28) par 1.8V drive pulse missing hai',
+        'Mains line aane par bhi changeover relay nahi click karti',
+        'Charging start nahi hoti (Pin 26 par 2V PWM signal missing)',
+      ],
+
+      basicChecks: [
+        'Pin 20 (+5V VCC Supply) aur Pin 8, Pin 19 (Ground) check karein',
+        'Pin 1 (Reset: 5V Mains / 5V Inv) check karein',
+        'Pin 9 & 10 Crystal Oscillator (2.4V Mains / 2.4V Inv) check karein',
+        'Pin 2 (Mains Sensing: 1.4V Mains / 0V Inv) check karein',
+        'Pin 3 (Battery Level Sense: 3.4V Mains / 4.0V Inv) check karein',
+        'Pin 27 & 28 Switching Signal Output (0V Mains / 1.8V Inv) check karein',
+        'Pin 26 Charging Signal Output (2.0V Mains / 0V Inv) check karein',
+        'Pin 23 Output Relay Drive (0V Mains / 4.9V Inv) check karein',
+      ],
+
+      technicalExplanation: {
+        title: 'Microtek Square Wave 28-Pin Micro IC Details',
+        explanation:
+          'Microtek Square Wave inverter series mein 28-pin microcontroller switching, sensing, charging aur protection control karta hai. Yahan sabhi 28 pins ke operating voltages Mains Mode / Inverter Mode format mein diye gaye hain:',
+        components: [
+          { component: 'Pin 1: RESET', function: 'Master reset pin', value: '5V (5V)' },
+          { component: 'Pin 2: MAINS SENSING INPUT', function: 'Mains AC voltage sensing', value: '1.4V (0V)' },
+          { component: 'Pin 3: BATTERY LEVEL SENSING INPUT', function: 'Battery voltage sensing line', value: '3.4V (4V)' },
+          { component: 'Pin 4: CHARGING AMP SENSING INPUT', function: 'Charging current sensing input', value: '0V (0V)' },
+          { component: 'Pin 5: OVERLOAD SENSING INPUT', function: 'Overload trip comparator input', value: '0V (0V)' },
+          { component: 'Pin 6: BUZZER DRIVE OUTPUT', function: 'Alarm buzzer trigger output', value: '5V (5V)' },
+          { component: 'Pin 7: MAINS HIGH CUT SENSE', function: 'High voltage cutoff sensing', value: '1V (0V)' },
+          { component: 'Pin 8: GND', function: 'Circuit Ground', value: '0V (0V)' },
+          { component: 'Pin 9: [CRYSTAL] OSCILLATOR', function: 'Crystal oscillator input 1', value: '2.4V (2.4V)' },
+          { component: 'Pin 10: [CRYSTAL] OSCILLATOR', function: 'Crystal oscillator input 2', value: '2.4V (2.4V)' },
+          { component: 'Pin 11: MAINS LED CONNECTION', function: 'Mains indication LED', value: '5V (0V)' },
+          { component: 'Pin 12: BATT CHARGING LED OUT', function: 'Battery charging indication LED', value: '4.5V (0V)' },
+          { component: 'Pin 13: INV ON LED CONNECTION OUT', function: 'Inverter ON status LED', value: '0V (4.5V)' },
+          { component: 'Pin 14: LOW BATT LED CONNECTION OUT', function: 'Low battery warning LED', value: '0V (4.5V)' },
+          { component: 'Pin 15: OVERLOAD LED CONNECTION OUT', function: 'Overload warning LED', value: '0V (5V)' },
+          { component: 'Pin 16: AC FUSE BLOWN SENSING', function: 'AC input fuse status sensing', value: '0V (5V)' },
+          { component: 'Pin 17: UPS ON/OFF SW', function: 'Front panel ON/OFF switch sense', value: '5V (0V)' },
+          { component: 'Pin 18: CHARGING H/L SETTING SW', function: 'High/Low charging current switch', value: '0V (5V)' },
+          { component: 'Pin 19: GND', function: 'Circuit Ground', value: '0V (0V)' },
+          { component: 'Pin 20: VCC +5V SUPPLY', function: 'Main +5V regulated power rail', value: '5V (5V)' },
+          { component: 'Pin 21: OVER LOAD SENSING INPUT 2', function: 'Secondary overload trip input', value: '5V (5V)' },
+          { component: 'Pin 22: AC VOLT MAIN SENSING INPUT', function: 'AC mains voltage level tracking', value: '2.5V (5V)' },
+          { component: 'Pin 23: OUTPUT RELAY DRIVE OUT', function: 'Output changeover relay coil driver', value: '0V (4.9V)' },
+          { component: 'Pin 24: FAN DRIVE OUTPUT', function: 'Cooling fan motor driver pulse', value: '0V OFF / 4.9V ON' },
+          { component: 'Pin 25: UPS/INV MODE SW', function: 'UPS Mode / Inverter Mode selector switch', value: '5V (0V INV)' },
+          { component: 'Pin 26: CHARGING SIGNAL OUTPUT', function: 'Battery charging SCR/triac trigger pulse', value: '2V (0V)' },
+          { component: 'Pin 27: SWITCHING SIGNAL OUTPUT', function: 'Channel 1 MOSFET switching drive pulse', value: '0V (1.8V)' },
+          { component: 'Pin 28: SWITCHING SIGNAL OUTPUT', function: 'Channel 2 MOSFET switching drive pulse', value: '0V (1.8V)' },
+        ],
+      },
+
+      possibleCauses: [
+        {
+          cause: 'Pin 20 (+5V) missing',
+          explanation: '7805 regulator dead hone se microcontroller bilkul on nahi hota.',
+        },
+        {
+          cause: 'Pin 9/10 Crystal oscillator dead',
+          explanation: '50Hz clock generation band hone se Pin 27 & 28 par switching drive nahi aati.',
+        },
+        {
+          cause: 'Pin 27/28 switching voltage imbalance (one is 1.8V, other is 0V)',
+          explanation: 'Driver transistor short hone se MOSFETs destroy ho sakte hain.',
+        },
+      ],
+
+      repairProcedure: [
+        {
+          step: 1,
+          title: 'Power & Clock Check',
+          explanation: 'Pin 20 (+5V), Pin 1 (+5V) aur Pin 9/10 (2.4V) test karein.',
+        },
+        {
+          step: 2,
+          title: 'Switching Gate Pulses Test',
+          explanation: 'Inverter mode mein Pin 27 aur Pin 28 dono par exactly 1.8V DC confirm karein.',
+        },
+        {
+          step: 3,
+          title: 'Charging PWM Output Test',
+          explanation: 'Mains mode mein Pin 26 par 2.0V DC charging drive measure karein.',
+        },
+        {
+          step: 4,
+          title: 'Relay & Sensing Verification',
+          explanation: 'Pin 23 relay drive (4.9V in Inv) aur Pin 2 mains sensing (1.4V in Mains) test karein.',
+        },
+      ],
+
+      circuitFlow:
+        'Mains Sense (Pin 2: 1.4V) + Batt Sense (Pin 3: 3.4V) ➔ Micro IC (5V / 2.4V Crystal) ➔ Switching Drive (Pin 27/28: 1.8V) ➔ Charging PWM (Pin 26: 2V) ➔ Relay Drive (Pin 23: 4.9V)',
+      importantNote:
+        'Microtek Square Wave model mein Pin 27 aur Pin 28 dono par 1.8V balance voltage hona essential hai. Kisi bhi ek pin par 0V ho to inverter chalu mat karein.',
+      diagnosis:
+        'VCC 5V and Crystal 2.4V OK hone par inverter mode mein Pin 27 & 28 par 1.8V aani chahiye. Agar missing ho to IC replace karein.',
+    },
+  },
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // SU-KAM SHINY SINE WAVE
+  // ═══════════════════════════════════════════════════════════════════════════
+  'sukam-shiny-inverter': {
+    'changeover': {
+      id: 'changeover',
+      title: 'Mains Changeover & Sensing Circuit (Pin 2)',
+      subtitle:
+        'Su-Kam Shiny Sine Wave inverter mein Mains Sensing aur Changeover circuit: 23-0-23/400V Step Down Transformer, D9 & D16 (M7) Bridge, R52 (15kΩ), R73 (1kΩ), C21 (0.47µF/63V) se Micro IC Pin 2 (~1.6V DC).',
+      icon: '🔄',
+      severity: 'high',
+
+      symptoms: [
+        'Mains 230V AC aane par bhi inverter backup mode se switch nahi karta (Changeover fail)',
+        'Mains connect hone par continuous beeping ya flashing indicator aata hai',
+        'Micro IC ke Pin 2 par expected 1.6V DC missing hai ya 0V aa rahi hai',
+        'D9 ya D16 diode short hone par transformer secondary heat ho jati hai',
+      ],
+
+      basicChecks: [
+        '230V AC Mains (N, FB) lines par input voltage measure karein',
+        '23-0-23 / 400V transformer secondary par AC voltage check karein',
+        'D9 aur D16 (M7) rectifier diodes check karein (DC output ~10V)',
+        'R52 (15kΩ) resistor ki resistance test karein',
+        'R73 (1kΩ) resistor ki resistance test karein',
+        'C21 (0.47µF / 63V) electrolytic filter capacitor par short circuit ya leakage check karein',
+        'Micro IC Pin 2 par exact ~1.6V DC sensing voltage measure karein',
+      ],
+
+      technicalExplanation: {
+        title: 'Su-Kam Shiny Changeover Circuit (Pin 2 Diagram)',
+        explanation:
+          'Su-Kam Shiny Sine Wave model mein mains sensing dedicated step-down transformer se shuru hoti hai: 1) 230V AC Mains (N, FB) ko 23-0-23 / 400V center-tapped transformer step-down karta hai. 2) Secondary ke dono ends ko D9 aur D16 (M7) rectifier diodes DC mein convert karte hain (~10V DC). 3) Yeh 10V DC voltage R52 (15kΩ) aur R73 (1kΩ) ke divider network se divide hokar ~1.6V DC generate karti hai. 4) C21 (0.47µF / 63V) filter capacitor voltage ko filter aur stabilize karta hai. 5) Yeh ~1.6V DC signal Micro IC ke Pin 2 (Mains Sense Pin) tak pahunchti hai jisse MCU turant changeover command execute karta hai.',
+        components: [
+          {
+            component: 'Step Down Transformer',
+            function: '230V AC Mains (N-FB) ko step-down karta hai (Center tapped 23-0-23).',
+            value: '23-0-23 / 400V',
+          },
+          {
+            component: 'D9 & D16 (M7)',
+            function: 'Secondary AC ko DC (~10V) mein convert karne wale rectifier diodes.',
+            value: 'M7 (1N4007 SMD)',
+          },
+          {
+            component: 'R52 (15kΩ)',
+            function: 'Upper divider resistor (~10V se voltage drop karta hai).',
+            value: '15kΩ Resistor',
+          },
+          {
+            component: 'R73 (1kΩ)',
+            function: 'Lower divider resistor to generate ~1.6V DC signal.',
+            value: '1kΩ Resistor',
+          },
+          {
+            component: 'C21 (0.47µF / 63V)',
+            function: 'DC sensing voltage filter capacitor (stable DC level provide karta hai).',
+            value: '0.47µF / 63V Electrolytic',
+          },
+          {
+            component: 'Micro IC Pin 2',
+            function: 'Microcontroller Mains Sensing Input Pin.',
+            value: 'Pin 2 (~1.6V DC)',
+          },
+        ],
+      },
+
+      possibleCauses: [
+        {
+          cause: '23-0-23 Transformer primary / secondary winding open',
+          explanation: 'Transformer damage hone se secondary par koi AC voltage generate nahi hoti.',
+        },
+        {
+          cause: 'D9 ya D16 (M7) diode short / open',
+          explanation: 'Diode fail hone par ~10V DC supply interrupt ho jati hai.',
+        },
+        {
+          cause: 'R52 (15kΩ) ya R73 (1kΩ) resistor open',
+          explanation: 'Divider circuit break hone se Pin 2 tak 1.6V signal nahi pahunch pata.',
+        },
+        {
+          cause: 'C21 (0.47µF / 63V) capacitor short to ground',
+          explanation: 'Capacitor short hone par Pin 2 voltage 0V ho jati hai.',
+        },
+      ],
+
+      repairProcedure: [
+        {
+          step: 1,
+          title: 'Transformer Input & Output Check',
+          explanation: 'Primary par 230V AC aur secondary par 23V AC measure karein.',
+        },
+        {
+          step: 2,
+          title: 'D9 & D16 Rectifier Diodes Test',
+          explanation: 'Multimeter diode mode par D9 aur D16 diodes ka forward voltage (~0.6V) test karein aur output par 10V DC verify karein.',
+        },
+        {
+          step: 3,
+          title: 'R52 (15kΩ) & R73 (1kΩ) Values Test',
+          explanation: 'Power off karke R52 (15kΩ) aur R73 (1kΩ) resistors ki value confirm karein.',
+        },
+        {
+          step: 4,
+          title: 'C21 Capacitor & Pin 2 Voltage Check',
+          explanation: 'C21 (0.47µF) check karein aur Micro IC Pin 2 par exactly ~1.6V DC confirm karein.',
+        },
+      ],
+
+      circuitFlow:
+        '230V AC (N, FB) ➔ 23-0-23/400V Transformer ➔ D9, D16 (M7) Diodes (~10V DC) ➔ R52 (15kΩ) + R73 (1kΩ) Divider ➔ C21 (0.47µF/63V Filter) ➔ Micro IC Pin 2 (~1.6V DC)',
+      importantNote:
+        'Su-Kam Shiny inverter mein changeover issue aane par sabse pehle Micro IC Pin 2 par 1.6V DC check karein. Agar 0V hai to D9/D16 ya R52 check karein.',
+      diagnosis:
+        'Mains 230V aane par agar Pin 2 par 1.6V DC aa rahi hai lekin changeover nahi ho raha to Relay drive transistor ya MCU fault hai.',
+    },
+
+    'microcontroller-pin-details': {
+      id: 'microcontroller-pin-details',
+      title: 'Su-Kam Shiny Sine Wave PIC16F72 28-Pin Details & Voltage Guide',
+      subtitle:
+        'Su-Kam Shiny Pure Sine Wave Inverter PIC16F72 (28-Pin) complete operating voltages, pinouts, and test procedures.',
+      icon: '🎛️',
+      severity: 'high',
+
+      symptoms: [
+        'Inverter completely dead hai ya switch press karne par response nahi deta',
+        'MOSFET gate drives (Pins 25, 26, 27, 28) abnormal hain (1.3V / 3.5V)',
+        'Mains line detect nahi ho rahi (Pin 2: 1.4V / Pin 22 Zero-Cross: 5/2.5V)',
+        'Overheat (Pin 11) ya Overload (Pin 4/21) false trigger ho raha hai',
+      ],
+
+      basicChecks: [
+        'Pin 20 (+5V VCC Supply) aur Pin 8, Pin 19 (Ground) check karein',
+        'Pin 1 (Reset: 5.0V) check karein',
+        'Pin 9 & Pin 10 (Crystal Oscillator) check karein',
+        'Pin 2 (Mains Sense: 1.4V) & Pin 22 (Zero Cross Sense: 5V/2.5V) check karein',
+        'Pin 3 (Batt Sense: 3.8V) & Pin 5 (Feedback: 1.5V) check karein',
+        'Pin 4 (3.0V Overload) & Pin 21 (Overload 5V) check karein',
+        'Switching Gate Drive Voltages: Pins 25 & 27 (1.3V Drive) aur Pins 26 & 28 (3.5V Drive) check karein',
+      ],
+
+      technicalExplanation: {
+        title: 'Su-Kam Shiny Sine Wave PIC16F72 28-Pin Details',
+        explanation:
+          'Su-Kam Shiny Pure Sine Wave inverter mein PIC16F72 microcontroller 28 pins ke through entire power inverter system ko control karta hai. Yahan complete pinout aur exact working voltages listed hain:',
+        components: [
+          { component: 'Pin 1: Reset', function: 'Microcontroller Master Reset', value: '5.0V' },
+          { component: 'Pin 2: Mains Sense', function: 'Mains AC changeover sensing input (from D9/D16 divider)', value: '1.4V' },
+          { component: 'Pin 3: Batt Sense', function: 'Battery voltage monitoring input', value: '3.8V' },
+          { component: 'Pin 4: Overload', function: 'Overload current detection input', value: '3.0V' },
+          { component: 'Pin 5: Feedback', function: 'AC output voltage regulation feedback', value: '1.5V' },
+          { component: 'Pin 6: Buzz', function: 'Buzzer audio alarm drive output', value: '4.0V–9.0V' },
+          { component: 'Pin 7: CHG Sense', function: 'Charging current sensing line', value: '0.0V–9.0V' },
+          { component: 'Pin 8: Ground', function: 'Circuit Common Ground', value: '0.0V' },
+          { component: 'Pin 9: Crystal', function: 'Oscillator crystal clock input 1', value: 'Oscillator Clock' },
+          { component: 'Pin 10: Crystal', function: 'Oscillator crystal clock input 2', value: 'Oscillator Clock' },
+          { component: 'Pin 11: Over Heat', function: 'Heatsink thermal sensor input', value: '5.0V' },
+          { component: 'Pin 12: Fan Drive', function: 'Cooling fan motor driver signal', value: '5.0V' },
+          { component: 'Pin 13: Led Overload', function: 'Overload warning LED drive', value: '5.0V' },
+          { component: 'Pin 14: Low Batt Led', function: 'Battery low warning LED drive', value: '5.0V' },
+          { component: 'Pin 15: Main Led', function: 'Mains present LED drive', value: '5.0V' },
+          { component: 'Pin 16: CHG Led', function: 'Battery charging LED drive', value: '5.0V' },
+          { component: 'Pin 17: Hi / Low CHG', function: 'High / Low charging mode switch', value: 'Switch Input' },
+          { component: 'Pin 18: UPS / INV', function: 'UPS mode / Inverter mode switch', value: 'Switch Input' },
+          { component: 'Pin 19: Ground', function: 'Circuit Common Ground', value: '0.0V' },
+          { component: 'Pin 20: +5V', function: 'Main regulated +5V power rail (VCC)', value: '5.0V' },
+          { component: 'Pin 21: Overload', function: 'Secondary overload trip input', value: '5.0V' },
+          { component: 'Pin 22: Zero Cross Sense', function: 'Mains AC sinusoidal zero cross detector', value: '5.0V / 2.5V' },
+          { component: 'Pin 23: UPS Led + Relay Drive', function: 'UPS status LED and changeover relay drive', value: '5.0V' },
+          { component: 'Pin 24: ON/OFF', function: 'Power switch input', value: '5.0V / 0.0V' },
+          { component: 'Pin 25: Drive', function: 'MOSFET switching drive channel 1', value: '1.3V' },
+          { component: 'Pin 26: Drive', function: 'MOSFET switching drive channel 2', value: '3.5V' },
+          { component: 'Pin 27: Drive', function: 'MOSFET switching drive channel 3', value: '1.3V' },
+          { component: 'Pin 28: Drive', function: 'MOSFET switching drive channel 4', value: '3.5V' },
+        ],
+      },
+
+      possibleCauses: [
+        {
+          cause: 'Pin 20 (+5V) missing',
+          explanation: '7805 regulator failure se PIC16F72 microcontroller start nahi hota.',
+        },
+        {
+          cause: 'Pin 25/27 (1.3V) ya Pin 26/28 (3.5V) drive missing',
+          explanation: 'Driver transistors short hone se sine wave generation interrupt ho jati hai.',
+        },
+        {
+          cause: 'Pin 2 Mains Sense (1.4V) missing',
+          explanation: 'Changeover transformer ya D9/D16 bridge cut hone se mains sense nahi hoti.',
+        },
+      ],
+
+      repairProcedure: [
+        {
+          step: 1,
+          title: 'VCC (+5V) & Reset Test',
+          explanation: 'Pin 20 par +5.0V aur Pin 1 par +5.0V verify karein.',
+        },
+        {
+          step: 2,
+          title: 'Mains & Zero Cross Sense Test',
+          explanation: 'Pin 2 par 1.4V aur Pin 22 par 5V/2.5V zero cross signal check karein.',
+        },
+        {
+          step: 3,
+          title: 'MOSFET Gate Drives Test',
+          explanation: 'Pins 25 & 27 par 1.3V DC aur Pins 26 & 28 par 3.5V DC drive pulses measure karein.',
+        },
+        {
+          step: 4,
+          title: 'Relay Drive (Pin 23) Test',
+          explanation: 'Pin 23 par 5.0V relay switching command check karein.',
+        },
+      ],
+
+      circuitFlow:
+        'Mains Sense (Pin 2: 1.4V) + Zero Cross (Pin 22: 5V/2.5V) ➔ PIC16F72 Microcontroller ➔ Gate Drives (Pins 25/27: 1.3V & Pins 26/28: 3.5V) ➔ Relay Drive (Pin 23: 5V) ➔ Display LEDs (Pins 13-16: 5V)',
+      importantNote:
+        'Su-Kam Shiny mein 4 gate drive pins hoti hain: Pins 25 & 27 par 1.3V aur Pins 26 & 28 par 3.5V hona chahiye. Agar voltages mismatch hon to gate drive transistors check karein.',
+      diagnosis:
+        'Power Rails 5V OK hone par agar switching pins (25, 26, 27, 28) par 1.3V/3.5V nahi milti to MCU IC ya gate circuitry replace karein.',
     },
   },
 };

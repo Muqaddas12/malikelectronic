@@ -42,6 +42,29 @@ const INDEXED_ICS = IC_DATABASE.map((ic) => ({
 
 const ALL_CATEGORIES = ['All', ...Array.from(new Set(IC_DATABASE.map((item) => item.category)))];
 
+const CATEGORY_NAMES_HI: Record<string, string> = {
+  'All': 'सभी (All)',
+  'Op-Amp': 'ऑप-एम्प (Op-Amp)',
+  'PWM Driver': 'PWM ड्राइवर',
+  'MOSFET Driver': 'MOSFET ड्राइवर',
+  'Darlington Driver': 'डार्लिंगटन ड्राइवर',
+  'Optocoupler': 'ऑप्टोकपलर',
+  'Regulator': 'रेगुलेटर IC',
+  'Microcontroller': 'माइक्रोकंट्रोलर',
+  'Timer': 'टाइमर IC (555)',
+  'Logic & Switch': 'लॉजिक व स्विच',
+  'Memory & Interface': 'मेमोरी व इंटरफेस',
+};
+
+const PIN_TYPE_NAMES_HI: Record<IcPin['type'], string> = {
+  Power: 'पावर VCC',
+  Ground: 'ग्राउंड GND',
+  Output: 'आउटपुट',
+  Input: 'इनपुट',
+  Control: 'कंट्रोल',
+  Passive: 'पैसिव',
+};
+
 const PIN_TYPE_COLORS: Record<IcPin['type'], string> = {
   Power: '#DC2626',
   Ground: '#1E293B',
@@ -71,6 +94,7 @@ function getCategoryTheme(category: string) {
 // ─── Combined DIP & SMD Visual Graphic Component ─────────────────────────────
 
 const CombinedIcGraphic = React.memo(function CombinedIcGraphic({ ic }: { ic: IcDetail }) {
+  const { language } = useLanguage();
   const [selectedView, setSelectedView] = useState<'both' | 'dip' | 'smd'>('both');
   const halfPins = Math.ceil(ic.totalPins / 2);
 
@@ -97,7 +121,7 @@ const CombinedIcGraphic = React.memo(function CombinedIcGraphic({ ic }: { ic: Ic
               selectedView === 'both' && styles.switchBtnTextActive,
             ]}
           >
-            DIP & SMD Combined
+            {tr(language, 'bothDipSmd')}
           </Text>
         </Pressable>
 
@@ -111,7 +135,7 @@ const CombinedIcGraphic = React.memo(function CombinedIcGraphic({ ic }: { ic: Ic
               selectedView === 'dip' && styles.switchBtnTextActive,
             ]}
           >
-            DIP
+            {tr(language, 'dipOnly')}
           </Text>
         </Pressable>
 
@@ -125,7 +149,7 @@ const CombinedIcGraphic = React.memo(function CombinedIcGraphic({ ic }: { ic: Ic
               selectedView === 'smd' && styles.switchBtnTextActive,
             ]}
           >
-            SMD (SOIC)
+            {tr(language, 'smdOnly')}
           </Text>
         </Pressable>
       </View>
@@ -265,13 +289,13 @@ const IcCardItem = React.memo(function IcCardItem({ ic, language, onSelect }: Ic
         >
           <Text style={styles.icCatIcon}>{theme.icon}</Text>
           <Text style={[styles.icCatText, { color: theme.text }]}>
-            {ic.category}
+            {language === 'hi' ? (CATEGORY_NAMES_HI[ic.category] ?? ic.category) : ic.category}
           </Text>
         </View>
 
         <View style={styles.icPinsBadge}>
           <Text style={styles.icPinsBadgeText}>
-            {ic.totalPins} Pins ({ic.dipPackageName} / {ic.smdPackageName.split(' ')[0]})
+            {ic.totalPins} {language === 'hi' ? 'पिन' : 'Pins'} ({ic.dipPackageName} / {ic.smdPackageName.split(' ')[0]})
           </Text>
         </View>
       </View>
@@ -280,7 +304,7 @@ const IcCardItem = React.memo(function IcCardItem({ ic, language, onSelect }: Ic
       <Text style={styles.icTitleText}>{ic.name}</Text>
       {ic.aliases && ic.aliases.length > 0 && (
         <Text style={styles.icAliasesText} numberOfLines={1}>
-          Equivalents: {ic.aliases.join(', ')}
+          {language === 'hi' ? 'समतुल्य:' : 'Equivalents:'} {ic.aliases.join(', ')}
         </Text>
       )}
 
@@ -395,13 +419,13 @@ const IcDetailView = React.memo(function IcDetailView({ ic, language, onBack }: 
             {/* Table Header */}
             <View style={[styles.pinTableRow, styles.pinTableHeader]}>
               <Text style={[styles.pinTableCellHeader, { width: 45 }]}>
-                Pin
+                {tr(language, 'pinNumber')}
               </Text>
               <Text style={[styles.pinTableCellHeader, { width: 85 }]}>
-                Name
+                {tr(language, 'pinName')}
               </Text>
               <Text style={[styles.pinTableCellHeader, { flex: 1 }]}>
-                Function & Description
+                {tr(language, 'pinFunction')}
               </Text>
             </View>
 
@@ -409,6 +433,7 @@ const IcDetailView = React.memo(function IcDetailView({ ic, language, onBack }: 
             {ic.pins.map((p, idx) => {
               const isEven = idx % 2 === 0;
               const typeColor = PIN_TYPE_COLORS[p.type] || '#6B7280';
+              const typeLabel = language === 'hi' ? (PIN_TYPE_NAMES_HI[p.type] ?? p.type) : p.type;
 
               return (
                 <View
@@ -440,7 +465,7 @@ const IcDetailView = React.memo(function IcDetailView({ ic, language, onBack }: 
                           { color: typeColor },
                         ]}
                       >
-                        {p.type}
+                        {typeLabel}
                       </Text>
                     </View>
                   </View>
@@ -560,6 +585,7 @@ export default function IcGuideScreen() {
         >
           {ALL_CATEGORIES.map((cat) => {
             const isSelected = selectedCategory === cat;
+            const catLabel = language === 'hi' ? (CATEGORY_NAMES_HI[cat] ?? cat) : cat;
             return (
               <Pressable
                 key={cat}
@@ -575,7 +601,7 @@ export default function IcGuideScreen() {
                     isSelected && styles.catPillTextSelected,
                   ]}
                 >
-                  {cat}
+                  {catLabel}
                 </Text>
               </Pressable>
             );

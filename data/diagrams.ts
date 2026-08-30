@@ -34,15 +34,26 @@ export const diagramMap: Record<string, Record<string, any>> = {
     'relay': require('@/assets/diagrams/LuminousEcoWatt+/pin 7 1 change over diagram.jpg'),
   },
 
-  // ─── Microtek Home UPS (V4–V7) ────────────────────────────────────────────
+  // ─── Microtek Home UPS (EB 900 / V4–V7 Series) ────────────────────────────
   'microtek-inverter': {
+    /**
+     * Microcontroller 28-Pin Details (EB 900 Sine Wave / EBHB-SGP-V3R3):
+     */
+    'microcontroller-pin-details': require('@/assets/diagrams/Microtek-V4-To-V7-Model/Microcontroller.png'),
+
+    /**
+     * Battery Low / Overcharge Sensing Circuit:
+     *   +12V (D18 Anode) → D18 Diode (12V Pass) → R56 (51kΩ) → Sensing Node (3.36V, R34 20kΩ to GND) → R36 (1kΩ) → Pin 5
+     */
+    'low-battery': require('@/assets/diagrams/Microtek-V4-To-V7-Model/BatteryLow-OverChage.png'),
+
     /**
      * Fan / Overheating Circuit:
      *   Heat Sensor → R1 (5.1k) → LM324 (pins 1-7) → Pin 27 PIC16F72
      *   Pin 17 → R79 (2.2k) → BD139 (Q15) → Fan Jack (via D20)
      */
-    'fan': require('@/assets/diagrams/Microtek-V4-To-V7-Model/microtek fan problem.png'),
-    'overheating': require('@/assets/diagrams/Microtek-V4-To-V7-Model/microtek fan problem.png'),
+    'fan': require('@/assets/diagrams/Microtek-V4-To-V7-Model/Heatsensor.png'),
+    'overheating': require('@/assets/diagrams/Microtek-V4-To-V7-Model/Heatsensor.png'),
 
     /**
      * Relay Changeover & Phase Switching Circuit:
@@ -66,6 +77,45 @@ export const diagramMap: Record<string, Record<string, any>> = {
     'no-output': require('@/assets/diagrams/Microtek-V4-To-V7-Model/11 12 13 14 15 23 25 microtek display diagram.png'),
   },
 
+  // ─── Microtek 24x7 Hybrid Series ──────────────────────────────────────────
+  'microtek-24x7': {
+    /**
+     * Microcontroller 20-Pin Details (Non-SMD DIP IC):
+     */
+    'microcontroller-pin-details': require('@/assets/diagrams/Microtek-24x7/Microcontroller.png'),
+  },
+
+  // ─── Microtek Square Wave (JM1250 / Classic Series) ────────────────────────
+  'microtek-square-wave': {
+    /**
+     * Microcontroller 28-Pin Details:
+     */
+    'microcontroller-pin-details': require('@/assets/diagrams/Microtek-Square-wave/Microcontroller.png'),
+  },
+
+  // ─── Su-Kam Shark SMD / DIP (Square Wave) ──────────────────────────────────
+  'sukam-shark-inverter': {
+    /**
+     * Microcontroller 28-Pin Details & Voltage Guide:
+     *   Pins 1-28 complete functions, sensing, relay drives, switching & LED voltages
+     */
+    'microcontroller-pin-details': require('@/assets/diagrams/Sukam-Shark-Smd-Dip-Old-Model/Microcontroller.png'),
+  },
+
+  // ─── Su-Kam Shiny Sine Wave ───────────────────────────────────────────────
+  'sukam-shiny-inverter': {
+    /**
+     * Changeover Circuit:
+     *   Mains 230V (N, FB) → 23-0-23/400V Step Down Transformer → D9, D16 (M7) Bridge → R52 (15kΩ) & R73 (1kΩ) + C21 (0.47µF/63V) → Micro IC Pin 2 (~1.6V)
+     */
+    'changeover': require('@/assets/diagrams/Sukam-Shiny-Sinewave/ChangeOver.png'),
+
+    /**
+     * Microcontroller 28-Pin Details (PIC16F72):
+     */
+    'microcontroller-pin-details': require('@/assets/diagrams/Sukam-Shiny-Sinewave/Microcontroller.png'),
+  },
+
   // ─── Livguard LG-E Model ──────────────────────────────────────────────────
   'livguard-inverter': {
     /**
@@ -81,15 +131,6 @@ export const diagramMap: Record<string, Record<string, any>> = {
      *   Micro Pin 9 → R65 (6.8kΩ) → Q17 (1F) → Relay-2 (125V Transformer Tap)
      */
     'charging': require('@/assets/diagrams/Livguard-LG-E-Model/pin 9 10 Livguard 700E Charging.png'),
-  },
-
-  // ─── Su-Kam Shark SMD / DIP (Square Wave) ──────────────────────────────────
-  'sukam-shark-inverter': {
-    /**
-     * Microcontroller 28-Pin Details & Voltage Guide:
-     *   Pins 1-28 complete functions, sensing, relay drives, switching & LED voltages
-     */
-    'microcontroller-pin-details': require('@/assets/diagrams/Sukam-Shark-Smd-Dip-Old-Model/Microcontroller.png'),
   },
 };
 

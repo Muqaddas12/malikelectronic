@@ -117,6 +117,25 @@ export const t: Translations = {
     microcontrollerSubtitle: 'Inspect all pin numbers, voltages, signals & working functions',
     page: 'Page',
 
+    // Calculators & Tools Extras
+    bands4: '4-Band Resistor',
+    bands5: '5-Band Resistor',
+    tolerance: 'Tolerance',
+    pinDetails: 'Pin Details',
+    open: 'Open →',
+    bothDipSmd: 'DIP & SMD Combined',
+    dipOnly: 'DIP Only',
+    smdOnly: 'SMD Only',
+    equivalents: 'Equivalents',
+    aliases: 'Aliases / Direct equivalents',
+    modelsAndFaults: 'Inverter Models & Faults',
+    customerAndTechHelp: 'Customer & Technical Help',
+    inverterRepairCompanion: 'MaliK Electronic Repair Companion',
+    pin: 'Pin',
+    name: 'Name',
+    type: 'Type',
+    all: 'All',
+
     // Sidebar
     language: 'Language',
     english: 'English',
@@ -240,6 +259,25 @@ export const t: Translations = {
     viewPinDetails: 'सभी 28 पिनों का वोल्टेज व चार्ट देखें →',
     microcontrollerSubtitle: 'सभी पिन नंबर, वोल्टेज, सिग्नल्स और कार्यप्रणाली देखें',
     page: 'पेज',
+
+    // Calculators & Tools Extras
+    bands4: '4-बैंड रेजिस्टेंस',
+    bands5: '5-बैंड रेजिस्टेंस',
+    tolerance: 'टॉलरेंस (सहनशीलता)',
+    pinDetails: 'पिन विवरण',
+    open: 'खोलें →',
+    bothDipSmd: 'DIP व SMD कंबाइंड',
+    dipOnly: 'केवल DIP',
+    smdOnly: 'केवल SMD',
+    equivalents: 'समतुल्य (Equivalents)',
+    aliases: 'अन्य नाम व सीधे विकल्प',
+    modelsAndFaults: 'इन्वर्टर मॉडल और फॉल्ट्स',
+    customerAndTechHelp: 'ग्राहक व तकनीकी सहायता',
+    inverterRepairCompanion: 'मालिक इलेक्ट्रॉनिक रिपेयर गाइड',
+    pin: 'पिन',
+    name: 'नाम',
+    type: 'प्रकार',
+    all: 'सभी (All)',
 
     // Sidebar
     language: 'भाषा (Language)',

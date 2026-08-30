@@ -200,7 +200,7 @@ export default function Sidebar({ visible, onClose }: Props) {
                   {tr(language, 'homepage')}
                 </Text>
                 <Text style={styles.navSub}>
-                  Inverter Models & Faults
+                  {tr(language, 'modelsAndFaults')}
                 </Text>
               </View>
               <Text style={styles.navArrow}>›</Text>
@@ -244,7 +244,7 @@ export default function Sidebar({ visible, onClose }: Props) {
                   {tr(language, 'support')}
                 </Text>
                 <Text style={styles.navSub}>
-                  Customer & Technical Help
+                  {tr(language, 'customerAndTechHelp')}
                 </Text>
               </View>
               <Text style={styles.navArrow}>›</Text>
@@ -309,7 +309,7 @@ export default function Sidebar({ visible, onClose }: Props) {
               {tr(language, 'version')}
             </Text>
             <Text style={styles.footerSub}>
-              MaliK Electronic Repair Companion
+              {tr(language, 'inverterRepairCompanion')}
             </Text>
           </View>
         </ScrollView>

@@ -39,7 +39,7 @@ export default function InverterCard({
 
       <View style={styles.content}>
         <Text style={styles.brand}>
-          {inverter.brand}
+          {language === 'hi' ? (inverter.brandHi ?? inverter.brand) : inverter.brand}
         </Text>
 
         <Text style={styles.model} numberOfLines={1}>
@@ -47,8 +47,8 @@ export default function InverterCard({
         </Text>
 
         <View style={styles.infoRow}>
-          <Text style={styles.specsText}>
-            {inverter.capacity} • {inverter.batteryVoltage}
+          <Text style={styles.specsText} numberOfLines={1}>
+            {inverter.capacity} • {inverter.batteryVoltage} • {language === 'hi' ? (inverter.typeHi ?? inverter.type) : inverter.type}
           </Text>
         </View>
 

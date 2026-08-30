@@ -60,7 +60,9 @@ export default function FaultCard({
           <View style={styles.badgeGroup}>
             {fault.diagramImage ? (
               <View style={styles.diagramBadge}>
-                <Text style={styles.diagramBadgeText}>SCHEMATIC</Text>
+                <Text style={styles.diagramBadgeText}>
+                  {language === 'hi' ? 'सर्किट डायग्राम' : 'SCHEMATIC'}
+                </Text>
               </View>
             ) : null}
 
