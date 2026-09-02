@@ -1,24 +1,33 @@
 import React, { useMemo, useState } from 'react';
 import {
-  Dimensions,
   FlatList,
   Image,
   Pressable,
-  StatusBar,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
-import { useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
+import { useLocalSearchParams } from 'expo-router';
 
 import AppHeader from '@/components/AppHeader';
 import DiagramViewerModal from '@/components/DiagramViewerModal';
 import FaultCard from '@/components/FaultCard';
 import PdfDocumentViewerModal from '@/components/PdfDocumentViewerModal';
 import SearchBar from '@/components/SearchBar';
-
+import SpecStrip, { Spec } from '@/components/SpecStrip';
+import {
+  layout,
+  lineFor,
+  mono,
+  radius,
+  size,
+  space,
+  weight,
+} from '@/constants/theme';
 import { useLanguage } from '@/context/LanguageContext';
+import { useTheme } from '@/context/ThemeContext';
 import { getFaultsForInverter } from '@/data/inverterfaults';
 import { inverters } from '@/data/inverters';
 import { getMicrocontrollerDoc } from '@/data/microcontroller';
@@ -28,24 +37,26 @@ import { useSafeNavigate } from '@/hooks/useSafeNavigate';
 export default function InverterFaultsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const [search, setSearch] = useState('');
-  const { language } = useLanguage();
+  const { language, isHindi } = useLanguage();
+  const { colors } = useTheme();
   const { safePush } = useSafeNavigate();
 
-  // Fullscreen interactive 2-finger zoom modal for PCB Image
   const [isPcbModalOpen, setIsPcbModalOpen] = useState(false);
-
-  // Google Drive Style PDF Document Viewer Modal State
   const [isMcModalOpen, setIsMcModalOpen] = useState(false);
 
   const inverter = inverters.find((item) => item.id === id);
-  const mcDoc = inverter ? getMicrocontrollerDoc(inverter.id, language) : undefined;
+
+  const mcDoc = inverter
+    ? getMicrocontrollerDoc(inverter.id, language)
+    : undefined;
+
+  const allFaults = useMemo(
+    () => (inverter ? getFaultsForInverter(inverter.id, language) : []),
+    [inverter, language],
+  );
 
   const inverterFaults = useMemo(() => {
-    if (!inverter) return [];
-
-    const allFaults = getFaultsForInverter(inverter.id, language);
     const query = search.trim().toLowerCase();
-
     if (!query) return allFaults;
 
     return allFaults.filter((fault) =>
@@ -54,14 +65,18 @@ export default function InverterFaultsScreen() {
         .toLowerCase()
         .includes(query),
     );
-  }, [inverter, search, language]);
+  }, [allFaults, search]);
 
   if (!inverter) {
     return (
-      <SafeAreaView style={styles.safeArea}>
-        <AppHeader showBack={true} showMenu={true} />
+      <SafeAreaView
+        edges={['top', 'left', 'right']}
+        style={[styles.safeArea, { backgroundColor: colors.surface }]}
+      >
+        <AppHeader showBack showMenu />
+
         <View style={styles.center}>
-          <Text style={styles.notFound}>
+          <Text style={[styles.notFound, { color: colors.text }]}>
             {tr(language, 'inverterNotFound')}
           </Text>
         </View>
@@ -69,29 +84,41 @@ export default function InverterFaultsScreen() {
     );
   }
 
+  const brand = isHindi ? inverter.brandHi ?? inverter.brand : inverter.brand;
+  const type = isHindi ? inverter.typeHi ?? inverter.type : inverter.type;
+
+  const specs: Spec[] = [
+    {
+      label: tr(language, 'specCapacity'),
+      value: inverter.capacity,
+      grow: 1.5,
+    },
+    {
+      label: tr(language, 'specBattery'),
+      value: inverter.batteryVoltage,
+    },
+    {
+      label: tr(language, 'specSheets'),
+      value: String(allFaults.length),
+      tone: colors.signal,
+    },
+  ];
+
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <StatusBar
-        barStyle="dark-content"
-        backgroundColor="#F7F8FA"
-      />
+    <SafeAreaView
+      edges={['top', 'left', 'right']}
+      style={[styles.safeArea, { backgroundColor: colors.surface }]}
+    >
+      <AppHeader showBack showMenu />
 
-      {/* Header Bar with Back Button & Sidebar Drawer */}
-      <AppHeader
-        showBack={true}
-        showMenu={true}
-      />
-
-      {/* FULLSCREEN 2-FINGER PINCH-TO-ZOOM PCB IMAGE MODAL */}
       <DiagramViewerModal
         visible={isPcbModalOpen}
         source={inverter.pcbImage}
-        title={`${language === 'hi' ? (inverter.brandHi ?? inverter.brand) : inverter.brand} ${inverter.model} — ${language === 'hi' ? 'पीसीबी फोटो' : 'PCB Photo'}`}
+        title={`${brand} ${inverter.model}`}
         subtitle={tr(language, 'zoomHint')}
         onClose={() => setIsPcbModalOpen(false)}
       />
 
-      {/* GOOGLE DRIVE STYLE FULLSCREEN MICROCONTROLLER PDF DOCUMENT VIEWER */}
       <PdfDocumentViewerModal
         visible={isMcModalOpen}
         doc={mcDoc}
@@ -107,110 +134,257 @@ export default function InverterFaultsScreen() {
             onPress={() =>
               safePush({
                 pathname: '/inverter/fault/[faultId]',
-                params: {
-                  id: inverter.id,
-                  faultId: item.id,
-                },
+                params: { id: inverter.id, faultId: item.id },
               })
             }
           />
         )}
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
         ListHeaderComponent={
           <>
-            {/* COMPACT HERO CARD SHOWING INVERTER DETAILS & PCB IMAGE */}
-            <View style={styles.hero}>
-              {/* LEFT SIDE: INVERTER SPECS */}
-              <View style={styles.heroInfo}>
-                <Text style={styles.brand}>
-                  {language === 'hi' ? (inverter.brandHi ?? inverter.brand) : inverter.brand}
-                </Text>
-
-                <Text style={styles.model} numberOfLines={1}>
-                  {inverter.model}
-                </Text>
-
-                <Text style={styles.specs} numberOfLines={1}>
-                  {inverter.capacity} • {inverter.batteryVoltage} • {language === 'hi' ? (inverter.typeHi ?? inverter.type) : inverter.type}
-                </Text>
-              </View>
-
-              {/* RIGHT SIDE: PCB PHOTO (CLICKABLE FOR 2-FINGER PINCH-TO-ZOOM) */}
-              {inverter.pcbImage ? (
-                <Pressable
-                  onPress={() => setIsPcbModalOpen(true)}
-                  style={({ pressed }) => [
-                    styles.imageContainer,
-                    pressed && styles.imagePressed,
-                  ]}
-                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                >
-                  <Image
-                    source={inverter.pcbImage}
-                    style={styles.pcbImage}
-                    resizeMode="contain"
-                  />
-                  <View style={styles.pcbBadge}>
-                    <Text style={styles.pcbBadgeText}>🔍 {language === 'hi' ? 'पीसीबी' : 'PCB'}</Text>
-                  </View>
-                </Pressable>
-              ) : null}
-            </View>
-
-            {/* DIRECT MICROCONTROLLER PIN DETAILS PDF / DOCUMENT BUTTON */}
-            {mcDoc && (
-              <Pressable
-                onPress={() => setIsMcModalOpen(true)}
-                style={({ pressed }) => [
-                  styles.mcCard,
-                  pressed && styles.mcCardPressed,
-                ]}
-              >
-                <View style={styles.mcIconBox}>
-                  <Text style={styles.mcIcon}>📟</Text>
-                </View>
-
-                <View style={styles.mcContent}>
-                  <View style={styles.mcHeaderRow}>
-                    <Text style={styles.mcTitle} numberOfLines={1}>
-                      {mcDoc.chipName}
-                    </Text>
-                    <View style={styles.mcBadge}>
-                      <Text style={styles.mcBadgeText}>
-                        {language === 'hi' ? 'पिन विवरण (PDF)' : 'PDF PIN DETAILS'}
-                      </Text>
-                    </View>
-                  </View>
-
-                  <Text style={styles.mcSubtitle} numberOfLines={1}>
-                    {mcDoc.subtitle || tr(language, 'microcontrollerSubtitle')}
+            <View
+              style={[
+                styles.hero,
+                {
+                  backgroundColor: colors.panel,
+                  borderColor: colors.rule,
+                },
+              ]}
+            >
+              <View style={styles.heroBody}>
+                <View style={styles.heroText}>
+                  <Text
+                    style={[styles.brand, { color: colors.textDim }]}
+                    numberOfLines={1}
+                  >
+                    {brand}
                   </Text>
 
-                  <Text style={styles.mcActionText}>
-                    {tr(language, 'viewPinDetails')}
+                  <Text
+                    style={[
+                      styles.model,
+                      {
+                        color: colors.text,
+                        lineHeight: lineFor('title', isHindi),
+                      },
+                    ]}
+                    numberOfLines={2}
+                  >
+                    {inverter.model}
+                  </Text>
+
+                  <Text
+                    style={[
+                      styles.type,
+                      {
+                        color: colors.textFaint,
+                        lineHeight: lineFor('small', isHindi),
+                      },
+                    ]}
+                    numberOfLines={2}
+                  >
+                    {type}
+                  </Text>
+                </View>
+
+                {inverter.pcbImage ? (
+                  <Pressable
+                    onPress={() => setIsPcbModalOpen(true)}
+                    accessibilityRole="button"
+                    accessibilityLabel={tr(language, 'viewPcbPhoto')}
+                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                    style={({ pressed }) => [
+                      styles.pcbWell,
+                      {
+                        backgroundColor: colors.panelSunken,
+                        borderColor: pressed
+                          ? colors.readout
+                          : colors.rule,
+                      },
+                    ]}
+                  >
+                    <Image
+                      source={inverter.pcbImage}
+                      style={styles.pcbImage}
+                      resizeMode="contain"
+                    />
+
+                    <View
+                      style={[
+                        styles.pcbLabel,
+                        {
+                          backgroundColor: colors.panel,
+                          borderTopColor: colors.rule,
+                        },
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.pcbLabelText,
+                          { color: colors.readout },
+                        ]}
+                      >
+                        PCB
+                      </Text>
+                    </View>
+                  </Pressable>
+                ) : null}
+              </View>
+
+              <SpecStrip specs={specs} />
+            </View>
+
+            {mcDoc ? (
+              <Pressable
+                onPress={() => setIsMcModalOpen(true)}
+                accessibilityRole="button"
+                accessibilityLabel={`${mcDoc.chipName}. ${tr(
+                  language,
+                  'viewPinDetails',
+                )}`}
+                style={({ pressed }) => [
+                  styles.mcCard,
+                  {
+                    borderColor: pressed ? colors.ruleStrong : colors.rule,
+                    backgroundColor: pressed
+                      ? colors.panelRaised
+                      : colors.panel,
+                  },
+                ]}
+              >
+                <View
+                  style={[styles.edge, { backgroundColor: colors.readout }]}
+                />
+
+                <View style={styles.mcInner}>
+                  <View
+                    style={[
+                      styles.mcIconWell,
+                      {
+                        backgroundColor: colors.panelSunken,
+                        borderColor: colors.rule,
+                      },
+                    ]}
+                  >
+                    <Text
+                      style={[styles.mcIcon, { color: colors.readout }]}
+                    >
+                      ⊞
+                    </Text>
+                  </View>
+
+                  <View style={styles.mcText}>
+                    <View style={styles.mcTitleRow}>
+                      <Text
+                        style={[
+                          styles.mcTitle,
+                          { color: colors.text },
+                        ]}
+                        numberOfLines={1}
+                      >
+                        {mcDoc.chipName}
+                      </Text>
+
+                      <View
+                        style={[
+                          styles.mcTag,
+                          { borderColor: colors.rule },
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            styles.mcTagText,
+                            { color: colors.readout },
+                          ]}
+                        >
+                          PDF
+                        </Text>
+                      </View>
+                    </View>
+
+                    <Text
+                      style={[
+                        styles.mcSubtitle,
+                        {
+                          color: colors.textDim,
+                          lineHeight: lineFor('small', isHindi),
+                        },
+                      ]}
+                      numberOfLines={2}
+                    >
+                      {mcDoc.subtitle ||
+                        tr(language, 'microcontrollerSubtitle')}
+                    </Text>
+
+                    <Text
+                      style={[
+                        styles.mcAction,
+                        { color: colors.readout },
+                      ]}
+                    >
+                      {tr(language, 'viewPinDetails')}
+                    </Text>
+                  </View>
+
+                  <Text
+                    style={[styles.chevron, { color: colors.textFaint }]}
+                  >
+                    ›
                   </Text>
                 </View>
               </Pressable>
-            )}
+            ) : null}
 
-            {/* SEARCH BAR */}
             <View style={styles.searchWrapper}>
               <SearchBar
                 value={search}
                 onChangeText={setSearch}
                 placeholder={tr(language, 'searchFault')}
               />
+
+              <Text
+                style={[styles.count, { color: colors.textFaint }]}
+                accessibilityLiveRegion="polite"
+              >
+                {inverterFaults.length} / {allFaults.length}
+              </Text>
             </View>
           </>
         }
         ListEmptyComponent={
-          <View style={styles.empty}>
-            <Text style={styles.emptyTitle}>
+          <View
+            style={[
+              styles.empty,
+              {
+                borderColor: colors.rule,
+                backgroundColor: colors.panelSunken,
+              },
+            ]}
+          >
+            <Text
+              style={[
+                styles.emptyTitle,
+                {
+                  color: colors.text,
+                  lineHeight: lineFor('sub', isHindi),
+                },
+              ]}
+            >
               {tr(language, 'noFaultFound')}
             </Text>
+
+            {search.trim() ? (
+              <Text
+                style={[styles.emptyQuery, { color: colors.readout }]}
+                numberOfLines={1}
+              >
+                {search.trim()}
+              </Text>
+            ) : null}
           </View>
         }
-        contentContainerStyle={styles.content}
-        showsVerticalScrollIndicator={false}
         ListFooterComponent={<View style={styles.bottomSpacer} />}
       />
     </SafeAreaView>
@@ -220,213 +394,211 @@ export default function InverterFaultsScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#F7F8FA',
   },
 
   content: {
-    paddingHorizontal: 18,
-    paddingTop: 4,
-    paddingBottom: 20,
+    paddingHorizontal: layout.gutter,
+    paddingTop: space.md,
+    paddingBottom: space.lg,
   },
 
-  /* COMPACT HERO */
+  /* HERO */
 
   hero: {
-    backgroundColor: '#111827',
-    borderRadius: 16,
-    padding: 12,
-    marginBottom: 10,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    minHeight: 80,
+    borderRadius: radius.lg,
+    borderWidth: StyleSheet.hairlineWidth,
+    marginBottom: space.md,
+    overflow: 'hidden',
   },
 
-  heroInfo: {
+  heroBody: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    padding: space.md,
+    gap: space.md,
+  },
+
+  heroText: {
     flex: 1,
-    paddingRight: 10,
   },
 
   brand: {
-    color: '#93C5FD',
-    fontSize: 11,
-    fontWeight: '800',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-    marginBottom: 2,
+    fontSize: size.small,
+    fontWeight: weight.semi,
   },
 
   model: {
-    color: '#FFFFFF',
-    fontSize: 17,
-    fontWeight: '900',
+    fontSize: size.title,
+    fontWeight: weight.bold,
+    letterSpacing: -0.3,
+    marginTop: 1,
   },
 
-  specs: {
-    color: '#D1D5DB',
-    fontSize: 11,
-    marginTop: 3,
-    fontWeight: '600',
+  type: {
+    fontSize: size.small,
+    marginTop: space.xs,
   },
 
-  /* PCB IMAGE THUMBNAIL */
+  /* PCB THUMBNAIL — a viewport onto the board, labelled rather than badged. */
 
-  imageContainer: {
-    width: 82,
-    height: 70,
+  pcbWell: {
+    width: 84,
+    height: 76,
+    borderRadius: radius.sm,
+    borderWidth: StyleSheet.hairlineWidth,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 12,
-    padding: 2,
-    position: 'relative',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
-  },
-
-  imagePressed: {
-    opacity: 0.8,
-    borderColor: '#2563EB',
+    overflow: 'hidden',
   },
 
   pcbImage: {
-    width: 76,
-    height: 64,
+    width: '100%',
+    height: '100%',
   },
 
-  pcbBadge: {
+  pcbLabel: {
     position: 'absolute',
-    bottom: 2,
-    right: 3,
-    backgroundColor: '#2563EB',
-    paddingHorizontal: 5,
-    paddingVertical: 1.5,
-    borderRadius: 4,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    alignItems: 'center',
+    paddingVertical: 2,
+    borderTopWidth: StyleSheet.hairlineWidth,
   },
 
-  pcbBadgeText: {
-    color: '#FFFFFF',
-    fontSize: 8,
-    fontWeight: '900',
+  pcbLabelText: {
+    fontFamily: mono,
+    fontSize: size.micro,
+    fontWeight: weight.bold,
   },
 
-  /* MICROCONTROLLER PIN DETAILS CARD */
+  /* MICROCONTROLLER DOC */
 
   mcCard: {
     flexDirection: 'row',
+    borderRadius: radius.lg,
+    borderWidth: StyleSheet.hairlineWidth,
+    marginBottom: space.md,
+    overflow: 'hidden',
+  },
+
+  edge: {
+    width: 3,
+  },
+
+  mcInner: {
+    flex: 1,
+    flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1E293B',
-    borderRadius: 14,
-    padding: 12,
-    marginBottom: 10,
-    borderWidth: 1,
-    borderColor: '#334155',
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 2,
+    padding: space.md,
+    gap: space.md,
   },
 
-  mcCardPressed: {
-    opacity: 0.8,
-    transform: [{ scale: 0.99 }],
-  },
-
-  mcIconBox: {
-    width: 44,
-    height: 44,
-    borderRadius: 10,
-    backgroundColor: '#0F172A',
+  mcIconWell: {
+    width: 42,
+    height: 42,
+    borderRadius: radius.sm,
+    borderWidth: StyleSheet.hairlineWidth,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: '#38BDF8',
   },
 
   mcIcon: {
-    fontSize: 22,
+    fontSize: 20,
   },
 
-  mcContent: {
+  mcText: {
     flex: 1,
-    marginLeft: 12,
   },
 
-  mcHeaderRow: {
+  mcTitleRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    gap: space.sm,
   },
 
   mcTitle: {
-    fontSize: 14,
-    fontWeight: '900',
-    color: '#FFFFFF',
-    flex: 1,
+    flexShrink: 1,
+    fontSize: size.body,
+    fontWeight: weight.bold,
   },
 
-  mcBadge: {
-    backgroundColor: '#0284C7',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
-    marginLeft: 6,
+  mcTag: {
+    paddingHorizontal: 5,
+    paddingVertical: 1,
+    borderRadius: radius.sm,
+    borderWidth: StyleSheet.hairlineWidth,
   },
 
-  mcBadgeText: {
-    color: '#FFFFFF',
-    fontSize: 8,
-    fontWeight: '900',
-    letterSpacing: 0.5,
+  mcTagText: {
+    fontFamily: mono,
+    fontSize: size.micro,
+    fontWeight: weight.bold,
   },
 
   mcSubtitle: {
-    fontSize: 11,
-    color: '#94A3B8',
+    fontSize: size.small,
     marginTop: 2,
   },
 
-  mcActionText: {
-    fontSize: 11,
-    fontWeight: '800',
-    color: '#38BDF8',
-    marginTop: 4,
+  mcAction: {
+    fontSize: size.micro,
+    fontWeight: weight.bold,
+    marginTop: space.sm,
   },
+
+  chevron: {
+    fontSize: 24,
+  },
+
+  /* SEARCH + COUNT */
 
   searchWrapper: {
-    marginBottom: 10,
+    marginBottom: space.md,
   },
 
-  /* EMPTY */
+  count: {
+    fontFamily: mono,
+    fontSize: size.micro,
+    fontWeight: weight.medium,
+    marginTop: space.sm,
+    marginLeft: 2,
+  },
+
+  /* EMPTY + NOT FOUND */
 
   empty: {
-    paddingTop: 50,
-    alignItems: 'center',
+    marginTop: space.lg,
+    padding: space.xl,
+    borderRadius: radius.lg,
+    borderWidth: StyleSheet.hairlineWidth,
   },
 
   emptyTitle: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: '#111827',
+    fontSize: size.sub,
+    fontWeight: weight.bold,
   },
 
-  /* BOTTOM SPACE */
+  emptyQuery: {
+    fontFamily: mono,
+    fontSize: size.small,
+    fontWeight: weight.semi,
+    marginTop: space.md,
+  },
 
   bottomSpacer: {
-    height: 40,
+    height: space.xxxl,
   },
-
-  /* NOT FOUND */
 
   center: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    padding: space.xl,
   },
 
   notFound: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: '#111827',
+    fontSize: size.sub,
+    fontWeight: weight.bold,
   },
 });

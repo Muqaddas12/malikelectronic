@@ -1,59 +1,117 @@
 import React, { useState } from 'react';
-
-import {
-  Dimensions,
-  Image,
-  Pressable,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  View
-} from 'react-native';
+import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useLocalSearchParams } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 import AppHeader from '@/components/AppHeader';
 import DiagramViewerModal from '@/components/DiagramViewerModal';
+import {
+  layout,
+  lineFor,
+  mono,
+  radius,
+  size,
+  space,
+  weight,
+} from '@/constants/theme';
 import { useLanguage } from '@/context/LanguageContext';
+import { useTheme } from '@/context/ThemeContext';
 import { getInverterFault } from '@/data/inverterfaults';
 import { tr } from '@/data/translations';
-import { useSafeNavigate } from '@/hooks/useSafeNavigate';
-import {
-  ComponentDetail,
-  InverterFaultDetail,
-} from '@/types/faultDetail';
+import { ComponentDetail, InverterFaultDetail } from '@/types/faultDetail';
 
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } =
-  Dimensions.get('window');
+const severityKeys: Record<string, string> = {
+  low: 'lowRisk',
+  medium: 'mediumRisk',
+  high: 'highRisk',
+  critical: 'criticalRisk',
+};
 
-// ─── Generic bullet list section ─────────────────────────────────────────────
-
-function BulletSection({
+/**
+ * Every section on this screen is the same panel with the same header rule —
+ * a datasheet, not a stack of differently-shaped cards. Only the note and the
+ * diagnosis break the pattern, because they carry a different kind of weight.
+ */
+function Card({
   title,
-  items,
+  lead,
+  children,
 }: {
   title: string;
-  items: string[];
+  lead?: string;
+  children: React.ReactNode;
 }) {
-  if (!items || items.length === 0) return null;
+  const { colors } = useTheme();
+  const { isHindi } = useLanguage();
+
   return (
-    <View style={styles.card}>
-      <Text style={styles.cardTitle}>{title}</Text>
-      <View style={styles.list}>
-        {items.map((item, i) => (
-          <View key={i} style={styles.listItem}>
-            <View style={styles.dot} />
-            <Text style={styles.listText}>{item}</Text>
-          </View>
-        ))}
-      </View>
+    <View
+      style={[
+        styles.card,
+        { backgroundColor: colors.panel, borderColor: colors.rule },
+      ]}
+    >
+      <Text
+        style={[
+          styles.cardTitle,
+          { color: colors.text, lineHeight: lineFor('sub', isHindi) },
+        ]}
+      >
+        {title}
+      </Text>
+
+      <View style={[styles.cardRule, { backgroundColor: colors.rule }]} />
+
+      {lead ? (
+        <Text
+          style={[
+            styles.lead,
+            { color: colors.textDim, lineHeight: lineFor('small', isHindi) },
+          ]}
+        >
+          {lead}
+        </Text>
+      ) : null}
+
+      {children}
     </View>
   );
 }
 
-// ─── Technical explanation with component table ───────────────────────────────
+function BulletSection({ title, items }: { title: string; items: string[] }) {
+  const { colors } = useTheme();
+  const { isHindi } = useLanguage();
+
+  if (!items || items.length === 0) return null;
+
+  return (
+    <Card title={title}>
+      <View style={styles.list}>
+        {items.map((item, i) => (
+          <View key={i} style={styles.listItem}>
+            {/* A dash, the way a spec sheet marks an entry. */}
+            <View
+              style={[styles.dash, { backgroundColor: colors.textFaint }]}
+            />
+
+            <Text
+              style={[
+                styles.listText,
+                {
+                  color: colors.textDim,
+                  lineHeight: lineFor('body', isHindi),
+                },
+              ]}
+            >
+              {item}
+            </Text>
+          </View>
+        ))}
+      </View>
+    </Card>
+  );
+}
 
 function TechnicalSection({
   fault,
@@ -68,78 +126,83 @@ function TechnicalSection({
   funcTitle: string;
   valTitle: string;
 }) {
+  const { colors } = useTheme();
+  const { isHindi } = useLanguage();
+
   const tech = fault.technicalExplanation;
   if (!tech) return null;
 
   return (
-    <View style={styles.card}>
-      <Text style={styles.cardTitle}>
-        🔧 {tech.title || title}
-      </Text>
-      <Text style={styles.explanationText}>
-        {tech.explanation}
-      </Text>
-
-      {/* Component Table */}
-      <View style={styles.table}>
-        {/* Header */}
-        <View style={[styles.tableRow, styles.tableHeader]}>
-          <Text style={[styles.tableCellBold, { flex: 1.2 }]}>
+    <Card title={tech.title || title} lead={tech.explanation}>
+      <View style={[styles.table, { borderColor: colors.rule }]}>
+        <View
+          style={[
+            styles.tableRow,
+            { backgroundColor: colors.panelSunken },
+          ]}
+        >
+          <Text style={[styles.headCell, { color: colors.textDim, flex: 1.2 }]}>
             {compTitle}
           </Text>
-          <Text style={[styles.tableCellBold, { flex: 2 }]}>
+          <Text style={[styles.headCell, { color: colors.textDim, flex: 2 }]}>
             {funcTitle}
           </Text>
-          <Text style={[styles.tableCellBold, { flex: 1 }]}>
+          <Text style={[styles.headCell, { color: colors.textDim, flex: 1 }]}>
             {valTitle}
           </Text>
         </View>
 
-        {tech.components.map(
-          (comp: ComponentDetail, i: number) => (
-            <View
-              key={i}
-              style={[
-                styles.tableRow,
-                i % 2 === 0 && styles.tableRowAlt,
-              ]}
+        {tech.components.map((comp: ComponentDetail, i: number) => (
+          <View
+            key={i}
+            style={[
+              styles.tableRow,
+              {
+                borderTopWidth: StyleSheet.hairlineWidth,
+                borderTopColor: colors.rule,
+              },
+            ]}
+          >
+            <Text
+              style={[styles.refCell, { color: colors.readout, flex: 1.2 }]}
             >
+              {comp.component}
+            </Text>
+
+            <View style={styles.funcCell}>
               <Text
                 style={[
-                  styles.tableCell,
-                  styles.componentName,
-                  { flex: 1.2 },
+                  styles.bodyCell,
+                  {
+                    color: colors.textDim,
+                    lineHeight: lineFor('small', isHindi),
+                  },
                 ]}
               >
-                {comp.component}
+                {comp.function}
               </Text>
-              <View style={{ flex: 2, paddingRight: 4 }}>
-                <Text style={styles.tableCell}>
-                  {comp.function}
+
+              {comp.important ? (
+                <Text
+                  style={[
+                    styles.warnCell,
+                    { color: colors.severity.high },
+                  ]}
+                >
+                  ⚠ {comp.important}
                 </Text>
-                {comp.important ? (
-                  <Text style={styles.importantInline}>
-                    ⚠ {comp.important}
-                  </Text>
-                ) : null}
-              </View>
-              <Text
-                style={[styles.tableCell, { flex: 1 }]}
-              >
-                {comp.value ??
-                  comp.value12V ??
-                  comp.package ??
-                  '—'}
-              </Text>
+              ) : null}
             </View>
-          ),
-        )}
+
+            <Text style={[styles.valueCell, { color: colors.text, flex: 1 }]}>
+              {comp.value ?? comp.value12V ?? comp.package ?? '—'}
+            </Text>
+          </View>
+        ))}
       </View>
-    </View>
+    </Card>
   );
 }
-
-// ─── Resistor value table ─────────────────────────────────────────────────────
 
 function ResistorSection({
   fault,
@@ -150,34 +213,26 @@ function ResistorSection({
   pcbTypeTitle: string;
   valTitle: string;
 }) {
+  const { colors } = useTheme();
+  const { isHindi } = useLanguage();
+
   const rv = fault.resistorValues;
   if (!rv) return null;
 
   return (
-    <View style={styles.card}>
-      <Text style={styles.cardTitle}>
-        📊 {rv.title}
-      </Text>
-      <Text style={styles.explanationText}>
-        {rv.explanation}
-      </Text>
-
-      <View style={styles.table}>
-        <View style={[styles.tableRow, styles.tableHeader]}>
-          <Text
-            style={[styles.tableCellBold, { flex: 1 }]}
-          >
+    <Card title={rv.title} lead={rv.explanation}>
+      <View style={[styles.table, { borderColor: colors.rule }]}>
+        <View
+          style={[styles.tableRow, { backgroundColor: colors.panelSunken }]}
+        >
+          <Text style={[styles.headCell, { color: colors.textDim, flex: 1.3 }]}>
             {pcbTypeTitle}
           </Text>
-          <Text
-            style={[styles.tableCellBold, { flex: 1 }]}
-          >
+          <Text style={[styles.headCell, { color: colors.textDim, flex: 1 }]}>
             {valTitle}
           </Text>
-          <Text
-            style={[styles.tableCellBold, { flex: 1 }]}
-          >
-            Marking
+          <Text style={[styles.headCell, { color: colors.textDim, flex: 1 }]}>
+            {isHindi ? 'मार्किंग' : 'Marking'}
           </Text>
         </View>
 
@@ -186,42 +241,69 @@ function ResistorSection({
             key={i}
             style={[
               styles.tableRow,
-              i % 2 === 0 && styles.tableRowAlt,
+              {
+                borderTopWidth: StyleSheet.hairlineWidth,
+                borderTopColor: colors.rule,
+              },
             ]}
           >
-            <Text style={[styles.tableCell, { flex: 1 }]}>
-              {v.pcb}
-            </Text>
             <Text
               style={[
-                styles.tableCell,
-                styles.componentName,
-                { flex: 1 },
+                styles.bodyCell,
+                {
+                  color: colors.textDim,
+                  flex: 1.3,
+                  lineHeight: lineFor('small', isHindi),
+                },
               ]}
             >
+              {v.pcb}
+            </Text>
+
+            <Text style={[styles.valueCell, { color: colors.readout, flex: 1 }]}>
               {v.r24}
             </Text>
-            <Text style={[styles.tableCell, { flex: 1 }]}>
+
+            <Text style={[styles.valueCell, { color: colors.text, flex: 1 }]}>
               {v.marking}
             </Text>
           </View>
         ))}
       </View>
 
-      {/* Reason notes */}
-      <View style={{ marginTop: 10, gap: 6 }}>
+      <View style={styles.reasons}>
         {rv.values.map((v, i) => (
-          <Text key={i} style={styles.resistorReason}>
-            • {v.pcb}: {v.reason}
-          </Text>
+          <View key={i} style={styles.listItem}>
+            <View
+              style={[styles.dash, { backgroundColor: colors.textFaint }]}
+            />
+
+            <Text
+              style={[
+                styles.listText,
+                {
+                  color: colors.textFaint,
+                  lineHeight: lineFor('small', isHindi),
+                  fontSize: size.small,
+                },
+              ]}
+            >
+              <Text style={{ color: colors.textDim, fontWeight: weight.semi }}>
+                {v.pcb}
+              </Text>
+              {`: ${v.reason}`}
+            </Text>
+          </View>
         ))}
       </View>
-    </View>
+    </Card>
   );
 }
 
-// ─── Possible causes ──────────────────────────────────────────────────────────
-
+/**
+ * Causes are alternatives, not a sequence — so they get separators, not
+ * numbers. Numbering them would imply a check order that does not exist.
+ */
 function CausesSection({
   fault,
   title,
@@ -229,35 +311,53 @@ function CausesSection({
   fault: InverterFaultDetail;
   title: string;
 }) {
-  if (
-    !fault.possibleCauses ||
-    fault.possibleCauses.length === 0
-  )
-    return null;
+  const { colors } = useTheme();
+  const { isHindi } = useLanguage();
+
+  if (!fault.possibleCauses || fault.possibleCauses.length === 0) return null;
 
   return (
-    <View style={styles.card}>
-      <Text style={styles.cardTitle}>
-        🔍 {title}
-      </Text>
-      <View style={styles.list}>
+    <Card title={title}>
+      <View>
         {fault.possibleCauses.map((item, i) => (
-          <View key={i} style={styles.causeItem}>
-            <Text style={styles.causeTitle}>
-              {i + 1}. {item.cause}
+          <View
+            key={i}
+            style={[
+              styles.cause,
+              i > 0 && {
+                borderTopWidth: StyleSheet.hairlineWidth,
+                borderTopColor: colors.rule,
+              },
+            ]}
+          >
+            <Text
+              style={[
+                styles.causeTitle,
+                { color: colors.text, lineHeight: lineFor('body', isHindi) },
+              ]}
+            >
+              {item.cause}
             </Text>
-            <Text style={styles.causeExplanation}>
+
+            <Text
+              style={[
+                styles.causeText,
+                {
+                  color: colors.textDim,
+                  lineHeight: lineFor('small', isHindi),
+                },
+              ]}
+            >
               {item.explanation}
             </Text>
           </View>
         ))}
       </View>
-    </View>
+    </Card>
   );
 }
 
-// ─── Repair procedure ─────────────────────────────────────────────────────────
-
+/** Repair steps are a real sequence, so here the numbering earns its place. */
 function RepairSection({
   fault,
   title,
@@ -265,63 +365,90 @@ function RepairSection({
   fault: InverterFaultDetail;
   title: string;
 }) {
-  if (
-    !fault.repairProcedure ||
-    fault.repairProcedure.length === 0
-  )
-    return null;
+  const { colors } = useTheme();
+  const { isHindi } = useLanguage();
+
+  if (!fault.repairProcedure || fault.repairProcedure.length === 0) return null;
 
   return (
-    <View style={styles.card}>
-      <Text style={styles.cardTitle}>
-        🛠️ {title}
-      </Text>
-      <View style={styles.list}>
-        {fault.repairProcedure.map((step) => (
-          <View key={step.step} style={styles.stepItem}>
-            <View style={styles.stepBadge}>
-              <Text style={styles.stepNumber}>
+    <Card title={title}>
+      <View>
+        {fault.repairProcedure.map((step, i) => (
+          <View
+            key={step.step}
+            style={[
+              styles.step,
+              i > 0 && {
+                borderTopWidth: StyleSheet.hairlineWidth,
+                borderTopColor: colors.rule,
+              },
+            ]}
+          >
+            <View
+              style={[
+                styles.stepMark,
+                {
+                  backgroundColor: colors.panelSunken,
+                  borderColor: colors.rule,
+                },
+              ]}
+            >
+              <Text style={[styles.stepNumber, { color: colors.signal }]}>
                 {step.step}
               </Text>
             </View>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.stepTitle}>
+
+            <View style={styles.stepText}>
+              <Text
+                style={[
+                  styles.stepTitle,
+                  { color: colors.text, lineHeight: lineFor('body', isHindi) },
+                ]}
+              >
                 {step.title}
               </Text>
-              <Text style={styles.stepExplanation}>
+
+              <Text
+                style={[
+                  styles.stepBody,
+                  {
+                    color: colors.textDim,
+                    lineHeight: lineFor('small', isHindi),
+                  },
+                ]}
+              >
                 {step.explanation}
               </Text>
             </View>
           </View>
         ))}
       </View>
-    </View>
+    </Card>
   );
 }
 
-// ─── Main screen ──────────────────────────────────────────────────────────────
-
 export default function FaultDetailScreen() {
-  const { id, faultId } =
-    useLocalSearchParams<{
-      id: string;
-      faultId: string;
-    }>();
+  const { id, faultId } = useLocalSearchParams<{
+    id: string;
+    faultId: string;
+  }>();
 
-  const { language } = useLanguage();
-  const { safeBack } = useSafeNavigate();
-
-  // Fullscreen interactive zoom state
+  const { language, isHindi } = useLanguage();
+  const { colors } = useTheme();
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
-  const [zoomScale, setZoomScale] = useState(1.0);
 
   const fault = getInverterFault(id, faultId, language);
 
   if (!fault) {
     return (
-      <SafeAreaView style={styles.safeArea}>
+      <SafeAreaView
+        edges={['top', 'left', 'right']}
+        style={[styles.safeArea, { backgroundColor: colors.surface }]}
+      >
+        <AppHeader showBack showMenu />
+
         <View style={styles.center}>
-          <Text style={styles.notFound}>
+          <Text style={[styles.notFound, { color: colors.text }]}>
             {tr(language, 'faultNotFound')}
           </Text>
         </View>
@@ -329,29 +456,21 @@ export default function FaultDetailScreen() {
     );
   }
 
-  const handleZoomIn = () => {
-    setZoomScale((prev) => Math.min(prev + 0.5, 4.0));
-  };
+  const severityColor =
+    colors.severity[fault.severity] ?? colors.severity.medium;
 
-  const handleZoomOut = () => {
-    setZoomScale((prev) => Math.max(prev - 0.5, 1.0));
-  };
-
-  const handleResetZoom = () => {
-    setZoomScale(1.0);
-  };
-
-  const baseImageWidth = SCREEN_WIDTH - 24;
-  const baseImageHeight = SCREEN_HEIGHT * 0.7;
+  const severityLabel = tr(
+    language,
+    severityKeys[fault.severity] ?? 'mediumRisk',
+  );
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <StatusBar
-        barStyle="dark-content"
-        backgroundColor="#F7F8FA"
-      />
+    <SafeAreaView
+      edges={['top', 'left', 'right']}
+      style={[styles.safeArea, { backgroundColor: colors.surface }]}
+    >
+      <AppHeader showBack showMenu title={fault.title} subtitle={fault.subtitle} />
 
-      {/* FULLSCREEN PINCH-TO-ZOOM DIAGRAM MODAL */}
       <DiagramViewerModal
         visible={isImageModalOpen}
         source={fault.diagramImage}
@@ -360,47 +479,45 @@ export default function FaultDetailScreen() {
         onClose={() => setIsImageModalOpen(false)}
       />
 
-      {/* HEADER WITH BACK BUTTON, TITLE & SIDEBAR MENU */}
-      <AppHeader
-        showBack={true}
-        title={fault.title}
-        showMenu={true}
-      />
-
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.content}
       >
-        {/* 1. SYMPTOMS (FIRST SECTION) */}
+        {/* Severity is the first thing a technician needs, before any procedure. */}
+        <View
+          style={[
+            styles.severityBar,
+            { backgroundColor: colors.panel, borderColor: colors.rule },
+          ]}
+        >
+          <View style={[styles.edge, { backgroundColor: severityColor }]} />
+
+          <View style={styles.severityInner}>
+            <Text style={styles.severityIcon}>{fault.icon}</Text>
+
+            <Text style={[styles.severityLabel, { color: severityColor }]}>
+              {severityLabel}
+            </Text>
+          </View>
+        </View>
+
         <BulletSection
           title={tr(language, 'symptoms')}
           items={fault.symptoms}
         />
 
-        {/* 2. SPECIFIC PCB CIRCUIT DIAGRAM IMAGE (WITH TAP TO VIEW BIG IMAGE) */}
-        <View style={styles.diagramCard}>
-          <View style={styles.diagramHeaderRow}>
-            <Text style={styles.diagramLabel}>
-              {tr(language, 'pcbDiagram')}
-            </Text>
-            {fault.diagramImage ? (
-              <View style={styles.diagramAvailableBadge}>
-                <Text style={styles.diagramAvailableText}>
-                  LIVE SCHEMATIC
-                </Text>
-              </View>
-            ) : null}
-          </View>
-
+        <Card title={tr(language, 'pcbDiagram')}>
           {fault.diagramImage ? (
             <Pressable
-              onPress={() => {
-                setZoomScale(1.0);
-                setIsImageModalOpen(true);
-              }}
+              onPress={() => setIsImageModalOpen(true)}
+              accessibilityRole="button"
+              accessibilityLabel={tr(language, 'viewSchematic')}
               style={({ pressed }) => [
-                styles.diagramImageWrap,
-                pressed && styles.diagramPressed,
+                styles.diagramWell,
+                {
+                  backgroundColor: colors.panelSunken,
+                  borderColor: pressed ? colors.readout : colors.rule,
+                },
               ]}
             >
               <Image
@@ -408,65 +525,91 @@ export default function FaultDetailScreen() {
                 style={styles.diagramImage}
                 resizeMode="contain"
               />
-              <View style={styles.zoomTapBadge}>
-                <Text style={styles.zoomTapText}>
+
+              <View
+                style={[
+                  styles.zoomHint,
+                  {
+                    backgroundColor: colors.panel,
+                    borderTopColor: colors.rule,
+                  },
+                ]}
+              >
+                <Text style={[styles.zoomHintText, { color: colors.readout }]}>
                   {tr(language, 'tapToZoom')}
                 </Text>
               </View>
             </Pressable>
           ) : (
-            <View style={styles.noImageContainer}>
-              <Text style={styles.noImageIcon}>🖼️</Text>
-              <Text style={styles.noImageTitle}>
+            <View
+              style={[
+                styles.noDiagram,
+                {
+                  borderColor: colors.rule,
+                  backgroundColor: colors.panelSunken,
+                },
+              ]}
+            >
+              <Text
+                style={[styles.noDiagramTitle, { color: colors.textDim }]}
+              >
                 {tr(language, 'noDiagramTitle')}
               </Text>
-              <Text style={styles.noImageText}>
+
+              <Text
+                style={[
+                  styles.noDiagramText,
+                  {
+                    color: colors.textFaint,
+                    lineHeight: lineFor('small', isHindi),
+                  },
+                ]}
+              >
                 {tr(language, 'noDiagramText')}
               </Text>
             </View>
           )}
-        </View>
+        </Card>
 
-        {/* 3. POSSIBLE CAUSES (DIRECTLY AFTER DIAGRAM) */}
         <CausesSection
           fault={fault}
           title={tr(language, 'possibleCauses')}
         />
 
-        {/* 4. REPAIR PROCEDURE */}
         <RepairSection
           fault={fault}
           title={tr(language, 'repairProcedure')}
         />
 
-        {/* 5. CIRCUIT FLOW */}
         {fault.circuitFlow ? (
-          <View style={styles.flowCard}>
-            <Text style={styles.cardTitleWhite}>
-              ⚡ {tr(language, 'circuitFlow')}
-            </Text>
-            <Text style={styles.flowText}>
-              {fault.circuitFlow}
-            </Text>
-          </View>
+          <Card title={tr(language, 'circuitFlow')}>
+            <View
+              style={[
+                styles.flowWell,
+                {
+                  backgroundColor: colors.panelSunken,
+                  borderColor: colors.rule,
+                },
+              ]}
+            >
+              <Text style={[styles.flowText, { color: colors.readout }]}>
+                {fault.circuitFlow}
+              </Text>
+            </View>
+          </Card>
         ) : null}
 
-        {/* 6. OTHER THINGS */}
-
-        {/* BASIC CHECKS */}
         <BulletSection
           title={tr(language, 'basicChecks')}
           items={fault.basicChecks}
         />
 
-        {/* RESISTOR VALUE TABLE */}
         <ResistorSection
           fault={fault}
           pcbTypeTitle={tr(language, 'pcbType')}
           valTitle={tr(language, 'value')}
         />
 
-        {/* TECHNICAL EXPLANATION + COMPONENT TABLE */}
         <TechnicalSection
           fault={fault}
           title={tr(language, 'componentsTable')}
@@ -475,27 +618,79 @@ export default function FaultDetailScreen() {
           valTitle={tr(language, 'value')}
         />
 
-        {/* IMPORTANT NOTE */}
         {fault.importantNote ? (
-          <View style={styles.noteCard}>
-            <Text style={styles.noteTitle}>
-              {tr(language, 'importantNote')}
-            </Text>
-            <Text style={styles.noteText}>
-              {fault.importantNote}
-            </Text>
+          <View
+            style={[
+              styles.flagCard,
+              {
+                backgroundColor: colors.panel,
+                borderColor: colors.rule,
+              },
+            ]}
+          >
+            <View
+              style={[
+                styles.edge,
+                { backgroundColor: colors.severity.high },
+              ]}
+            />
+
+            <View style={styles.flagInner}>
+              <Text
+                style={[
+                  styles.flagTitle,
+                  { color: colors.severity.high },
+                ]}
+              >
+                {tr(language, 'importantNote')}
+              </Text>
+
+              <Text
+                style={[
+                  styles.flagText,
+                  {
+                    color: colors.text,
+                    lineHeight: lineFor('small', isHindi),
+                  },
+                ]}
+              >
+                {fault.importantNote}
+              </Text>
+            </View>
           </View>
         ) : null}
 
-        {/* DIAGNOSIS SUMMARY */}
         {fault.diagnosis ? (
-          <View style={styles.diagnosisCard}>
-            <Text style={styles.diagnosisTitle}>
-              {tr(language, 'diagnosisSummary')}
-            </Text>
-            <Text style={styles.diagnosisText}>
-              {fault.diagnosis}
-            </Text>
+          <View
+            style={[
+              styles.flagCard,
+              {
+                backgroundColor: colors.verifiedSoft,
+                borderColor: colors.rule,
+              },
+            ]}
+          >
+            <View
+              style={[styles.edge, { backgroundColor: colors.verified }]}
+            />
+
+            <View style={styles.flagInner}>
+              <Text style={[styles.flagTitle, { color: colors.verified }]}>
+                {tr(language, 'diagnosisSummary')}
+              </Text>
+
+              <Text
+                style={[
+                  styles.flagText,
+                  {
+                    color: colors.text,
+                    lineHeight: lineFor('small', isHindi),
+                  },
+                ]}
+              >
+                {fault.diagnosis}
+              </Text>
+            </View>
           </View>
         ) : null}
       </ScrollView>
@@ -503,389 +698,180 @@ export default function FaultDetailScreen() {
   );
 }
 
-// ─── Styles ───────────────────────────────────────────────────────────────────
-
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#F7F8FA',
   },
 
   content: {
-    paddingHorizontal: 18,
-    paddingTop: 10,
-    paddingBottom: 60,
+    paddingHorizontal: layout.gutter,
+    paddingTop: space.md,
+    paddingBottom: space.xxxl + space.xl,
+    gap: space.md,
   },
 
-  /* TOP BAR */
+  /* SEVERITY BAR */
 
-  topBar: {
-    marginBottom: 12,
-  },
-
-  backButton: {
-    alignSelf: 'flex-start',
-    paddingVertical: 6,
-    paddingRight: 15,
-    marginBottom: 6,
-  },
-
-  backText: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: '#2563EB',
-  },
-
-  faultHeaderTitle: {
-    fontSize: 22,
-    fontWeight: '900',
-    color: '#111827',
-    marginTop: 2,
-    lineHeight: 28,
-  },
-
-  /* PCB DIAGRAM CARD */
-
-  diagramCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 20,
-    padding: 16,
-    marginTop: 14,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-  },
-
-  diagramHeaderRow: {
+  severityBar: {
     flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 12,
-  },
-
-  diagramLabel: {
-    fontSize: 16,
-    fontWeight: '900',
-    color: '#111827',
-  },
-
-  diagramAvailableBadge: {
-    backgroundColor: '#DCFCE7',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 6,
-  },
-
-  diagramAvailableText: {
-    color: '#15803D',
-    fontSize: 9,
-    fontWeight: '900',
-    letterSpacing: 0.5,
-  },
-
-  diagramImageWrap: {
-    width: '100%',
-    backgroundColor: '#F8FAFC',
-    borderRadius: 14,
-    padding: 8,
-    borderWidth: 1.5,
-    borderColor: '#E2E8F0',
-    alignItems: 'center',
+    borderRadius: radius.md,
+    borderWidth: StyleSheet.hairlineWidth,
     overflow: 'hidden',
   },
 
-  diagramPressed: {
-    opacity: 0.85,
-    borderColor: '#2563EB',
+  edge: {
+    width: 3,
   },
 
-  diagramImage: {
-    width: '100%',
-    height: 220,
-    borderRadius: 8,
-  },
-
-  zoomTapBadge: {
-    marginTop: 10,
-    backgroundColor: '#EFF6FF',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#BFDBFE',
-  },
-
-  zoomTapText: {
-    color: '#1D4ED8',
-    fontSize: 12,
-    fontWeight: '800',
-  },
-
-  /* MODAL FULLSCREEN VIEWER */
-
-  modalBackdrop: {
+  severityInner: {
     flex: 1,
-    backgroundColor: '#0A0F1E',
-  },
-
-  modalSafeArea: {
-    flex: 1,
-  },
-
-  modalHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 18,
-    paddingVertical: 12,
-    backgroundColor: '#111827',
-    borderBottomWidth: 1,
-    borderBottomColor: '#1F2937',
+    gap: space.sm,
+    paddingHorizontal: space.md,
+    paddingVertical: space.sm,
   },
 
-  modalTitle: {
-    color: '#FFFFFF',
+  severityIcon: {
     fontSize: 15,
-    fontWeight: '900',
   },
 
-  modalSubtitle: {
-    color: '#9CA3AF',
-    fontSize: 11,
-    marginTop: 2,
-  },
-
-  modalCloseButton: {
-    backgroundColor: '#EF4444',
-    paddingHorizontal: 13,
-    paddingVertical: 7,
-    borderRadius: 8,
-  },
-
-  modalCloseText: {
-    color: '#FFFFFF',
-    fontSize: 13,
-    fontWeight: '800',
-  },
-
-  /* ZOOM CONTROLS */
-
-  zoomControlBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    backgroundColor: '#1E293B',
-    paddingVertical: 9,
-    paddingHorizontal: 12,
-  },
-
-  zoomBtn: {
-    backgroundColor: '#2563EB',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
-  },
-
-  zoomBtnText: {
-    color: '#FFFFFF',
-    fontSize: 12,
-    fontWeight: '800',
-  },
-
-  zoomBadge: {
-    backgroundColor: '#0F172A',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#334155',
-  },
-
-  zoomBadgeText: {
-    color: '#38BDF8',
-    fontSize: 12,
-    fontWeight: '900',
-  },
-
-  zoomResetBtn: {
-    backgroundColor: '#334155',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 8,
-  },
-
-  zoomResetText: {
-    color: '#E2E8F0',
-    fontSize: 12,
-    fontWeight: '700',
-  },
-
-  horizontalScrollContent: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-
-  verticalScrollContent: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 10,
+  severityLabel: {
+    fontSize: size.small,
+    fontWeight: weight.bold,
   },
 
   /* SHARED CARD */
 
   card: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 18,
-    padding: 18,
-    marginTop: 14,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderRadius: radius.lg,
+    borderWidth: StyleSheet.hairlineWidth,
+    padding: space.lg,
   },
 
   cardTitle: {
-    fontSize: 16,
-    fontWeight: '900',
-    color: '#111827',
-    marginBottom: 12,
+    fontSize: size.sub,
+    fontWeight: weight.bold,
+    letterSpacing: -0.2,
   },
 
-  cardTitleWhite: {
-    fontSize: 16,
-    fontWeight: '900',
-    color: '#F8FAFC',
-    marginBottom: 10,
+  cardRule: {
+    height: StyleSheet.hairlineWidth,
+    marginTop: space.md,
+    marginBottom: space.md,
+  },
+
+  lead: {
+    fontSize: size.small,
+    marginBottom: space.md,
   },
 
   /* BULLET LIST */
 
-  list: { gap: 10 },
+  list: {
+    gap: space.md,
+  },
 
   listItem: {
     flexDirection: 'row',
     alignItems: 'flex-start',
+    gap: space.md,
   },
 
-  dot: {
-    width: 7,
-    height: 7,
-    borderRadius: 4,
-    backgroundColor: '#2563EB',
-    marginTop: 7,
-    marginRight: 10,
+  dash: {
+    width: 9,
+    height: 1.5,
+    marginTop: 10,
     flexShrink: 0,
   },
 
   listText: {
     flex: 1,
-    color: '#4B5563',
-    fontSize: 14,
-    lineHeight: 21,
+    fontSize: size.body,
   },
 
-  /* TECHNICAL EXPLANATION */
-
-  explanationText: {
-    color: '#374151',
-    fontSize: 13,
-    lineHeight: 20,
-    marginBottom: 14,
+  reasons: {
+    marginTop: space.md,
+    gap: space.sm,
   },
 
-  /* TABLE */
+  /* TABLES */
 
   table: {
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderRadius: radius.md,
+    borderWidth: StyleSheet.hairlineWidth,
     overflow: 'hidden',
-  },
-
-  tableHeader: {
-    backgroundColor: '#1E3A5F',
   },
 
   tableRow: {
     flexDirection: 'row',
-    paddingHorizontal: 10,
-    paddingVertical: 9,
-    gap: 6,
+    paddingHorizontal: space.md,
+    paddingVertical: space.sm + 1,
+    gap: space.sm,
   },
 
-  tableRowAlt: {
-    backgroundColor: '#F8FAFC',
+  headCell: {
+    fontSize: size.micro,
+    fontWeight: weight.semi,
   },
 
-  tableCellBold: {
-    color: '#FFFFFF',
-    fontSize: 11,
-    fontWeight: '800',
+  bodyCell: {
+    fontSize: size.small,
   },
 
-  tableCell: {
-    color: '#374151',
-    fontSize: 12,
-    lineHeight: 17,
+  funcCell: {
+    flex: 2,
+    paddingRight: space.xs,
   },
 
-  componentName: {
-    fontWeight: '800',
-    color: '#1D4ED8',
+  /* Component references and measured values both read as data, so both are mono. */
+  refCell: {
+    fontFamily: mono,
+    fontSize: size.small,
+    fontWeight: weight.semi,
   },
 
-  importantInline: {
-    color: '#B45309',
-    fontSize: 11,
+  valueCell: {
+    fontFamily: mono,
+    fontSize: size.small,
+    fontWeight: weight.semi,
+  },
+
+  warnCell: {
+    fontSize: size.micro,
+    fontWeight: weight.medium,
     marginTop: 3,
-    fontStyle: 'italic',
   },
 
-  /* RESISTOR SECTION */
+  /* CAUSES */
 
-  resistorReason: {
-    color: '#6B7280',
-    fontSize: 12,
-    lineHeight: 18,
-  },
-
-  /* POSSIBLE CAUSES */
-
-  causeItem: {
-    borderLeftWidth: 3,
-    borderLeftColor: '#2563EB',
-    paddingLeft: 12,
-    paddingVertical: 6,
+  cause: {
+    paddingVertical: space.md,
   },
 
   causeTitle: {
-    fontSize: 14,
-    fontWeight: '800',
-    color: '#111827',
+    fontSize: size.body,
+    fontWeight: weight.semi,
   },
 
-  causeExplanation: {
-    fontSize: 13,
-    color: '#6B7280',
-    lineHeight: 19,
-    marginTop: 3,
+  causeText: {
+    fontSize: size.small,
+    marginTop: 2,
   },
 
   /* REPAIR STEPS */
 
-  stepItem: {
+  step: {
     flexDirection: 'row',
-    gap: 12,
-    paddingVertical: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F3F4F6',
+    gap: space.md,
+    paddingVertical: space.md,
   },
 
-  stepBadge: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    backgroundColor: '#2563EB',
+  stepMark: {
+    width: 28,
+    height: 28,
+    borderRadius: radius.sm,
+    borderWidth: StyleSheet.hairlineWidth,
     alignItems: 'center',
     justifyContent: 'center',
     flexShrink: 0,
@@ -893,88 +879,107 @@ const styles = StyleSheet.create({
   },
 
   stepNumber: {
-    color: '#FFFFFF',
-    fontSize: 13,
-    fontWeight: '900',
+    fontFamily: mono,
+    fontSize: size.small,
+    fontWeight: weight.bold,
+  },
+
+  stepText: {
+    flex: 1,
   },
 
   stepTitle: {
-    fontSize: 14,
-    fontWeight: '800',
-    color: '#111827',
+    fontSize: size.body,
+    fontWeight: weight.semi,
   },
 
-  stepExplanation: {
-    fontSize: 13,
-    color: '#6B7280',
-    lineHeight: 19,
-    marginTop: 3,
+  stepBody: {
+    fontSize: size.small,
+    marginTop: 2,
   },
 
-  /* CIRCUIT FLOW */
+  /* DIAGRAM */
 
-  flowCard: {
-    backgroundColor: '#0F172A',
-    borderRadius: 16,
-    padding: 18,
-    marginTop: 14,
+  diagramWell: {
+    width: '100%',
+    borderRadius: radius.md,
+    borderWidth: StyleSheet.hairlineWidth,
+    overflow: 'hidden',
+  },
+
+  diagramImage: {
+    width: '100%',
+    height: 220,
+  },
+
+  zoomHint: {
+    alignItems: 'center',
+    paddingVertical: space.sm,
+    borderTopWidth: StyleSheet.hairlineWidth,
+  },
+
+  zoomHintText: {
+    fontSize: size.small,
+    fontWeight: weight.semi,
+  },
+
+  noDiagram: {
+    borderRadius: radius.md,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderStyle: 'dashed',
+    paddingVertical: space.xxl,
+    paddingHorizontal: space.lg,
+    alignItems: 'center',
+    gap: space.xs,
+  },
+
+  noDiagramTitle: {
+    fontSize: size.body,
+    fontWeight: weight.semi,
+  },
+
+  noDiagramText: {
+    fontSize: size.small,
+    textAlign: 'center',
+  },
+
+  /* CIRCUIT FLOW — a readout window, not a card. */
+
+  flowWell: {
+    borderRadius: radius.md,
+    borderWidth: StyleSheet.hairlineWidth,
+    padding: space.md,
   },
 
   flowText: {
-    color: '#38BDF8',
-    fontSize: 13,
-    fontWeight: '700',
-    fontFamily: 'monospace',
-    letterSpacing: 0.5,
+    fontFamily: mono,
+    fontSize: size.small,
+    fontWeight: weight.medium,
     lineHeight: 22,
   },
 
-  /* IMPORTANT NOTE */
+  /* NOTE + DIAGNOSIS */
 
-  noteCard: {
-    backgroundColor: '#FFFBEB',
-    borderWidth: 1,
-    borderColor: '#FCD34D',
-    borderRadius: 16,
-    padding: 16,
-    marginTop: 14,
+  flagCard: {
+    flexDirection: 'row',
+    borderRadius: radius.lg,
+    borderWidth: StyleSheet.hairlineWidth,
+    overflow: 'hidden',
   },
 
-  noteTitle: {
-    fontSize: 15,
-    fontWeight: '900',
-    color: '#92400E',
-    marginBottom: 8,
+  flagInner: {
+    flex: 1,
+    padding: space.lg,
   },
 
-  noteText: {
-    color: '#78350F',
-    fontSize: 13,
-    lineHeight: 20,
+  flagTitle: {
+    fontSize: size.body,
+    fontWeight: weight.bold,
+    marginBottom: space.sm,
   },
 
-  /* DIAGNOSIS */
-
-  diagnosisCard: {
-    backgroundColor: '#F0FDF4',
-    borderWidth: 1,
-    borderColor: '#86EFAC',
-    borderRadius: 16,
-    padding: 16,
-    marginTop: 14,
-  },
-
-  diagnosisTitle: {
-    fontSize: 15,
-    fontWeight: '900',
-    color: '#15803D',
-    marginBottom: 6,
-  },
-
-  diagnosisText: {
-    color: '#14532D',
-    fontSize: 13,
-    lineHeight: 20,
+  flagText: {
+    fontSize: size.small,
   },
 
   /* NOT FOUND */
@@ -983,44 +988,12 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    padding: space.xl,
   },
 
   notFound: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: '#111827',
-  },
-
-  /* NO DIAGRAM PLACEHOLDER */
-
-  noImageContainer: {
-    width: '100%',
-    backgroundColor: '#F8FAFC',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    borderStyle: 'dashed',
-    paddingVertical: 32,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-  },
-
-  noImageIcon: {
-    fontSize: 40,
-  },
-
-  noImageTitle: {
-    fontSize: 15,
-    fontWeight: '800',
-    color: '#64748B',
-  },
-
-  noImageText: {
-    fontSize: 12,
-    color: '#94A3B8',
-    textAlign: 'center',
-    paddingHorizontal: 20,
-    lineHeight: 18,
+    fontSize: size.sub,
+    fontWeight: weight.bold,
   },
 });
+

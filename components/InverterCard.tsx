@@ -1,13 +1,23 @@
 import React from 'react';
 import {
-    Image,
-    Pressable,
-    StyleSheet,
-    Text,
-    View,
+  Image,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
 } from 'react-native';
 
+import SpecStrip, { Spec } from '@/components/SpecStrip';
+import {
+  lineFor,
+  radius,
+  size,
+  space,
+  weight,
+} from '@/constants/theme';
 import { useLanguage } from '@/context/LanguageContext';
+import { useTheme } from '@/context/ThemeContext';
+import { tr } from '@/data/translations';
 import { Inverter } from '@/types/inverter';
 
 type Props = {
@@ -15,147 +25,165 @@ type Props = {
   onPress: () => void;
 };
 
-export default function InverterCard({
-  inverter,
-  onPress,
-}: Props) {
-  const { language } = useLanguage();
+export default function InverterCard({ inverter, onPress }: Props) {
+  const { language, isHindi } = useLanguage();
+  const { colors } = useTheme();
+
+  const brand = isHindi
+    ? inverter.brandHi ?? inverter.brand
+    : inverter.brand;
+
+  const type = isHindi
+    ? inverter.typeHi ?? inverter.type
+    : inverter.type;
+
+  const specs: Spec[] = [
+    {
+      label: tr(language, 'specCapacity'),
+      value: inverter.capacity,
+      grow: 1.4,
+    },
+    {
+      label: tr(language, 'specBattery'),
+      value: inverter.batteryVoltage,
+    },
+    {
+      label: tr(language, 'specSheets'),
+      value: String(inverter.faults.length),
+      tone: colors.signal,
+    },
+  ];
 
   return (
     <Pressable
       onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={`${brand} ${inverter.model}`}
       style={({ pressed }) => [
         styles.card,
-        pressed && styles.pressed,
+        {
+          borderColor: pressed ? colors.ruleStrong : colors.rule,
+          backgroundColor: pressed ? colors.panelRaised : colors.panel,
+        },
       ]}
     >
-      <View style={styles.imageContainer}>
-        <Image
-          source={inverter.image}
-          style={styles.image}
-          resizeMode="contain"
-        />
-      </View>
+      <View style={styles.body}>
+        <View
+          style={[
+            styles.well,
+            {
+              backgroundColor: colors.panelSunken,
+              borderColor: colors.rule,
+            },
+          ]}
+        >
+          <Image
+            source={inverter.image}
+            style={styles.image}
+            resizeMode="contain"
+          />
+        </View>
 
-      <View style={styles.content}>
-        <Text style={styles.brand}>
-          {language === 'hi' ? (inverter.brandHi ?? inverter.brand) : inverter.brand}
-        </Text>
+        <View style={styles.text}>
+          <Text
+            style={[styles.brand, { color: colors.textDim }]}
+            numberOfLines={1}
+          >
+            {brand}
+          </Text>
 
-        <Text style={styles.model} numberOfLines={1}>
-          {inverter.model}
-        </Text>
+          <Text
+            style={[
+              styles.model,
+              {
+                color: colors.text,
+                lineHeight: lineFor('sub', isHindi),
+              },
+            ]}
+            numberOfLines={2}
+          >
+            {inverter.model}
+          </Text>
 
-        <View style={styles.infoRow}>
-          <Text style={styles.specsText} numberOfLines={1}>
-            {inverter.capacity} • {inverter.batteryVoltage} • {language === 'hi' ? (inverter.typeHi ?? inverter.type) : inverter.type}
+          <Text
+            style={[
+              styles.type,
+              {
+                color: colors.textFaint,
+                lineHeight: lineFor('micro', isHindi),
+              },
+            ]}
+            numberOfLines={1}
+          >
+            {type}
           </Text>
         </View>
 
-        <Text style={styles.faultCount}>
-          {inverter.faults.length}{' '}
-          {language === 'hi'
-            ? 'सर्किट डायग्राम उपलब्ध'
-            : inverter.faults.length === 1
-            ? 'Circuit Diagram'
-            : 'Circuit Diagrams'}
+        <Text style={[styles.chevron, { color: colors.textFaint }]}>
+          ›
         </Text>
       </View>
 
-      <Text style={styles.arrow}>
-        ›
-      </Text>
+      <SpecStrip specs={specs} />
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
+    borderRadius: radius.lg,
+    borderWidth: StyleSheet.hairlineWidth,
+    marginBottom: space.md,
+    overflow: 'hidden',
+  },
+
+  body: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    marginBottom: 10,
-    padding: 10,
-    shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowRadius: 6,
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    elevation: 2,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
+    padding: space.md,
+    gap: space.md,
   },
 
-  pressed: {
-    opacity: 0.75,
-    transform: [
-      {
-        scale: 0.99,
-      },
-    ],
-  },
-
-  imageContainer: {
-    width: 78,
-    height: 72,
-    borderRadius: 12,
-    backgroundColor: '#F4F6F8',
+  well: {
+    width: 66,
+    height: 66,
+    borderRadius: radius.sm,
+    borderWidth: StyleSheet.hairlineWidth,
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
   },
 
   image: {
-    width: '92%',
-    height: '92%',
+    width: '86%',
+    height: '86%',
   },
 
-  content: {
+  text: {
     flex: 1,
-    paddingLeft: 12,
   },
 
   brand: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: '#2563EB',
-    textTransform: 'uppercase',
-    letterSpacing: 0.3,
+    fontSize: size.micro,
+    fontWeight: weight.semi,
   },
 
   model: {
-    fontSize: 15,
-    fontWeight: '900',
-    color: '#111827',
+    fontSize: size.sub,
+    fontWeight: weight.bold,
+    letterSpacing: -0.2,
     marginTop: 1,
-    marginBottom: 3,
   },
 
-  infoRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  type: {
+    fontSize: size.micro,
+    fontWeight: weight.regular,
+    marginTop: 2,
   },
 
-  specsText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#4B5563',
-  },
-
-  faultCount: {
-    marginTop: 4,
-    fontSize: 11,
-    color: '#15803D',
-    fontWeight: '700',
-  },
-
-  arrow: {
-    fontSize: 22,
-    color: '#9CA3AF',
-    fontWeight: '600',
-    paddingHorizontal: 4,
+  chevron: {
+    fontSize: 24,
+    fontWeight: weight.regular,
+    marginTop: -2,
   },
 });

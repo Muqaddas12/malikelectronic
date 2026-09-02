@@ -1,25 +1,21 @@
 import React from 'react';
-import {
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { InverterFaultDetail } from '@/types/faultDetail';
+import {
+  lineFor,
+  radius,
+  size,
+  space,
+  weight,
+} from '@/constants/theme';
 import { useLanguage } from '@/context/LanguageContext';
+import { useTheme } from '@/context/ThemeContext';
 import { tr } from '@/data/translations';
+import { InverterFaultDetail } from '@/types/faultDetail';
 
 type Props = {
   fault: InverterFaultDetail;
   onPress: () => void;
-};
-
-const severityColors = {
-  low: '#16A34A',
-  medium: '#CA8A04',
-  high: '#EA580C',
-  critical: '#DC2626',
 };
 
 const severityKeys: Record<string, string> = {
@@ -29,64 +25,94 @@ const severityKeys: Record<string, string> = {
   critical: 'criticalRisk',
 };
 
-export default function FaultCard({
-  fault,
-  onPress,
-}: Props) {
-  const { language } = useLanguage();
-  const severityColor = severityColors[fault.severity];
-  const severityKey = severityKeys[fault.severity] || 'mediumRisk';
+export default function FaultCard({ fault, onPress }: Props) {
+  const { language, isHindi } = useLanguage();
+  const { colors } = useTheme();
+
+  const severityColor =
+    colors.severity[fault.severity] ?? colors.severity.medium;
+  const severityLabel = tr(
+    language,
+    severityKeys[fault.severity] ?? 'mediumRisk',
+  );
 
   return (
     <Pressable
       onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={`${fault.title}. ${severityLabel}`}
       style={({ pressed }) => [
         styles.card,
-        pressed && styles.pressed,
+        {
+          borderColor: pressed ? colors.ruleStrong : colors.rule,
+          backgroundColor: pressed ? colors.panelRaised : colors.panel,
+        },
       ]}
     >
-      <View style={styles.iconContainer}>
-        <Text style={styles.icon}>
-          {fault.icon}
-        </Text>
-      </View>
+      {/* Severity is safety information, so it gets structure, not a pill. */}
+      <View style={[styles.edge, { backgroundColor: severityColor }]} />
 
-      <View style={styles.content}>
-        <View style={styles.titleRow}>
-          <Text style={styles.title} numberOfLines={1}>
+      <View style={styles.inner}>
+        <View
+          style={[
+            styles.iconWell,
+            {
+              backgroundColor: colors.panelSunken,
+              borderColor: colors.rule,
+            },
+          ]}
+        >
+          <Text style={styles.icon}>{fault.icon}</Text>
+        </View>
+
+        <View style={styles.content}>
+          <Text
+            style={[
+              styles.title,
+              {
+                color: colors.text,
+                lineHeight: lineFor('body', isHindi),
+              },
+            ]}
+            numberOfLines={2}
+          >
             {fault.title}
           </Text>
 
-          <View style={styles.badgeGroup}>
+          <Text
+            style={[
+              styles.subtitle,
+              {
+                color: colors.textDim,
+                lineHeight: lineFor('small', isHindi),
+              },
+            ]}
+            numberOfLines={2}
+          >
+            {fault.subtitle}
+          </Text>
+
+          <View style={styles.metaRow}>
+            <Text style={[styles.severity, { color: severityColor }]}>
+              {severityLabel}
+            </Text>
+
             {fault.diagramImage ? (
-              <View style={styles.diagramBadge}>
-                <Text style={styles.diagramBadgeText}>
-                  {language === 'hi' ? 'सर्किट डायग्राम' : 'SCHEMATIC'}
+              <View
+                style={[styles.tag, { borderColor: colors.rule }]}
+              >
+                <Text
+                  style={[styles.tagText, { color: colors.readout }]}
+                >
+                  {isHindi ? 'सर्किट डायग्राम' : 'Schematic'}
                 </Text>
               </View>
             ) : null}
-
-            <View
-              style={[
-                styles.badge,
-                {
-                  backgroundColor: severityColor,
-                },
-              ]}
-            >
-              <Text style={styles.badgeText}>
-                {tr(language, severityKey)}
-              </Text>
-            </View>
           </View>
         </View>
 
-        <Text style={styles.subtitle} numberOfLines={1}>
-          {fault.subtitle}
-        </Text>
-
-        <Text style={styles.tap}>
-          {tr(language, 'tapToTroubleshoot')}
+        <Text style={[styles.chevron, { color: colors.textFaint }]}>
+          ›
         </Text>
       </View>
     </Pressable>
@@ -96,101 +122,77 @@ export default function FaultCard({
 const styles = StyleSheet.create({
   card: {
     flexDirection: 'row',
+    borderRadius: radius.lg,
+    borderWidth: StyleSheet.hairlineWidth,
+    marginBottom: space.sm,
+    overflow: 'hidden',
+  },
+
+  edge: {
+    width: 3,
+  },
+
+  inner: {
+    flex: 1,
+    flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 14,
-    padding: 10,
-    marginBottom: 8,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    shadowColor: '#000',
-    shadowOpacity: 0.03,
-    shadowRadius: 4,
-    elevation: 1,
+    padding: space.md,
+    gap: space.md,
   },
 
-  pressed: {
-    opacity: 0.7,
-    transform: [{ scale: 0.99 }],
-  },
-
-  iconContainer: {
-    width: 42,
-    height: 42,
-    borderRadius: 12,
-    backgroundColor: '#F3F4F6',
+  iconWell: {
+    width: 40,
+    height: 40,
+    borderRadius: radius.sm,
+    borderWidth: StyleSheet.hairlineWidth,
     alignItems: 'center',
     justifyContent: 'center',
   },
 
   icon: {
-    fontSize: 20,
+    fontSize: 19,
   },
 
   content: {
     flex: 1,
-    marginLeft: 10,
-  },
-
-  titleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
   },
 
   title: {
-    flex: 1,
-    fontSize: 14,
-    fontWeight: '800',
-    color: '#111827',
-  },
-
-  badgeGroup: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    marginLeft: 6,
-  },
-
-  diagramBadge: {
-    backgroundColor: '#DCFCE7',
-    borderRadius: 4,
-    paddingHorizontal: 5,
-    paddingVertical: 2,
-    borderWidth: 0.5,
-    borderColor: '#86EFAC',
-  },
-
-  diagramBadgeText: {
-    color: '#15803D',
-    fontSize: 8,
-    fontWeight: '900',
-    letterSpacing: 0.3,
+    fontSize: size.body,
+    fontWeight: weight.semi,
   },
 
   subtitle: {
-    fontSize: 11,
-    color: '#6B7280',
+    fontSize: size.small,
     marginTop: 2,
-    lineHeight: 16,
   },
 
-  tap: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: '#2563EB',
-    marginTop: 4,
+  metaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.sm,
+    marginTop: space.sm,
   },
 
-  badge: {
-    borderRadius: 5,
+  severity: {
+    fontSize: size.micro,
+    fontWeight: weight.bold,
+  },
+
+  tag: {
     paddingHorizontal: 6,
     paddingVertical: 2,
+    borderRadius: radius.sm,
+    borderWidth: StyleSheet.hairlineWidth,
   },
 
-  badgeText: {
-    color: '#FFFFFF',
-    fontSize: 8,
-    fontWeight: '900',
+  tagText: {
+    fontSize: size.micro,
+    fontWeight: weight.semi,
+  },
+
+  chevron: {
+    fontSize: 24,
+    fontWeight: weight.regular,
   },
 });

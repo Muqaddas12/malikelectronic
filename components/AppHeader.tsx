@@ -2,7 +2,16 @@ import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import Sidebar from '@/components/Sidebar';
+import {
+  layout,
+  lineFor,
+  radius,
+  size,
+  space,
+  weight,
+} from '@/constants/theme';
 import { useLanguage } from '@/context/LanguageContext';
+import { useTheme } from '@/context/ThemeContext';
 import { tr } from '@/data/translations';
 import { useSafeNavigate } from '@/hooks/useSafeNavigate';
 
@@ -25,16 +34,14 @@ export default function AppHeader({
   showMenu = true,
   rightComponent,
 }: AppHeaderProps) {
-  const { language } = useLanguage();
+  const { language, isHindi } = useLanguage();
+  const { colors } = useTheme();
   const { safeBack } = useSafeNavigate();
   const [sidebarVisible, setSidebarVisible] = useState(false);
 
   const handleBack = () => {
-    if (onBackPress) {
-      onBackPress();
-    } else {
-      safeBack();
-    }
+    if (onBackPress) onBackPress();
+    else safeBack();
   };
 
   return (
@@ -44,187 +51,270 @@ export default function AppHeader({
         onClose={() => setSidebarVisible(false)}
       />
 
-      <View style={styles.headerContainer}>
-        {/* Top Action Row (Hamburger Menu & Back Button on LEFT, Brand Logo on RIGHT) */}
+      <View
+        style={[
+          styles.header,
+          {
+            backgroundColor: colors.surface,
+            borderBottomColor: colors.rule,
+          },
+        ]}
+      >
         <View style={styles.topRow}>
-          {/* LEFT SIDE: Hamburger Menu Button & Back Button */}
           <View style={styles.leftActions}>
-            {showMenu && (
-              <Pressable
-                onPress={() => setSidebarVisible(true)}
-                style={({ pressed }) => [
-                  styles.menuButton,
-                  pressed && styles.menuButtonPressed,
-                ]}
-                hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-                accessibilityLabel="Open navigation menu"
-              >
-                <View style={styles.hamburgerIcon}>
-                  <View style={styles.hamburgerBar} />
-                  <View style={styles.hamburgerBar} />
-                  <View style={styles.hamburgerBar} />
-                </View>
-                <Text style={styles.langIndicator}>{language.toUpperCase()}</Text>
-              </Pressable>
-            )}
-
             {showBack && (
               <Pressable
                 onPress={handleBack}
-                style={styles.backButton}
-                hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+                accessibilityRole="button"
+                accessibilityLabel={backLabel || tr(language, 'back')}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                style={({ pressed }) => [
+                  styles.iconButton,
+                  {
+                    borderColor: colors.rule,
+                    backgroundColor: pressed
+                      ? colors.panelRaised
+                      : colors.panel,
+                  },
+                ]}
               >
-                <Text style={styles.backText}>
-                  {backLabel || tr(language, 'back')}
+                <Text
+                  style={[styles.chevron, { color: colors.text }]}
+                >
+                  ‹
                 </Text>
+              </Pressable>
+            )}
+
+            {showMenu && (
+              <Pressable
+                onPress={() => setSidebarVisible(true)}
+                accessibilityRole="button"
+                accessibilityLabel="Open menu"
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                style={({ pressed }) => [
+                  styles.menuButton,
+                  {
+                    borderColor: colors.rule,
+                    backgroundColor: pressed
+                      ? colors.panelRaised
+                      : colors.panel,
+                  },
+                ]}
+              >
+                <View style={styles.bars}>
+                  <View
+                    style={[styles.bar, { backgroundColor: colors.text }]}
+                  />
+                  <View
+                    style={[styles.bar, { backgroundColor: colors.text }]}
+                  />
+                  <View
+                    style={[
+                      styles.bar,
+                      styles.barShort,
+                      { backgroundColor: colors.text },
+                    ]}
+                  />
+                </View>
+
+                <View
+                  style={[
+                    styles.langPill,
+                    { backgroundColor: colors.signalSoft },
+                  ]}
+                >
+                  <Text
+                    style={[styles.langText, { color: colors.signal }]}
+                  >
+                    {language === 'hi' ? 'हि' : 'EN'}
+                  </Text>
+                </View>
               </Pressable>
             )}
           </View>
 
-          {/* RIGHT SIDE: App Brand Logo or Custom Right Component */}
           <View style={styles.rightActions}>
-            {rightComponent ? (
-              rightComponent
-            ) : (
-              <View style={styles.brandRow}>
-                <View style={styles.brandIconCircle}>
-                  <Text style={styles.brandIcon}>⚡</Text>
+            {rightComponent ?? (
+              <View style={styles.brand}>
+                <View
+                  style={[
+                    styles.brandMark,
+                    { borderColor: colors.signal },
+                  ]}
+                >
+                  <View
+                    style={[
+                      styles.brandCore,
+                      { backgroundColor: colors.signal },
+                    ]}
+                  />
                 </View>
-                <Text style={styles.appName}>{tr(language, 'appName')}</Text>
+
+                <Text
+                  style={[styles.brandName, { color: colors.textDim }]}
+                  numberOfLines={1}
+                >
+                  {tr(language, 'appName')}
+                </Text>
               </View>
             )}
           </View>
         </View>
 
-        {/* Title and Subtitle Row */}
-        {title ? <Text style={styles.pageTitle}>{title}</Text> : null}
-        {subtitle ? <Text style={styles.pageSubtitle}>{subtitle}</Text> : null}
+        {title ? (
+          <Text
+            style={[
+              styles.title,
+              {
+                color: colors.text,
+                lineHeight: lineFor('title', isHindi),
+              },
+            ]}
+          >
+            {title}
+          </Text>
+        ) : null}
+
+        {subtitle ? (
+          <Text
+            style={[
+              styles.subtitle,
+              {
+                color: colors.textDim,
+                lineHeight: lineFor('small', isHindi),
+              },
+            ]}
+          >
+            {subtitle}
+          </Text>
+        ) : null}
       </View>
     </>
   );
 }
 
 const styles = StyleSheet.create({
-  headerContainer: {
-    paddingHorizontal: 18,
-    paddingTop: 8,
-    paddingBottom: 10,
-    backgroundColor: '#F7F8FA',
+  header: {
+    paddingHorizontal: layout.gutter,
+    paddingTop: space.sm,
+    paddingBottom: space.md,
+    borderBottomWidth: StyleSheet.hairlineWidth,
   },
 
   topRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 6,
+    minHeight: layout.tap,
   },
-
-  /* LEFT ACTIONS */
 
   leftActions: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: space.sm,
   },
 
-  menuButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 7,
-    backgroundColor: '#FFFFFF',
-    paddingVertical: 7,
-    paddingHorizontal: 11,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    shadowColor: '#000',
-    shadowOpacity: 0.04,
-    shadowRadius: 4,
-    elevation: 1,
-  },
-
-  menuButtonPressed: {
-    opacity: 0.7,
-    backgroundColor: '#F3F4F6',
-  },
-
-  hamburgerIcon: {
-    width: 15,
-    height: 12,
-    justifyContent: 'space-between',
-  },
-
-  hamburgerBar: {
-    width: '100%',
-    height: 2,
-    backgroundColor: '#111827',
-    borderRadius: 1,
-  },
-
-  langIndicator: {
-    fontSize: 11,
-    fontWeight: '800',
-    color: '#2563EB',
-  },
-
-  backButton: {
-    paddingVertical: 6,
-    paddingHorizontal: 8,
-    backgroundColor: '#EFF6FF',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#DBEAFE',
-  },
-
-  backText: {
-    fontSize: 14,
-    fontWeight: '800',
-    color: '#2563EB',
-  },
-
-  /* RIGHT ACTIONS */
-
-  rightActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-
-  brandRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-
-  brandIconCircle: {
-    width: 26,
-    height: 26,
-    borderRadius: 7,
-    backgroundColor: '#EFF6FF',
+  iconButton: {
+    width: 38,
+    height: 38,
+    borderRadius: radius.md,
+    borderWidth: StyleSheet.hairlineWidth,
     alignItems: 'center',
     justifyContent: 'center',
   },
 
-  brandIcon: {
-    fontSize: 13,
+  chevron: {
+    fontSize: 26,
+    lineHeight: 28,
+    fontWeight: weight.medium,
+    marginTop: -4,
+    marginLeft: -2,
   },
 
-  appName: {
-    fontSize: 14,
-    fontWeight: '800',
-    color: '#2563EB',
-    letterSpacing: 0.2,
+  menuButton: {
+    height: 38,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.sm,
+    paddingHorizontal: space.md,
+    borderRadius: radius.md,
+    borderWidth: StyleSheet.hairlineWidth,
   },
 
-  pageTitle: {
-    fontSize: 22,
-    fontWeight: '900',
-    color: '#111827',
-    marginTop: 4,
+  bars: {
+    width: 16,
+    height: 11,
+    justifyContent: 'space-between',
   },
 
-  pageSubtitle: {
-    fontSize: 13,
-    color: '#6B7280',
-    marginTop: 2,
+  bar: {
+    height: 1.5,
+    width: '100%',
+    borderRadius: 1,
+  },
+
+  barShort: {
+    width: '65%',
+  },
+
+  langPill: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: radius.sm,
+  },
+
+  langText: {
+    fontSize: size.micro,
+    fontWeight: weight.bold,
+  },
+
+  rightActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexShrink: 1,
+    marginLeft: space.md,
+  },
+
+  brand: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.sm,
+    flexShrink: 1,
+  },
+
+  /* A terminal post: ring with a live core. */
+  brandMark: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    borderWidth: 1.5,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  brandCore: {
+    width: 7,
+    height: 7,
+    borderRadius: 4,
+  },
+
+  brandName: {
+    fontSize: size.small,
+    fontWeight: weight.semi,
+    flexShrink: 1,
+  },
+
+  title: {
+    fontSize: size.title,
+    fontWeight: weight.bold,
+    letterSpacing: -0.3,
+    marginTop: space.md,
+  },
+
+  subtitle: {
+    fontSize: size.small,
+    marginTop: space.xs,
+    maxWidth: 520,
   },
 });

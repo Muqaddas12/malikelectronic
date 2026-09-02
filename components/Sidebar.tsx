@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   Animated,
   Dimensions,
@@ -10,311 +10,449 @@ import {
   TouchableWithoutFeedback,
   View,
 } from 'react-native';
-import { router } from 'expo-router';
 
-import { useLanguage, Language } from '@/context/LanguageContext';
+import {
+  layout,
+  lineFor,
+  mono,
+  radius,
+  size,
+  space,
+  ThemePreference,
+  weight,
+} from '@/constants/theme';
+import { Language, useLanguage } from '@/context/LanguageContext';
+import { useTheme } from '@/context/ThemeContext';
 import { tr } from '@/data/translations';
 import { useSafeNavigate } from '@/hooks/useSafeNavigate';
 
-const SCREEN_WIDTH = Dimensions.get('window').width;
-const DRAWER_WIDTH = Math.min(SCREEN_WIDTH * 0.82, 330);
+const DRAWER_WIDTH = Math.min(
+  Dimensions.get('window').width * 0.84,
+  340,
+);
 
 type Props = {
   visible: boolean;
   onClose: () => void;
 };
 
-export default function Sidebar({ visible, onClose }: Props) {
-  const { language, setLanguage } = useLanguage();
-  const { safePush } = useSafeNavigate();
-  const [supportModalVisible, setSupportModalVisible] = useState(false);
+type Option<T extends string> = {
+  value: T;
+  label: string;
+};
 
-  const translateX = useRef(new Animated.Value(-DRAWER_WIDTH)).current;
+/**
+ * Two-or-three way switch. Used for language and appearance, which are both
+ * settings a technician flips mid-job, so they sit in view rather than
+ * behind a submenu.
+ */
+function Segmented<T extends string>({
+  label,
+  options,
+  value,
+  onChange,
+}: {
+  label: string;
+  options: Option<T>[];
+  value: T;
+  onChange: (next: T) => void;
+}) {
+  const { colors } = useTheme();
+
+  return (
+    <View style={styles.group}>
+      <Text style={[styles.groupLabel, { color: colors.textFaint }]}>
+        {label}
+      </Text>
+
+      <View
+        style={[
+          styles.segmented,
+          {
+            borderColor: colors.rule,
+            backgroundColor: colors.panelSunken,
+          },
+        ]}
+      >
+        {options.map((option, index) => {
+          const active = option.value === value;
+
+          return (
+            <Pressable
+              key={option.value}
+              onPress={() => onChange(option.value)}
+              accessibilityRole="radio"
+              accessibilityState={{ selected: active }}
+              accessibilityLabel={option.label}
+              style={[
+                styles.segment,
+                index > 0 && {
+                  borderLeftWidth: StyleSheet.hairlineWidth,
+                  borderLeftColor: colors.rule,
+                },
+                active && { backgroundColor: colors.signal },
+              ]}
+            >
+              <Text
+                numberOfLines={1}
+                style={[
+                  styles.segmentText,
+                  {
+                    color: active ? colors.signalInk : colors.textDim,
+                  },
+                ]}
+              >
+                {option.label}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </View>
+    </View>
+  );
+}
+
+function NavRow({
+  title,
+  detail,
+  onPress,
+}: {
+  title: string;
+  detail: string;
+  onPress: () => void;
+}) {
+  const { colors } = useTheme();
+  const { isHindi } = useLanguage();
+
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={title}
+      style={({ pressed }) => [
+        styles.navRow,
+        {
+          borderBottomColor: colors.rule,
+          backgroundColor: pressed ? colors.panelRaised : 'transparent',
+        },
+      ]}
+    >
+      <View style={styles.navText}>
+        <Text
+          style={[
+            styles.navTitle,
+            {
+              color: colors.text,
+              lineHeight: lineFor('body', isHindi),
+            },
+          ]}
+        >
+          {title}
+        </Text>
+
+        <Text
+          style={[
+            styles.navDetail,
+            {
+              color: colors.textDim,
+              lineHeight: lineFor('micro', isHindi),
+            },
+          ]}
+        >
+          {detail}
+        </Text>
+      </View>
+
+      <Text style={[styles.navChevron, { color: colors.textFaint }]}>
+        ›
+      </Text>
+    </Pressable>
+  );
+}
+
+export default function Sidebar({ visible, onClose }: Props) {
+  const { language, setLanguage, isHindi } = useLanguage();
+  const { colors, preference, setPreference, reduceMotion } = useTheme();
+  const { safePush } = useSafeNavigate();
+  const [supportVisible, setSupportVisible] = useState(false);
+
+  const translateX = useRef(
+    new Animated.Value(-DRAWER_WIDTH),
+  ).current;
   const overlayOpacity = useRef(new Animated.Value(0)).current;
 
-  React.useEffect(() => {
-    if (visible) {
-      Animated.parallel([
-        Animated.spring(translateX, {
-          toValue: 0,
-          damping: 22,
-          mass: 0.8,
-          stiffness: 180,
-          useNativeDriver: true,
-        }),
-        Animated.timing(overlayOpacity, {
-          toValue: 1,
-          duration: 200,
-          useNativeDriver: true,
-        }),
-      ]).start();
-    } else {
-      Animated.parallel([
-        Animated.timing(translateX, {
-          toValue: -DRAWER_WIDTH,
-          duration: 220,
-          useNativeDriver: true,
-        }),
-        Animated.timing(overlayOpacity, {
-          toValue: 0,
-          duration: 180,
-          useNativeDriver: true,
-        }),
-      ]).start();
-    }
-  }, [visible]);
+  useEffect(() => {
+    const duration = reduceMotion ? 0 : 200;
 
-  const handleLanguage = (lang: Language) => {
-    setLanguage(lang);
-  };
-
-  const navigateToHome = () => {
-    onClose();
-    safePush('/(tabs)');
-  };
-
-  const navigateToTools = () => {
-    onClose();
-    safePush('/(tabs)/two');
-  };
+    Animated.parallel([
+      Animated.timing(translateX, {
+        toValue: visible ? 0 : -DRAWER_WIDTH,
+        duration,
+        useNativeDriver: true,
+      }),
+      Animated.timing(overlayOpacity, {
+        toValue: visible ? 1 : 0,
+        duration,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [visible, reduceMotion, translateX, overlayOpacity]);
 
   if (!visible) return null;
 
+  const go = (path: '/(tabs)' | '/(tabs)/two') => {
+    onClose();
+    safePush(path);
+  };
+
   return (
     <View style={styles.root}>
-      {/* Support & Contact Dialog Modal */}
-      <Modal
-        visible={supportModalVisible}
-        transparent={true}
-        animationType="fade"
-        onRequestClose={() => setSupportModalVisible(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.supportModalBox}>
-            <View style={styles.supportModalHeader}>
-              <Text style={styles.supportModalTitle}>
-                📞 {tr(language, 'supportModalTitle')}
-              </Text>
-              <Pressable
-                onPress={() => setSupportModalVisible(false)}
-                style={styles.modalCloseBtn}
-                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-              >
-                <Text style={styles.modalCloseBtnText}>✕</Text>
-              </Pressable>
-            </View>
+      <SupportDialog
+        visible={supportVisible}
+        onClose={() => setSupportVisible(false)}
+      />
 
-            <Text style={styles.supportModalDesc}>
-              {tr(language, 'supportModalDesc')}
-            </Text>
-
-            <View style={styles.supportItem}>
-              <Text style={styles.supportItemLabel}>
-                📱 {tr(language, 'phone')}:
-              </Text>
-              <Text style={styles.supportItemValue}>
-                {tr(language, 'phoneNum')}
-              </Text>
-            </View>
-
-            <View style={styles.supportItem}>
-              <Text style={styles.supportItemLabel}>
-                💬 {tr(language, 'whatsapp')}:
-              </Text>
-              <Text style={styles.supportItemValue}>
-                {tr(language, 'phoneNum')}
-              </Text>
-            </View>
-
-            <View style={styles.supportItem}>
-              <Text style={styles.supportItemLabel}>
-                📍 {tr(language, 'address')}:
-              </Text>
-              <Text style={styles.supportItemValue}>
-                {tr(language, 'addressText')}
-              </Text>
-            </View>
-
-            <Pressable
-              onPress={() => setSupportModalVisible(false)}
-              style={styles.supportDoneBtn}
-            >
-              <Text style={styles.supportDoneBtnText}>
-                {tr(language, 'close')}
-              </Text>
-            </Pressable>
-          </View>
-        </View>
-      </Modal>
-
-      {/* Dimmed Background Overlay */}
       <TouchableWithoutFeedback onPress={onClose}>
         <Animated.View
-          style={[styles.overlay, { opacity: overlayOpacity }]}
+          style={[
+            styles.overlay,
+            {
+              backgroundColor: colors.overlay,
+              opacity: overlayOpacity,
+            },
+          ]}
         />
       </TouchableWithoutFeedback>
 
-      {/* Drawer Container */}
       <Animated.View
         style={[
           styles.drawer,
-          { transform: [{ translateX }] },
+          {
+            backgroundColor: colors.panel,
+            borderRightColor: colors.rule,
+            transform: [{ translateX }],
+          },
         ]}
       >
-        {/* 1. Header */}
-        <View style={styles.header}>
-          <View style={styles.logoRow}>
-            <View style={styles.logoBadge}>
-              <Text style={styles.logoEmoji}>⚡</Text>
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.drawerTitle}>
-                {tr(language, 'sidebarTitle')}
-              </Text>
-              <Text style={styles.drawerSubtitle}>
-                {tr(language, 'sidebarSubtitle')}
-              </Text>
-            </View>
+        <View
+          style={[
+            styles.header,
+            {
+              backgroundColor: colors.panelSunken,
+              borderBottomColor: colors.rule,
+            },
+          ]}
+        >
+          <View
+            style={[styles.mark, { borderColor: colors.signal }]}
+          >
+            <View
+              style={[
+                styles.markCore,
+                { backgroundColor: colors.signal },
+              ]}
+            />
           </View>
+
+          <Text style={[styles.brandName, { color: colors.text }]}>
+            {tr(language, 'sidebarTitle')}
+          </Text>
+
+          <Text
+            style={[
+              styles.brandLine,
+              {
+                color: colors.textDim,
+                lineHeight: lineFor('small', isHindi),
+              },
+            ]}
+          >
+            {tr(language, 'sidebarSubtitle')}
+          </Text>
         </View>
 
         <ScrollView
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.drawerScroll}
+          contentContainerStyle={styles.scroll}
         >
-          {/* 2. Main Navigation Menu (Top section) */}
-          <View style={styles.section}>
-            {/* Homepage item */}
-            <Pressable
-              onPress={navigateToHome}
-              style={({ pressed }) => [
-                styles.navItem,
-                pressed && styles.navItemPressed,
-              ]}
-            >
-              <View style={styles.navIconBox}>
-                <Text style={styles.navIcon}>🏠</Text>
-              </View>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.navText}>
-                  {tr(language, 'homepage')}
-                </Text>
-                <Text style={styles.navSub}>
-                  {tr(language, 'modelsAndFaults')}
-                </Text>
-              </View>
-              <Text style={styles.navArrow}>›</Text>
-            </Pressable>
+          <NavRow
+            title={tr(language, 'homepage')}
+            detail={tr(language, 'modelsAndFaults')}
+            onPress={() => go('/(tabs)')}
+          />
 
-            {/* Electronics Tools item */}
-            <Pressable
-              onPress={navigateToTools}
-              style={({ pressed }) => [
-                styles.navItem,
-                pressed && styles.navItemPressed,
-              ]}
-            >
-              <View style={[styles.navIconBox, { backgroundColor: '#EFF6FF' }]}>
-                <Text style={styles.navIcon}>🧮</Text>
-              </View>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.navText}>
-                  {tr(language, 'tools')}
-                </Text>
-                <Text style={styles.navSub}>
-                  {tr(language, 'toolsSubtitle')}
-                </Text>
-              </View>
-              <Text style={styles.navArrow}>›</Text>
-            </Pressable>
+          <NavRow
+            title={tr(language, 'tools')}
+            detail={tr(language, 'toolsSubtitle')}
+            onPress={() => go('/(tabs)/two')}
+          />
 
-            {/* Support & Help item */}
-            <Pressable
-              onPress={() => setSupportModalVisible(true)}
-              style={({ pressed }) => [
-                styles.navItem,
-                pressed && styles.navItemPressed,
+          <NavRow
+            title={tr(language, 'support')}
+            detail={tr(language, 'customerAndTechHelp')}
+            onPress={() => setSupportVisible(true)}
+          />
+
+          <View style={styles.settings}>
+            <Segmented<Language>
+              label={tr(language, 'language')}
+              value={language}
+              onChange={setLanguage}
+              options={[
+                { value: 'en', label: 'English' },
+                { value: 'hi', label: 'हिंदी' },
               ]}
-            >
-              <View style={[styles.navIconBox, { backgroundColor: '#F0FDF4' }]}>
-                <Text style={styles.navIcon}>📞</Text>
-              </View>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.navText}>
-                  {tr(language, 'support')}
-                </Text>
-                <Text style={styles.navSub}>
-                  {tr(language, 'customerAndTechHelp')}
-                </Text>
-              </View>
-              <Text style={styles.navArrow}>›</Text>
-            </Pressable>
+            />
+
+            <Segmented<ThemePreference>
+              label={tr(language, 'appearance')}
+              value={preference}
+              onChange={setPreference}
+              options={[
+                { value: 'system', label: tr(language, 'themeSystem') },
+                { value: 'light', label: tr(language, 'themeLight') },
+                { value: 'dark', label: tr(language, 'themeDark') },
+              ]}
+            />
           </View>
 
-          {/* Divider */}
-          <View style={styles.divider} />
-
-          {/* 3. Language Selector (at bottom as requested) */}
-          <View style={styles.section}>
-            <Text style={styles.sectionLabel}>
-              🌐 {tr(language, 'language')}
-            </Text>
-
-            {/* English Option */}
-            <Pressable
-              style={[
-                styles.langOption,
-                language === 'en' && styles.langOptionActive,
-              ]}
-              onPress={() => handleLanguage('en')}
+          <View
+            style={[styles.footer, { borderTopColor: colors.rule }]}
+          >
+            <Text
+              style={[styles.footerVersion, { color: colors.textDim }]}
             >
-              <Text
-                style={[
-                  styles.langText,
-                  language === 'en' && styles.langTextActive,
-                ]}
-              >
-                🇬🇧  English
-              </Text>
-              {language === 'en' && (
-                <View style={styles.checkDot} />
-              )}
-            </Pressable>
-
-            {/* Hindi Option */}
-            <Pressable
-              style={[
-                styles.langOption,
-                language === 'hi' && styles.langOptionActive,
-              ]}
-              onPress={() => handleLanguage('hi')}
-            >
-              <Text
-                style={[
-                  styles.langText,
-                  language === 'hi' && styles.langTextActive,
-                ]}
-              >
-                🇮🇳  हिंदी (Hindi)
-              </Text>
-              {language === 'hi' && (
-                <View style={styles.checkDot} />
-              )}
-            </Pressable>
-          </View>
-
-          {/* Footer Info */}
-          <View style={styles.footer}>
-            <Text style={styles.footerText}>
               {tr(language, 'version')}
             </Text>
-            <Text style={styles.footerSub}>
+
+            <Text
+              style={[styles.footerNote, { color: colors.textFaint }]}
+            >
               {tr(language, 'inverterRepairCompanion')}
             </Text>
           </View>
         </ScrollView>
       </Animated.View>
     </View>
+  );
+}
+
+function SupportDialog({
+  visible,
+  onClose,
+}: {
+  visible: boolean;
+  onClose: () => void;
+}) {
+  const { language, isHindi } = useLanguage();
+  const { colors } = useTheme();
+
+  const rows = [
+    { label: tr(language, 'phone'), value: tr(language, 'phoneNum') },
+    { label: tr(language, 'whatsapp'), value: tr(language, 'phoneNum') },
+    { label: tr(language, 'address'), value: tr(language, 'addressText') },
+  ];
+
+  return (
+    <Modal
+      visible={visible}
+      transparent
+      animationType="fade"
+      onRequestClose={onClose}
+    >
+      <View
+        style={[styles.dialogScrim, { backgroundColor: colors.overlay }]}
+      >
+        <View
+          style={[
+            styles.dialog,
+            {
+              backgroundColor: colors.panel,
+              borderColor: colors.rule,
+            },
+          ]}
+        >
+          <Text style={[styles.dialogTitle, { color: colors.text }]}>
+            {tr(language, 'supportModalTitle')}
+          </Text>
+
+          <Text
+            style={[
+              styles.dialogBody,
+              {
+                color: colors.textDim,
+                lineHeight: lineFor('small', isHindi),
+              },
+            ]}
+          >
+            {tr(language, 'supportModalDesc')}
+          </Text>
+
+          <View
+            style={[
+              styles.dialogTable,
+              {
+                borderColor: colors.rule,
+                backgroundColor: colors.panelSunken,
+              },
+            ]}
+          >
+            {rows.map((row, index) => (
+              <View
+                key={row.label}
+                style={[
+                  styles.dialogRow,
+                  index > 0 && {
+                    borderTopWidth: StyleSheet.hairlineWidth,
+                    borderTopColor: colors.rule,
+                  },
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.dialogRowLabel,
+                    { color: colors.textFaint },
+                  ]}
+                >
+                  {row.label}
+                </Text>
+
+                <Text
+                  style={[
+                    styles.dialogRowValue,
+                    { color: colors.readout },
+                  ]}
+                  selectable
+                >
+                  {row.value}
+                </Text>
+              </View>
+            ))}
+          </View>
+
+          <Pressable
+            onPress={onClose}
+            accessibilityRole="button"
+            style={({ pressed }) => [
+              styles.dialogButton,
+              {
+                backgroundColor: colors.signal,
+                opacity: pressed ? 0.85 : 1,
+              },
+            ]}
+          >
+            <Text
+              style={[
+                styles.dialogButtonText,
+                { color: colors.signalInk },
+              ]}
+            >
+              {tr(language, 'close')}
+            </Text>
+          </Pressable>
+        </View>
+      </View>
+    </Modal>
   );
 }
 
@@ -327,7 +465,6 @@ const styles = StyleSheet.create({
 
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.5)',
   },
 
   drawer: {
@@ -336,280 +473,188 @@ const styles = StyleSheet.create({
     top: 0,
     bottom: 0,
     width: DRAWER_WIDTH,
-    backgroundColor: '#FFFFFF',
-    shadowColor: '#000',
-    shadowOpacity: 0.25,
-    shadowRadius: 20,
-    shadowOffset: { width: 5, height: 0 },
-    elevation: 20,
+    borderRightWidth: StyleSheet.hairlineWidth,
   },
 
-  drawerScroll: {
-    paddingBottom: 40,
+  scroll: {
+    paddingBottom: space.xxxl,
   },
-
-  /* HEADER */
 
   header: {
-    backgroundColor: '#111827',
-    paddingTop: 54,
-    paddingBottom: 22,
-    paddingHorizontal: 20,
+    paddingTop: 56,
+    paddingBottom: space.xl,
+    paddingHorizontal: space.xl,
+    borderBottomWidth: StyleSheet.hairlineWidth,
   },
 
-  logoRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 14,
-  },
-
-  logoBadge: {
-    width: 46,
-    height: 46,
-    borderRadius: 14,
-    backgroundColor: '#2563EB',
+  mark: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    borderWidth: 2,
     alignItems: 'center',
     justifyContent: 'center',
+    marginBottom: space.md,
   },
 
-  logoEmoji: {
-    fontSize: 22,
+  markCore: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
   },
 
-  drawerTitle: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '900',
+  brandName: {
+    fontSize: size.sub,
+    fontWeight: weight.bold,
+    letterSpacing: -0.2,
   },
 
-  drawerSubtitle: {
-    color: '#93C5FD',
-    fontSize: 11,
+  brandLine: {
+    fontSize: size.small,
     marginTop: 2,
   },
 
-  /* DIVIDER */
-
-  divider: {
-    height: 1,
-    backgroundColor: '#F3F4F6',
-    marginVertical: 4,
-  },
-
-  /* SECTION */
-
-  section: {
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-  },
-
-  sectionLabel: {
-    fontSize: 11,
-    fontWeight: '800',
-    color: '#6B7280',
-    textTransform: 'uppercase',
-    letterSpacing: 0.8,
-    marginBottom: 10,
-  },
-
-  /* NAVIGATION ITEMS */
-
-  navItem: {
+  navRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 12,
-    borderRadius: 14,
-    backgroundColor: '#FFFFFF',
-    marginBottom: 6,
-    borderWidth: 1,
-    borderColor: '#F3F4F6',
-  },
-
-  navItemPressed: {
-    backgroundColor: '#F8FAFC',
-    borderColor: '#E2E8F0',
-  },
-
-  navIconBox: {
-    width: 38,
-    height: 38,
-    borderRadius: 10,
-    backgroundColor: '#FFFBEB',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
-  },
-
-  navIcon: {
-    fontSize: 18,
+    minHeight: layout.tap + 14,
+    paddingHorizontal: space.xl,
+    paddingVertical: space.md,
+    borderBottomWidth: StyleSheet.hairlineWidth,
   },
 
   navText: {
-    fontSize: 14,
-    fontWeight: '800',
-    color: '#111827',
+    flex: 1,
   },
 
-  navSub: {
-    fontSize: 11,
-    color: '#6B7280',
-    marginTop: 2,
+  navTitle: {
+    fontSize: size.body,
+    fontWeight: weight.semi,
   },
 
-  navArrow: {
-    fontSize: 20,
-    color: '#9CA3AF',
-    fontWeight: '600',
+  navDetail: {
+    fontSize: size.micro,
+    marginTop: 1,
   },
 
-  /* LANGUAGE OPTIONS */
+  navChevron: {
+    fontSize: 22,
+  },
 
-  langOption: {
+  settings: {
+    paddingHorizontal: space.xl,
+    paddingTop: space.xl,
+    gap: space.xl,
+  },
+
+  group: {
+    gap: space.sm,
+  },
+
+  groupLabel: {
+    fontSize: size.micro,
+    fontWeight: weight.semi,
+  },
+
+  segmented: {
     flexDirection: 'row',
+    borderRadius: radius.md,
+    borderWidth: StyleSheet.hairlineWidth,
+    overflow: 'hidden',
+  },
+
+  segment: {
+    flex: 1,
+    minHeight: 38,
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 13,
-    paddingHorizontal: 14,
-    borderRadius: 12,
-    marginBottom: 8,
-    backgroundColor: '#F9FAFB',
-    borderWidth: 1.5,
-    borderColor: '#E5E7EB',
+    justifyContent: 'center',
+    paddingHorizontal: space.xs,
   },
 
-  langOptionActive: {
-    backgroundColor: '#EFF6FF',
-    borderColor: '#2563EB',
+  segmentText: {
+    fontSize: size.small,
+    fontWeight: weight.semi,
   },
-
-  langText: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#374151',
-  },
-
-  langTextActive: {
-    color: '#1D4ED8',
-    fontWeight: '800',
-  },
-
-  checkDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: '#2563EB',
-  },
-
-  /* FOOTER */
 
   footer: {
-    paddingHorizontal: 20,
-    paddingTop: 10,
+    marginTop: space.xxl,
+    marginHorizontal: space.xl,
+    paddingTop: space.lg,
+    borderTopWidth: StyleSheet.hairlineWidth,
   },
 
-  footerText: {
-    fontSize: 12,
-    fontWeight: '800',
-    color: '#374151',
+  footerVersion: {
+    fontFamily: mono,
+    fontSize: size.micro,
+    fontWeight: weight.medium,
   },
 
-  footerSub: {
-    fontSize: 11,
-    color: '#9CA3AF',
+  footerNote: {
+    fontSize: size.micro,
     marginTop: 2,
   },
 
-  /* SUPPORT MODAL */
+  /* SUPPORT DIALOG */
 
-  modalOverlay: {
+  dialogScrim: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.6)',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 20,
+    padding: space.xl,
   },
 
-  supportModalBox: {
+  dialog: {
     width: '100%',
-    maxWidth: 340,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 22,
-    padding: 20,
-    shadowColor: '#000',
-    shadowOpacity: 0.2,
-    shadowRadius: 15,
-    elevation: 10,
+    maxWidth: 360,
+    borderRadius: radius.lg,
+    borderWidth: StyleSheet.hairlineWidth,
+    padding: space.xl,
   },
 
-  supportModalHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 12,
+  dialogTitle: {
+    fontSize: size.sub,
+    fontWeight: weight.bold,
   },
 
-  supportModalTitle: {
-    fontSize: 16,
-    fontWeight: '900',
-    color: '#111827',
+  dialogBody: {
+    fontSize: size.small,
+    marginTop: space.sm,
   },
 
-  modalCloseBtn: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: '#F3F4F6',
+  dialogTable: {
+    marginTop: space.lg,
+    borderRadius: radius.md,
+    borderWidth: StyleSheet.hairlineWidth,
+    overflow: 'hidden',
+  },
+
+  dialogRow: {
+    paddingHorizontal: space.md,
+    paddingVertical: space.md,
+  },
+
+  dialogRowLabel: {
+    fontSize: size.micro,
+    fontWeight: weight.medium,
+  },
+
+  dialogRowValue: {
+    fontFamily: mono,
+    fontSize: size.small,
+    fontWeight: weight.semi,
+    marginTop: 3,
+  },
+
+  dialogButton: {
+    marginTop: space.lg,
+    minHeight: layout.tap,
+    borderRadius: radius.md,
     alignItems: 'center',
     justifyContent: 'center',
   },
 
-  modalCloseBtnText: {
-    fontSize: 14,
-    color: '#6B7280',
-    fontWeight: '800',
-  },
-
-  supportModalDesc: {
-    fontSize: 12,
-    lineHeight: 18,
-    color: '#4B5563',
-    marginBottom: 16,
-  },
-
-  supportItem: {
-    backgroundColor: '#F8FAFC',
-    padding: 12,
-    borderRadius: 12,
-    marginBottom: 8,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-  },
-
-  supportItemLabel: {
-    fontSize: 11,
-    fontWeight: '800',
-    color: '#2563EB',
-    marginBottom: 2,
-  },
-
-  supportItemValue: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: '#1E293B',
-  },
-
-  supportDoneBtn: {
-    backgroundColor: '#2563EB',
-    borderRadius: 12,
-    paddingVertical: 12,
-    alignItems: 'center',
-    marginTop: 12,
-  },
-
-  supportDoneBtnText: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '800',
+  dialogButtonText: {
+    fontSize: size.body,
+    fontWeight: weight.bold,
   },
 });

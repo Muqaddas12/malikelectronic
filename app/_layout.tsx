@@ -1,318 +1,237 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
-    Animated,
-    Dimensions,
-    StyleSheet,
-    Text,
-    View
+  Animated,
+  StyleSheet,
+  Text,
+  View,
 } from 'react-native';
 
 import {
-    DarkTheme,
-    DefaultTheme,
-    ThemeProvider,
+  DarkTheme,
+  DefaultTheme,
+  ThemeProvider as NavigationThemeProvider,
 } from '@react-navigation/native';
-
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import { useColorScheme } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
 
+import {
+  mono,
+  size,
+  space,
+  weight,
+} from '@/constants/theme';
 import { LanguageProvider } from '@/context/LanguageContext';
+import { ThemeProvider, useTheme } from '@/context/ThemeContext';
 
-// Keep native splash visible until we are ready
 SplashScreen.preventAutoHideAsync();
 
-const { width: SCREEN_W, height: SCREEN_H } =
-  Dimensions.get('window');
+/**
+ * One orchestrated moment on cold start: the terminal post lights, a trace
+ * runs out of it, then the name lands. Around 1.1s, because this is a tool
+ * opened dozens of times a shift — anything longer is a tax on the user.
+ */
+function PowerUpSplash({ onFinished }: { onFinished: () => void }) {
+  const { colors, reduceMotion } = useTheme();
 
-// ─── Animated App Splash ─────────────────────────────────────────────────────
-
-function AnimatedSplash({
-  onFinished,
-}: {
-  onFinished: () => void;
-}) {
-  const logoScale = useRef(new Animated.Value(0.3)).current;
-  const logoOpacity = useRef(new Animated.Value(0)).current;
-  const titleOpacity = useRef(new Animated.Value(0)).current;
-  const taglineOpacity = useRef(new Animated.Value(0)).current;
-  const screenOpacity = useRef(new Animated.Value(1)).current;
+  const core = useRef(new Animated.Value(0)).current;
+  const trace = useRef(new Animated.Value(0)).current;
+  const name = useRef(new Animated.Value(0)).current;
+  const screen = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
+    if (reduceMotion) {
+      onFinished();
+      return;
+    }
+
     Animated.sequence([
-      // 1. Logo pops in
-      Animated.parallel([
-        Animated.spring(logoScale, {
-          toValue: 1,
-          damping: 12,
-          mass: 0.7,
-          stiffness: 180,
-          useNativeDriver: true,
-        }),
-        Animated.timing(logoOpacity, {
-          toValue: 1,
-          duration: 350,
-          useNativeDriver: true,
-        }),
-      ]),
-      // 2. Title fades in
-      Animated.timing(titleOpacity, {
+      Animated.spring(core, {
         toValue: 1,
-        duration: 300,
+        damping: 13,
+        mass: 0.6,
+        stiffness: 200,
         useNativeDriver: true,
       }),
-      // 3. Tagline fades in
-      Animated.timing(taglineOpacity, {
+      Animated.timing(trace, {
         toValue: 1,
-        duration: 300,
+        duration: 260,
         useNativeDriver: true,
       }),
-      // 4. Hold for a moment
-      Animated.delay(800),
-      // 5. Whole screen fades out
-      Animated.timing(screenOpacity, {
+      Animated.timing(name, {
+        toValue: 1,
+        duration: 220,
+        useNativeDriver: true,
+      }),
+      Animated.delay(160),
+      Animated.timing(screen, {
         toValue: 0,
-        duration: 450,
+        duration: 240,
         useNativeDriver: true,
       }),
-    ]).start(() => onFinished());
-  }, []);
+    ]).start(onFinished);
+  }, [reduceMotion, core, trace, name, screen, onFinished]);
 
   return (
     <Animated.View
       style={[
-        styles.splashRoot,
-        { opacity: screenOpacity },
+        styles.splash,
+        { backgroundColor: colors.surface, opacity: screen },
       ]}
     >
-      {/* Background gradient effect using layered views */}
-      <View style={styles.splashBgTop} />
-      <View style={styles.splashBgBottom} />
+      <View style={styles.splashRow}>
+        <Animated.View
+          style={[
+            styles.splashMark,
+            {
+              borderColor: colors.signal,
+              transform: [{ scale: core }],
+            },
+          ]}
+        >
+          <View
+            style={[
+              styles.splashCore,
+              { backgroundColor: colors.signal },
+            ]}
+          />
+        </Animated.View>
 
-      {/* Decorative circles */}
-      <View style={styles.circle1} />
-      <View style={styles.circle2} />
+        <Animated.View
+          style={[
+            styles.splashTrace,
+            {
+              backgroundColor: colors.signal,
+              opacity: trace,
+              transform: [{ scaleX: trace }],
+            },
+          ]}
+        />
+      </View>
 
-      {/* Logo badge */}
-      <Animated.View
-        style={[
-          styles.logoWrap,
-          {
-            opacity: logoOpacity,
-            transform: [{ scale: logoScale }],
-          },
-        ]}
-      >
-        <View style={styles.logoBg}>
-          <Text style={styles.logoIcon}>⚡</Text>
-        </View>
-      </Animated.View>
+      <Animated.View style={{ opacity: name }}>
+        <Text style={[styles.splashName, { color: colors.text }]}>
+          MaliK Electronic
+        </Text>
 
-      {/* App name */}
-      <Animated.Text
-        style={[styles.splashTitle, { opacity: titleOpacity }]}
-      >
-        MaliK Electronic
-      </Animated.Text>
-
-      {/* Tagline */}
-      <Animated.Text
-        style={[
-          styles.splashTagline,
-          { opacity: taglineOpacity },
-        ]}
-      >
-        Inverter Repair Guide
-      </Animated.Text>
-
-      {/* Dots loader */}
-      <Animated.View
-        style={[
-          styles.dotsRow,
-          { opacity: taglineOpacity },
-        ]}
-      >
-        {[0, 1, 2].map((i) => (
-          <View key={i} style={styles.dot} />
-        ))}
+        <Text style={[styles.splashTag, { color: colors.readout }]}>
+          Inverter repair reference
+        </Text>
       </Animated.View>
     </Animated.View>
   );
 }
 
-// ─── Root Layout ─────────────────────────────────────────────────────────────
 
-export default function RootLayout() {
-  const colorScheme = useColorScheme();
-  const [appReady, setAppReady] = useState(false);
+function RootShell() {
+  const { colors, mode } = useTheme();
   const [splashDone, setSplashDone] = useState(false);
 
   useEffect(() => {
-    // Hide native splash immediately — we show our own
     SplashScreen.hideAsync();
-    setAppReady(true);
   }, []);
 
-  // Show animated splash until it finishes
-  if (!appReady || !splashDone) {
+  const navigationTheme = {
+    ...(mode === 'dark' ? DarkTheme : DefaultTheme),
+    colors: {
+      ...(mode === 'dark' ? DarkTheme : DefaultTheme).colors,
+      background: colors.surface,
+      card: colors.panel,
+      text: colors.text,
+      border: colors.rule,
+      primary: colors.signal,
+      notification: colors.severity.critical,
+    },
+  };
+
+  if (!splashDone) {
     return (
-      <LanguageProvider>
-        {appReady && (
-          <AnimatedSplash onFinished={() => setSplashDone(true)} />
-        )}
-      </LanguageProvider>
+      <>
+        <StatusBar style={mode === 'dark' ? 'light' : 'dark'} />
+        <PowerUpSplash onFinished={() => setSplashDone(true)} />
+      </>
     );
   }
 
   return (
-    <LanguageProvider>
-      <ThemeProvider
-        value={
-          colorScheme === 'dark'
-            ? DarkTheme
-            : DefaultTheme
-        }
+    <NavigationThemeProvider value={navigationTheme}>
+      <StatusBar style={mode === 'dark' ? 'light' : 'dark'} />
+
+      <Stack
+        screenOptions={{
+          headerShown: false,
+          contentStyle: { backgroundColor: colors.surface },
+        }}
       >
-        <Stack>
-          <Stack.Screen
-            name="(tabs)"
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name="inverter/[id]"
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name="inverter/fault/[faultId]"
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name="tools/smd-calculator"
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name="tools/dip-calculator"
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name="tools/ic-guide"
-            options={{ headerShown: false }}
-          />
-        </Stack>
-      </ThemeProvider>
-    </LanguageProvider>
+        <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="inverter/[id]" />
+        <Stack.Screen name="inverter/fault/[faultId]" />
+        <Stack.Screen name="tools/smd-calculator" />
+        <Stack.Screen name="tools/dip-calculator" />
+        <Stack.Screen name="tools/ic-guide" />
+      </Stack>
+    </NavigationThemeProvider>
   );
 }
 
-// ─── Styles ───────────────────────────────────────────────────────────────────
+
+export default function RootLayout() {
+  return (
+    <ThemeProvider>
+      <LanguageProvider>
+        <RootShell />
+      </LanguageProvider>
+    </ThemeProvider>
+  );
+}
 
 const styles = StyleSheet.create({
-  splashRoot: {
-    flex: 1,
-    width: SCREEN_W,
-    height: SCREEN_H,
-    backgroundColor: '#0A0F1E',
-    alignItems: 'center',
+  splash: {
+    ...StyleSheet.absoluteFillObject,
+    alignItems: 'flex-start',
     justifyContent: 'center',
-    position: 'absolute',
-    zIndex: 9999,
+    paddingHorizontal: space.xxl,
   },
 
-  splashBgTop: {
-    position: 'absolute',
-    top: -80,
-    right: -80,
-    width: 300,
-    height: 300,
-    borderRadius: 150,
-    backgroundColor: '#1E3A6E',
-    opacity: 0.5,
-  },
-
-  splashBgBottom: {
-    position: 'absolute',
-    bottom: -60,
-    left: -60,
-    width: 240,
-    height: 240,
-    borderRadius: 120,
-    backgroundColor: '#1B3250',
-    opacity: 0.4,
-  },
-
-  circle1: {
-    position: 'absolute',
-    top: SCREEN_H * 0.15,
-    left: 30,
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    borderWidth: 1.5,
-    borderColor: '#2563EB',
-    opacity: 0.3,
-  },
-
-  circle2: {
-    position: 'absolute',
-    bottom: SCREEN_H * 0.2,
-    right: 40,
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    borderWidth: 1.5,
-    borderColor: '#60A5FA',
-    opacity: 0.25,
-  },
-
-  logoWrap: {
-    marginBottom: 28,
-  },
-
-  logoBg: {
-    width: 100,
-    height: 100,
-    borderRadius: 28,
-    backgroundColor: '#2563EB',
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#2563EB',
-    shadowOpacity: 0.7,
-    shadowRadius: 30,
-    shadowOffset: { width: 0, height: 0 },
-    elevation: 20,
-  },
-
-  logoIcon: {
-    fontSize: 52,
-  },
-
-  splashTitle: {
-    color: '#FFFFFF',
-    fontSize: 28,
-    fontWeight: '900',
-    letterSpacing: 0.5,
-    textAlign: 'center',
-  },
-
-  splashTagline: {
-    color: '#93C5FD',
-    fontSize: 14,
-    fontWeight: '600',
-    marginTop: 8,
-    letterSpacing: 2,
-    textTransform: 'uppercase',
-  },
-
-  dotsRow: {
+  splashRow: {
     flexDirection: 'row',
-    gap: 8,
-    marginTop: 40,
+    alignItems: 'center',
+    marginBottom: space.xl,
   },
 
-  dot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: '#2563EB',
+  splashMark: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    borderWidth: 2.5,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  splashCore: {
+    width: 13,
+    height: 13,
+    borderRadius: 7,
+  },
+
+  /* The trace grows from the post, so it is pinned on its left edge. */
+  splashTrace: {
+    width: 120,
+    height: 2,
+    marginLeft: space.md,
+    transform: [{ scaleX: 0 }],
+  },
+
+  splashName: {
+    fontSize: size.display,
+    fontWeight: weight.bold,
+    letterSpacing: -0.6,
+  },
+
+  splashTag: {
+    fontFamily: mono,
+    fontSize: size.small,
+    fontWeight: weight.medium,
+    marginTop: space.sm,
   },
 });

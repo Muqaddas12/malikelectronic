@@ -41,7 +41,7 @@ export const t: Translations = {
     searchFault: 'Search fault...',
     noFaultFound: 'No fault found',
     back: '‹ Back',
-    tapToTroubleshoot: 'Tap to troubleshoot →',
+    tapToTroubleshoot: 'Tap to troubleshoot',
 
     // Fault detail screen
     pcbDiagram: '🔍 Circuit Diagram',
@@ -98,7 +98,7 @@ export const t: Translations = {
     icListTitle: 'Inverter IC Directory',
     icListSubtitle: 'Browse 200+ Inverter & Power Electronics ICs. Tap any IC to inspect pinout & working principle.',
     totalIcsAvailable: 'ICs available',
-    viewIcDetails: 'View Pinout & Working →',
+    viewIcDetails: 'View pinout & working',
     backToIcsList: '‹ Back to IC List',
     searchIc: 'Search IC name (e.g. LM324, SG3525, ULN2003)...',
     noIcFound: 'No IC found matching your search',
@@ -113,7 +113,7 @@ export const t: Translations = {
 
     // Microcontroller PDF & Details
     microcontrollerPinDetails: 'Microcontroller Pin Details (PDF)',
-    viewPinDetails: 'View Complete 28-Pin Voltages & Chart →',
+    viewPinDetails: 'View all 28 pin voltages & chart',
     microcontrollerSubtitle: 'Inspect all pin numbers, voltages, signals & working functions',
     page: 'Page',
 
@@ -122,7 +122,7 @@ export const t: Translations = {
     bands5: '5-Band Resistor',
     tolerance: 'Tolerance',
     pinDetails: 'Pin Details',
-    open: 'Open →',
+    open: 'Open',
     bothDipSmd: 'DIP & SMD Combined',
     dipOnly: 'DIP Only',
     smdOnly: 'SMD Only',
@@ -145,6 +145,26 @@ export const t: Translations = {
     sidebarSubtitle: 'Inverter Repair Guide & Tools',
     settings: 'Settings',
     close: 'Close',
+
+    // Appearance
+    appearance: 'Appearance',
+    themeSystem: 'Match phone',
+    themeDark: 'Dark',
+    themeLight: 'Light',
+
+    // Specification strip labels
+    specCapacity: 'Capacity',
+    specBattery: 'Battery',
+    specWaveform: 'Waveform',
+    specSheets: 'Schematics',
+    specRisk: 'Risk',
+    openTool: 'Open',
+    viewSchematic: 'View schematic',
+    viewPcbPhoto: 'View PCB photo',
+
+    // Tab bar — short enough to fit under an icon
+    tabInverters: 'Inverters',
+    tabTools: 'Tools',
   },
 
   hi: {
@@ -184,7 +204,7 @@ export const t: Translations = {
     searchFault: 'खराबी खोजें...',
     noFaultFound: 'कोई खराबी नहीं मिली',
     back: '‹ वापस',
-    tapToTroubleshoot: 'सुधारने के लिए टैप करें →',
+    tapToTroubleshoot: 'सुधारने के लिए टैप करें',
 
     // Fault detail screen
     pcbDiagram: '🔍 सर्किट डायग्राम',
@@ -241,7 +261,7 @@ export const t: Translations = {
     icListTitle: 'इन्वर्टर IC डायरेक्टरी',
     icListSubtitle: '200+ इन्वर्टर और पावर इलेक्ट्रॉनिक्स ICs उपलब्ध हैं। पिनआउट और कार्यप्रणाली देखने के लिए किसी भी IC पर टैप करें।',
     totalIcsAvailable: 'ICs उपलब्ध हैं',
-    viewIcDetails: 'पिनआउट व कार्यप्रणाली देखें →',
+    viewIcDetails: 'पिनआउट व कार्यप्रणाली देखें',
     backToIcsList: '‹ IC सूची पर वापस जाएं',
     searchIc: 'IC नाम खोजें (उदा. LM324, SG3525, ULN2003)...',
     noIcFound: 'इस नाम से कोई IC नहीं मिली',
@@ -256,7 +276,7 @@ export const t: Translations = {
 
     // Microcontroller PDF & Details
     microcontrollerPinDetails: 'माइक्रोकंट्रोलर पिन विवरण (PDF)',
-    viewPinDetails: 'सभी 28 पिनों का वोल्टेज व चार्ट देखें →',
+    viewPinDetails: 'सभी 28 पिनों का वोल्टेज व चार्ट देखें',
     microcontrollerSubtitle: 'सभी पिन नंबर, वोल्टेज, सिग्नल्स और कार्यप्रणाली देखें',
     page: 'पेज',
 
@@ -265,7 +285,7 @@ export const t: Translations = {
     bands5: '5-बैंड रेजिस्टेंस',
     tolerance: 'टॉलरेंस (सहनशीलता)',
     pinDetails: 'पिन विवरण',
-    open: 'खोलें →',
+    open: 'खोलें',
     bothDipSmd: 'DIP व SMD कंबाइंड',
     dipOnly: 'केवल DIP',
     smdOnly: 'केवल SMD',
@@ -288,6 +308,26 @@ export const t: Translations = {
     sidebarSubtitle: 'इन्वर्टर मरम्मत गाइड और टूल्स',
     settings: 'सेटिंग्स',
     close: 'बंद करें',
+
+    // Appearance
+    appearance: 'दिखावट',
+    themeSystem: 'फ़ोन जैसा',
+    themeDark: 'डार्क',
+    themeLight: 'लाइट',
+
+    // Specification strip labels
+    specCapacity: 'क्षमता',
+    specBattery: 'बैटरी',
+    specWaveform: 'वेवफ़ॉर्म',
+    specSheets: 'सर्किट डायग्राम',
+    specRisk: 'जोखिम',
+    openTool: 'खोलें',
+    viewSchematic: 'सर्किट डायग्राम देखें',
+    viewPcbPhoto: 'पीसीबी फोटो देखें',
+
+    // Tab bar — short enough to fit under an icon
+    tabInverters: 'इन्वर्टर',
+    tabTools: 'टूल्स',
   },
 };
 

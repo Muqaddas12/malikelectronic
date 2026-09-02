@@ -1,49 +1,70 @@
 import React from 'react';
+import { StyleSheet, Text, View } from 'react-native';
 
 import {
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+  lineFor,
+  size,
+  space,
+  weight,
+} from '@/constants/theme';
+import { useLanguage } from '@/context/LanguageContext';
+import { useTheme } from '@/context/ThemeContext';
 
 type Props = {
   title: string;
   subtitle?: string;
 };
 
-export default function SectionTitle({
-  title,
-  subtitle,
-}: Props) {
+export default function SectionTitle({ title, subtitle }: Props) {
+  const { colors } = useTheme();
+  const { isHindi } = useLanguage();
+
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>
+      <Text
+        style={[
+          styles.title,
+          {
+            color: colors.text,
+            lineHeight: lineFor('title', isHindi),
+          },
+        ]}
+      >
         {title}
       </Text>
 
-      {subtitle && (
-        <Text style={styles.subtitle}>
+      {subtitle ? (
+        <Text
+          style={[
+            styles.subtitle,
+            {
+              color: colors.textDim,
+              lineHeight: lineFor('small', isHindi),
+            },
+          ]}
+        >
           {subtitle}
         </Text>
-      )}
+      ) : null}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: 15,
+    marginBottom: space.lg,
   },
 
   title: {
-    fontSize: 22,
-    fontWeight: '900',
-    color: '#111827',
+    fontSize: size.title,
+    fontWeight: weight.bold,
+    letterSpacing: -0.3,
   },
 
   subtitle: {
-    fontSize: 13,
-    color: '#6B7280',
-    marginTop: 4,
+    fontSize: size.small,
+    fontWeight: weight.regular,
+    marginTop: space.xs,
+    maxWidth: 460,
   },
 });
