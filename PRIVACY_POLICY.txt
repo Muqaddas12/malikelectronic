@@ -5,15 +5,15 @@ App Name      : MaliK Electronic
 Package ID    : com.muqaddas123.malikelectronic
 Version       : 1.0.0
 Effective Date: September 9, 2026
-Contact       : MaliK Electronic Repair & Spares, Main Market
-                Phone / WhatsApp: +91 98765 43210
+Contact       : support@mtbyown.com
+              
 ================================================================================
 
 
 1. INTRODUCTION
 ---------------
-MaliK Electronic ("we", "our", or "us") operates the MaliK Electronic mobile
-application (the "App"). This Privacy Policy explains what information the App
+MaliK Electronic we operates the MaliK Electronic mobile
+application . This Privacy Policy explains what information the App
 collects, how we use it, and your rights in relation to it.
 
 By downloading or using the App you agree to the practices described in this
@@ -151,7 +151,7 @@ contact us:
 
   MaliK Electronic Repair & Spares
   Main Market
-  Phone / WhatsApp : +91 98765 43210
+ email us:support@mtbyown.com
 
   App Package ID   : com.muqaddas123.malikelectronic
 
