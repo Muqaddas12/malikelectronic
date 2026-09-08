@@ -1,0 +1,162 @@
+================================================================================
+                    PRIVACY POLICY — MaliK Electronic App
+================================================================================
+App Name      : MaliK Electronic
+Package ID    : com.muqaddas123.malikelectronic
+Version       : 1.0.0
+Effective Date: September 9, 2026
+Contact       : MaliK Electronic Repair & Spares, Main Market
+                Phone / WhatsApp: +91 98765 43210
+================================================================================
+
+
+1. INTRODUCTION
+---------------
+MaliK Electronic ("we", "our", or "us") operates the MaliK Electronic mobile
+application (the "App"). This Privacy Policy explains what information the App
+collects, how we use it, and your rights in relation to it.
+
+By downloading or using the App you agree to the practices described in this
+Privacy Policy. If you do not agree, please uninstall the App and stop using it.
+
+
+2. WHAT THIS APP DOES
+---------------------
+MaliK Electronic is an offline inverter repair & troubleshooting guide for
+electronics technicians. Its features include:
+
+  • Inverter fault diagnosis and step-by-step repair guides
+    (Luminous, Microtek, Su-Kam, Livguard and other brands)
+  • Circuit diagrams and PCB photo viewer with pinch-to-zoom
+  • Microcontroller pin-detail PDF viewer
+  • SMD & DIP resistor calculators
+  • IC Pinout & Working Guide (200+ ICs)
+  • Bilingual interface (English / Hindi)
+  • Contact information for MaliK Electronic shop
+
+The App is designed to work entirely OFFLINE. No account creation or login
+is required.
+
+
+3. INFORMATION WE DO NOT COLLECT
+---------------------------------
+We do NOT collect, transmit, store, or share any of the following:
+
+  ✗ Personal identifiable information (name, email, phone number, address)
+  ✗ Location data (GPS or network-based)
+  ✗ Camera or microphone access
+  ✗ Contacts, call logs, or SMS
+  ✗ Photos or files from your device storage
+  ✗ Device identifiers (IMEI, Advertising ID, etc.)
+  ✗ Usage analytics or crash reports sent to any remote server
+  ✗ Browsing history or clipboard contents
+  ✗ Financial or payment information
+
+The App does NOT connect to any external server or API during normal use.
+All content (fault guides, circuit diagrams, IC data, resistor tables) is
+bundled inside the App itself and loaded locally.
+
+
+4. INFORMATION STORED LOCALLY ON YOUR DEVICE
+---------------------------------------------
+The App saves the following data ONLY on your device (never sent anywhere):
+
+  • Your language preference (English or Hindi)
+  • Your appearance preference (Light / Dark / System theme)
+
+This data is stored using React Native's AsyncStorage, which is private to
+the App on your device. Uninstalling the App deletes this data automatically.
+
+
+5. PERMISSIONS REQUESTED
+-------------------------
+The App requests only the permissions strictly necessary for its features.
+On Android, these are:
+
+  INTERNET
+    Not used to collect data. Listed because the Expo development framework
+    includes this by default. The production App does not make any network
+    requests to external servers.
+
+No other permissions (camera, microphone, storage, location, contacts, etc.)
+are requested.
+
+
+6. THIRD-PARTY SERVICES
+------------------------
+The App does NOT integrate any third-party analytics, advertising, tracking,
+or social-media SDKs.
+
+The App is built with the following open-source frameworks which do NOT
+independently collect personal data:
+
+  • React Native (Meta / Facebook) — MIT License
+  • Expo SDK 54                    — MIT License
+  • Expo Router                    — MIT License
+
+These frameworks operate entirely on-device and do not phone home during
+normal app usage.
+
+
+7. CHILDREN'S PRIVACY
+----------------------
+The App is intended for electronics technicians and repair professionals and
+is not directed at children under the age of 13. We do not knowingly collect
+any personal information from children. Because the App collects no personal
+information from any user, no special procedures for children are necessary.
+
+
+8. DATA SECURITY
+----------------
+Because the App collects no personal data and makes no network requests,
+there is no risk of your personal information being intercepted or leaked by
+this App. All local preferences are stored in your device's sandboxed
+application storage, inaccessible to other apps.
+
+
+9. LINKS TO EXTERNAL SERVICES
+------------------------------
+The App displays contact information for MaliK Electronic (phone number and
+WhatsApp). Tapping these links will open your device's Phone or WhatsApp
+application. Those applications are governed by their own privacy policies:
+
+  • WhatsApp Privacy Policy: https://www.whatsapp.com/legal/privacy-policy
+  • Your phone app is governed by your device manufacturer / OS vendor.
+
+We are not responsible for the privacy practices of those external apps.
+
+
+10. CHANGES TO THIS PRIVACY POLICY
+------------------------------------
+We may update this Privacy Policy from time to time. Any changes will be
+reflected in an updated version of this file distributed with a new App
+release. The "Effective Date" at the top of this document will be updated.
+
+Continued use of the App after an update constitutes acceptance of the
+revised policy.
+
+
+11. YOUR RIGHTS
+---------------
+Because the App collects no personal information, there is no personal data
+for us to access, correct, port, or delete on your behalf. If you have any
+concern, you may simply uninstall the App, which removes all locally stored
+preferences.
+
+
+12. CONTACT US
+--------------
+If you have any questions or concerns about this Privacy Policy, please
+contact us:
+
+  MaliK Electronic Repair & Spares
+  Main Market
+  Phone / WhatsApp : +91 98765 43210
+
+  App Package ID   : com.muqaddas123.malikelectronic
+
+
+================================================================================
+               This Privacy Policy is effective as of September 9, 2026.
+================================================================================
+
