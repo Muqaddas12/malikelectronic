@@ -1,21 +1,23 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
-    Dimensions,
-    Modal,
-    Pressable,
-    ScrollView,
-    StyleSheet,
-    Text,
-    View,
+  Dimensions,
+  Modal,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import * as ScreenCapture from 'expo-screen-capture';
 
 import InteractiveViewer from '@/components/InteractiveViewer';
 import { useLanguage } from '@/context/LanguageContext';
 import { MicrocontrollerDoc } from '@/data/microcontroller';
 import { tr } from '@/data/translations';
 
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } =
+  Dimensions.get('window');
 
 type Props = {
   visible: boolean;
@@ -29,97 +31,245 @@ export default function PdfDocumentViewerModal({
   onClose,
 }: Props) {
   const { language } = useLanguage();
+
   const [activePageIndex, setActivePageIndex] = useState(0);
   const [zoomScale, setZoomScale] = useState(1.0);
 
-  if (!doc) return null;
+  /*
+   * ---------------------------------------------------------
+   * SCREENSHOT / SCREEN RECORDING PROTECTION
+   * ---------------------------------------------------------
+   *
+   * When this viewer is visible:
+   *
+   * Android:
+   *   FLAG_SECURE is enabled by expo-screen-capture.
+   *   Screenshots and screen recording are blocked.
+   *
+   * iOS:
+   *   Screen capture protection is applied where supported.
+   *
+   * When the viewer closes, protection is removed so the
+   * rest of your application behaves normally.
+   */
+  useEffect(() => {
+    let mounted = true;
+
+    const enableProtection = async () => {
+      if (!visible) return;
+
+      try {
+        await ScreenCapture.preventScreenCaptureAsync();
+      } catch (error) {
+        console.warn(
+          'Unable to enable screen capture protection:',
+          error
+        );
+      }
+    };
+
+    const disableProtection = async () => {
+      if (visible) return;
+
+      try {
+        await ScreenCapture.allowScreenCaptureAsync();
+      } catch (error) {
+        console.warn(
+          'Unable to disable screen capture protection:',
+          error
+        );
+      }
+    };
+
+    if (mounted) {
+      if (visible) {
+        enableProtection();
+      } else {
+        disableProtection();
+      }
+    }
+
+    return () => {
+      mounted = false;
+    };
+  }, [visible]);
+
+  /*
+   * Reset page/zoom when a different document is opened.
+   */
+  useEffect(() => {
+    if (visible) {
+      setActivePageIndex(0);
+      setZoomScale(1.0);
+    }
+  }, [visible, doc?.chipName]);
+
+  /*
+   * Safety cleanup:
+   * If this component is removed while visible, restore
+   * normal screen capture behavior.
+   */
+  useEffect(() => {
+    return () => {
+      ScreenCapture.allowScreenCaptureAsync().catch(() => {});
+    };
+  }, []);
+
+  if (!doc) {
+    return null;
+  }
 
   const totalPages = doc.pages.length;
-  const basePageWidth = SCREEN_WIDTH - 20;
-  const basePageHeight = SCREEN_HEIGHT * 0.74;
+
+  const goToPage = (index: number) => {
+    if (index < 0 || index >= totalPages) {
+      return;
+    }
+
+    setActivePageIndex(index);
+    setZoomScale(1.0);
+  };
+
+  const previousPage = () => {
+    goToPage(Math.max(0, activePageIndex - 1));
+  };
+
+  const nextPage = () => {
+    goToPage(Math.min(totalPages - 1, activePageIndex + 1));
+  };
 
   return (
     <Modal
       visible={visible}
       transparent={false}
       animationType="fade"
+      presentationStyle="fullScreen"
       onRequestClose={onClose}
     >
       <View style={styles.viewerContainer}>
         <SafeAreaView style={styles.safeArea}>
-          {/* GOOGLE DRIVE STYLE TOP APP BAR */}
+          {/* =================================================
+              GOOGLE DRIVE STYLE TOP BAR
+              ================================================= */}
           <View style={styles.driveHeader}>
+            {/* LEFT SIDE */}
             <View style={styles.titleInfo}>
               <View style={styles.pdfIconBadge}>
                 <Text style={styles.pdfIconText}>PDF</Text>
               </View>
-              <View style={{ flex: 1, marginLeft: 10 }}>
-                <Text style={styles.docTitle} numberOfLines={1}>
-                  {doc.chipName} — {language === 'hi' ? 'पिन विवरण' : 'Pin Details'}
+
+              <View style={styles.titleTextContainer}>
+                <Text
+                  style={styles.docTitle}
+                  numberOfLines={1}
+                  ellipsizeMode="tail"
+                >
+                  {doc.chipName} —{' '}
+                  {language === 'hi'
+                    ? 'पिन विवरण'
+                    : 'Pin Details'}
                 </Text>
-                <Text style={styles.docSubtitle} numberOfLines={1}>
+
+                <Text
+                  style={styles.docSubtitle}
+                  numberOfLines={1}
+                  ellipsizeMode="middle"
+                >
                   {doc.title}.pdf
                 </Text>
               </View>
             </View>
 
+            {/* RIGHT SIDE */}
             <View style={styles.headerRight}>
-              {/* Current Page Pill */}
+              {/* PAGE NUMBER */}
               <View style={styles.pagePill}>
                 <Text style={styles.pagePillText}>
                   {activePageIndex + 1} / {totalPages}
                 </Text>
               </View>
 
-              {/* Close Button */}
+              {/* PROTECTED BADGE */}
+              <View style={styles.protectedBadge}>
+                <Text style={styles.protectedIcon}>🔒</Text>
+              </View>
+
+              {/* CLOSE */}
               <Pressable
                 onPress={onClose}
-                style={styles.closeBtn}
-                hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+                style={({ pressed }) => [
+                  styles.closeBtn,
+                  pressed && styles.closeBtnPressed,
+                ]}
+                hitSlop={{
+                  top: 12,
+                  bottom: 12,
+                  left: 12,
+                  right: 12,
+                }}
+                accessibilityRole="button"
+                accessibilityLabel={
+                  language === 'hi'
+                    ? 'बंद करें'
+                    : 'Close document'
+                }
               >
                 <Text style={styles.closeBtnText}>✕</Text>
               </Pressable>
             </View>
           </View>
 
-          {/* QUICK JUMP PAGE STRIP (For multi-page PDFs) */}
+          {/* =================================================
+              QUICK PAGE STRIP
+              ================================================= */}
           {totalPages > 1 && (
             <View style={styles.pageStrip}>
               <Text style={styles.pageStripLabel}>
                 📄 {tr(language, 'page')}:
               </Text>
+
               <ScrollView
-                horizontal={true}
+                horizontal
                 showsHorizontalScrollIndicator={false}
                 contentContainerStyle={styles.pageStripRow}
               >
-                {doc.pages.map((_, idx) => (
-                  <Pressable
-                    key={idx}
-                    onPress={() => {
-                      setActivePageIndex(idx);
-                      setZoomScale(1.0);
-                    }}
-                    style={[
-                      styles.stripBtn,
-                      activePageIndex === idx && styles.stripBtnActive,
-                    ]}
-                  >
-                    <Text
-                      style={[
-                        styles.stripBtnText,
-                        activePageIndex === idx && styles.stripBtnTextActive,
+                {doc.pages.map((_, idx) => {
+                  const isActive =
+                    activePageIndex === idx;
+
+                  return (
+                    <Pressable
+                      key={idx}
+                      onPress={() => goToPage(idx)}
+                      style={({ pressed }) => [
+                        styles.stripBtn,
+                        isActive &&
+                          styles.stripBtnActive,
+                        pressed &&
+                          styles.stripBtnPressed,
                       ]}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Page ${idx + 1}`}
                     >
-                      {tr(language, 'page')} {idx + 1}
-                    </Text>
-                  </Pressable>
-                ))}
+                      <Text
+                        style={[
+                          styles.stripBtnText,
+                          isActive &&
+                            styles.stripBtnTextActive,
+                        ]}
+                      >
+                        {tr(language, 'page')} {idx + 1}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
               </ScrollView>
             </View>
           )}
 
-          {/* TWO-FINGER PINCH-TO-ZOOM CANVAS */}
+          {/* =================================================
+              DOCUMENT CANVAS
+              ================================================= */}
           <View style={styles.canvasWrapper}>
             <View style={styles.paperShadowWrapper}>
               <InteractiveViewer
@@ -131,49 +281,65 @@ export default function PdfDocumentViewerModal({
             </View>
           </View>
 
-          {/* FLOATING ZOOM CONTROLS (Google Drive Style Bottom HUD) */}
+          {/* =================================================
+              BOTTOM GOOGLE DRIVE STYLE HUD
+              ================================================= */}
           <View style={styles.bottomHud}>
-            {/* Prev Page Button if Multi-Page */}
+            {/* PREVIOUS PAGE */}
             {totalPages > 1 && (
               <Pressable
                 disabled={activePageIndex === 0}
-                onPress={() => {
-                  setActivePageIndex((prev) => Math.max(0, prev - 1));
-                  setZoomScale(1.0);
-                }}
-                style={[
+                onPress={previousPage}
+                style={({ pressed }) => [
                   styles.navPageBtn,
-                  activePageIndex === 0 && styles.navPageBtnDisabled,
+                  activePageIndex === 0 &&
+                    styles.navPageBtnDisabled,
+                  pressed &&
+                    activePageIndex !== 0 &&
+                    styles.navPageBtnPressed,
                 ]}
+                accessibilityRole="button"
+                accessibilityLabel="Previous page"
               >
                 <Text style={styles.navPageBtnText}>◀</Text>
               </Pressable>
             )}
 
+            {/* ZOOM LEVEL */}
             <View style={styles.hudBadge}>
               <Text style={styles.hudBadgeText}>
                 {Math.round(zoomScale * 100)}%
               </Text>
             </View>
 
+            {/* PROTECTED VIEWER MESSAGE */}
             <View style={styles.hudHint}>
+              <Text style={styles.hudHintIcon}>🔒</Text>
+
               <Text style={styles.hudHintText}>
-                🤏 {language === 'hi' ? 'दो उंगलियों से ज़ूम करें' : 'Pinch with 2 fingers'}
+                {language === 'hi'
+                  ? 'केवल देखने के लिए'
+                  : 'View only'}
               </Text>
             </View>
 
-            {/* Next Page Button if Multi-Page */}
+            {/* NEXT PAGE */}
             {totalPages > 1 && (
               <Pressable
-                disabled={activePageIndex === totalPages - 1}
-                onPress={() => {
-                  setActivePageIndex((prev) => Math.min(totalPages - 1, prev + 1));
-                  setZoomScale(1.0);
-                }}
-                style={[
+                disabled={
+                  activePageIndex === totalPages - 1
+                }
+                onPress={nextPage}
+                style={({ pressed }) => [
                   styles.navPageBtn,
-                  activePageIndex === totalPages - 1 && styles.navPageBtnDisabled,
+                  activePageIndex === totalPages - 1 &&
+                    styles.navPageBtnDisabled,
+                  pressed &&
+                    activePageIndex !== totalPages - 1 &&
+                    styles.navPageBtnPressed,
                 ]}
+                accessibilityRole="button"
+                accessibilityLabel="Next page"
               >
                 <Text style={styles.navPageBtnText}>▶</Text>
               </Pressable>
@@ -185,41 +351,52 @@ export default function PdfDocumentViewerModal({
   );
 }
 
+/* =========================================================
+   STYLES
+   ========================================================= */
+
 const styles = StyleSheet.create({
   viewerContainer: {
     flex: 1,
-    backgroundColor: '#1E2228', // Google Drive dark canvas background
+    backgroundColor: '#1E2228',
   },
 
   safeArea: {
     flex: 1,
+    backgroundColor: '#1E2228',
   },
 
-  /* GOOGLE DRIVE TOP BAR */
+  /* =======================================================
+     TOP APP BAR
+     ======================================================= */
 
   driveHeader: {
+    minHeight: 60,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 14,
-    paddingVertical: 10,
+    paddingVertical: 8,
     backgroundColor: '#16191D',
     borderBottomWidth: 1,
     borderBottomColor: '#282C34',
   },
 
   titleInfo: {
+    flex: 1,
+    minWidth: 0,
     flexDirection: 'row',
     alignItems: 'center',
-    flex: 1,
     paddingRight: 8,
   },
 
   pdfIconBadge: {
-    backgroundColor: '#EA4335', // Google PDF red
+    backgroundColor: '#EA4335',
     paddingHorizontal: 6,
-    paddingVertical: 3,
+    paddingVertical: 4,
     borderRadius: 4,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 
   pdfIconText: {
@@ -227,6 +404,12 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: '900',
     letterSpacing: 0.5,
+  },
+
+  titleTextContainer: {
+    flex: 1,
+    marginLeft: 10,
+    minWidth: 0,
   },
 
   docTitle: {
@@ -238,7 +421,7 @@ const styles = StyleSheet.create({
   docSubtitle: {
     color: '#9AA0A6',
     fontSize: 11,
-    marginTop: 1,
+    marginTop: 2,
   },
 
   headerRight: {
@@ -250,7 +433,7 @@ const styles = StyleSheet.create({
   pagePill: {
     backgroundColor: '#282C34',
     paddingHorizontal: 9,
-    paddingVertical: 4,
+    paddingVertical: 5,
     borderRadius: 12,
     borderWidth: 1,
     borderColor: '#3C4043',
@@ -262,6 +445,21 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
 
+  protectedBadge: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: '#282C34',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#3C4043',
+  },
+
+  protectedIcon: {
+    fontSize: 13,
+  },
+
   closeBtn: {
     width: 32,
     height: 32,
@@ -271,15 +469,22 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
 
+  closeBtnPressed: {
+    opacity: 0.65,
+  },
+
   closeBtnText: {
     color: '#FFFFFF',
     fontSize: 14,
     fontWeight: '900',
   },
 
-  /* QUICK JUMP PAGE STRIP */
+  /* =======================================================
+     PAGE STRIP
+     ======================================================= */
 
   pageStrip: {
+    minHeight: 44,
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#16191D',
@@ -299,20 +504,25 @@ const styles = StyleSheet.create({
   pageStripRow: {
     flexDirection: 'row',
     gap: 6,
+    paddingRight: 10,
   },
 
   stripBtn: {
     backgroundColor: '#282C34',
     paddingHorizontal: 10,
-    paddingVertical: 4,
+    paddingVertical: 5,
     borderRadius: 6,
     borderWidth: 1,
     borderColor: '#3C4043',
   },
 
   stripBtnActive: {
-    backgroundColor: '#1A73E8', // Google Drive Blue
+    backgroundColor: '#1A73E8',
     borderColor: '#8AB4F8',
+  },
+
+  stripBtnPressed: {
+    opacity: 0.7,
   },
 
   stripBtnText: {
@@ -326,13 +536,16 @@ const styles = StyleSheet.create({
     fontWeight: '900',
   },
 
-  /* CANVAS */
+  /* =======================================================
+     DOCUMENT CANVAS
+     ======================================================= */
 
   canvasWrapper: {
     flex: 1,
     backgroundColor: '#202124',
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'hidden',
   },
 
   paperShadowWrapper: {
@@ -342,49 +555,69 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
 
-  /* BOTTOM HUD CONTROLS */
+  /* =======================================================
+     BOTTOM HUD
+     ======================================================= */
 
   bottomHud: {
     position: 'absolute',
     bottom: 16,
     alignSelf: 'center',
+
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(32, 33, 36, 0.95)',
+
+    backgroundColor: 'rgba(32, 33, 36, 0.96)',
+
     paddingVertical: 7,
-    paddingHorizontal: 14,
+    paddingHorizontal: 12,
+
     borderRadius: 24,
-    gap: 10,
+    gap: 9,
+
     borderWidth: 1,
     borderColor: '#3C4043',
+
     shadowColor: '#000',
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.35,
     shadowRadius: 8,
-    elevation: 6,
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+
+    elevation: 8,
   },
 
   navPageBtn: {
+    minWidth: 34,
+    height: 28,
     backgroundColor: '#1A73E8',
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 12,
+    paddingHorizontal: 9,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  navPageBtnPressed: {
+    opacity: 0.7,
   },
 
   navPageBtnDisabled: {
     backgroundColor: '#3C4043',
-    opacity: 0.5,
+    opacity: 0.45,
   },
 
   navPageBtnText: {
     color: '#FFFFFF',
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '900',
   },
 
   hudBadge: {
     backgroundColor: '#303134',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
+    paddingHorizontal: 9,
+    paddingVertical: 5,
     borderRadius: 8,
   },
 
@@ -395,7 +628,14 @@ const styles = StyleSheet.create({
   },
 
   hudHint: {
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingHorizontal: 4,
+    gap: 4,
+  },
+
+  hudHintIcon: {
+    fontSize: 11,
   },
 
   hudHintText: {
