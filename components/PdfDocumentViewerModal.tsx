@@ -1,15 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import {
-  Dimensions,
-  Modal,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
+    Dimensions,
+    Modal,
+    Pressable,
+    ScrollView,
+    StyleSheet,
+    Text,
+    View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import * as ScreenCapture from 'expo-screen-capture';
 
 import InteractiveViewer from '@/components/InteractiveViewer';
 import { useLanguage } from '@/context/LanguageContext';
@@ -36,65 +35,6 @@ export default function PdfDocumentViewerModal({
   const [zoomScale, setZoomScale] = useState(1.0);
 
   /*
-   * ---------------------------------------------------------
-   * SCREENSHOT / SCREEN RECORDING PROTECTION
-   * ---------------------------------------------------------
-   *
-   * When this viewer is visible:
-   *
-   * Android:
-   *   FLAG_SECURE is enabled by expo-screen-capture.
-   *   Screenshots and screen recording are blocked.
-   *
-   * iOS:
-   *   Screen capture protection is applied where supported.
-   *
-   * When the viewer closes, protection is removed so the
-   * rest of your application behaves normally.
-   */
-  useEffect(() => {
-    let mounted = true;
-
-    const enableProtection = async () => {
-      if (!visible) return;
-
-      try {
-        await ScreenCapture.preventScreenCaptureAsync();
-      } catch (error) {
-        console.warn(
-          'Unable to enable screen capture protection:',
-          error
-        );
-      }
-    };
-
-    const disableProtection = async () => {
-      if (visible) return;
-
-      try {
-        await ScreenCapture.allowScreenCaptureAsync();
-      } catch (error) {
-        console.warn(
-          'Unable to disable screen capture protection:',
-          error
-        );
-      }
-    };
-
-    if (mounted) {
-      if (visible) {
-        enableProtection();
-      } else {
-        disableProtection();
-      }
-    }
-
-    return () => {
-      mounted = false;
-    };
-  }, [visible]);
-
-  /*
    * Reset page/zoom when a different document is opened.
    */
   useEffect(() => {
@@ -103,17 +43,6 @@ export default function PdfDocumentViewerModal({
       setZoomScale(1.0);
     }
   }, [visible, doc?.chipName]);
-
-  /*
-   * Safety cleanup:
-   * If this component is removed while visible, restore
-   * normal screen capture behavior.
-   */
-  useEffect(() => {
-    return () => {
-      ScreenCapture.allowScreenCaptureAsync().catch(() => {});
-    };
-  }, []);
 
   if (!doc) {
     return null;
