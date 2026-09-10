@@ -127,12 +127,26 @@ export default function PdfDocumentViewerModal({
         }),
       ]).start();
     } else {
-      Animated.timing(scaleAnim, {
-        toValue: clamped,
-        duration: 220,
-        easing: Easing.out(Easing.cubic),
-        useNativeDriver: true,
-      }).start();
+      const maxPanX = Math.max(0, ((clamped - 1) * pageWidth) / 2);
+      const maxPanY = Math.max(0, ((clamped - 1) * pageHeight) / 2);
+      const targetX = Math.min(Math.max(currentPan.current.x, -maxPanX), maxPanX);
+      const targetY = Math.min(Math.max(currentPan.current.y, -maxPanY), maxPanY);
+      currentPan.current = { x: targetX, y: targetY };
+
+      Animated.parallel([
+        Animated.timing(scaleAnim, {
+          toValue: clamped,
+          duration: 220,
+          easing: Easing.out(Easing.cubic),
+          useNativeDriver: true,
+        }),
+        Animated.timing(panAnim, {
+          toValue: { x: targetX, y: targetY },
+          duration: 220,
+          easing: Easing.out(Easing.cubic),
+          useNativeDriver: true,
+        }),
+      ]).start();
     }
   };
 
@@ -215,6 +229,13 @@ export default function PdfDocumentViewerModal({
 
           currentScale.current = nextScale;
           scaleAnim.setValue(nextScale);
+
+          // Keep pan within new scale bounds so no black space can appear during pinch
+          const maxPanX = Math.max(0, ((nextScale - 1) * pageWidth) / 2);
+          const maxPanY = Math.max(0, ((nextScale - 1) * pageHeight) / 2);
+          const clampedX = Math.min(Math.max(currentPan.current.x, -maxPanX), maxPanX);
+          const clampedY = Math.min(Math.max(currentPan.current.y, -maxPanY), maxPanY);
+          panAnim.setValue({ x: clampedX, y: clampedY });
           return;
         }
 
@@ -351,9 +372,9 @@ export default function PdfDocumentViewerModal({
                 styles.animatedWrapper,
                 {
                   transform: [
-                    { scale: scaleAnim },
                     { translateX: panAnim.x },
                     { translateY: panAnim.y },
+                    { scale: scaleAnim },
                   ],
                 },
               ]}
