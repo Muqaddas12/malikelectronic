@@ -114,24 +114,18 @@ export default function InteractiveViewer({
 
   const panResponder = useRef(
     PanResponder.create({
-      onStartShouldSetPanResponder: (evt) => {
-        return evt.nativeEvent.touches.length >= 2 || currentScale.current > 1.05;
-      },
-      onMoveShouldSetPanResponder: (evt) => {
-        return evt.nativeEvent.touches.length >= 2 || currentScale.current > 1.05;
-      },
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: () => true,
       onStartShouldSetPanResponderCapture: () => false,
-      onMoveShouldSetPanResponderCapture: (evt) => {
-        return evt.nativeEvent.touches.length >= 2 || currentScale.current > 1.05;
-      },
+      onMoveShouldSetPanResponderCapture: () => false,
 
       onPanResponderGrant: (evt) => {
         const touches = evt.nativeEvent.touches;
 
         // Double-tap zoom toggle (1.0x <-> 2.5x)
         const now = Date.now();
-        if (touches.length === 1 && now - lastTapTime.current < 280) {
-          const targetScale = currentScale.current > 1.3 ? 1.0 : 2.5;
+        if (touches.length === 1 && now - lastTapTime.current < 350 && now - lastTapTime.current > 40) {
+          const targetScale = currentScale.current > 1.2 ? 1.0 : 2.5;
           currentScale.current = targetScale;
 
           if (targetScale <= 1.05) {
@@ -169,7 +163,7 @@ export default function InteractiveViewer({
           initialPinchDist.current = calcDistance(touches[0], touches[1]);
           pinchStartScale.current = currentScale.current;
           pinchStartPan.current = { ...currentPan.current };
-        } else if (currentScale.current > 1.05) {
+        } else {
           pinchStartPan.current = { ...currentPan.current };
         }
       },
@@ -178,8 +172,15 @@ export default function InteractiveViewer({
         const touches = evt.nativeEvent.touches;
 
         // 2-FINGER FLUID PINCH-TO-ZOOM (60/120 FPS native transforms without mid-gesture re-renders)
-        if (touches.length >= 2 && initialPinchDist.current) {
+        if (touches.length >= 2) {
           const dist = calcDistance(touches[0], touches[1]);
+          if (!initialPinchDist.current || initialPinchDist.current <= 0) {
+            initialPinchDist.current = dist;
+            pinchStartScale.current = currentScale.current;
+            pinchStartPan.current = { ...currentPan.current };
+            return;
+          }
+
           const ratio = dist / initialPinchDist.current;
           const nextScale = Math.min(Math.max(pinchStartScale.current * ratio, minScale), maxScale);
 
@@ -191,12 +192,19 @@ export default function InteractiveViewer({
           const maxPanY = Math.max(0, (baseHeight * (nextScale - 1)) / 2);
           const clampedX = Math.min(Math.max(currentPan.current.x, -maxPanX), maxPanX);
           const clampedY = Math.min(Math.max(currentPan.current.y, -maxPanY), maxPanY);
+          currentPan.current = { x: clampedX, y: clampedY };
           pan.setValue({ x: clampedX, y: clampedY });
           return;
         }
 
         // 1-FINGER 2D PAN WHEN ZOOMED IN
         if (touches.length === 1 && currentScale.current > 1.05) {
+          // If finger lifted from a 2-finger pinch, smoothly re-anchor pan
+          if (initialPinchDist.current !== null) {
+            initialPinchDist.current = null;
+            pinchStartPan.current = { ...currentPan.current };
+          }
+
           const maxPanX = Math.max(0, (baseWidth * (currentScale.current - 1)) / 2);
           const maxPanY = Math.max(0, (baseHeight * (currentScale.current - 1)) / 2);
 
@@ -207,6 +215,7 @@ export default function InteractiveViewer({
           targetX = Math.min(Math.max(targetX, -maxPanX), maxPanX);
           targetY = Math.min(Math.max(targetY, -maxPanY), maxPanY);
 
+          currentPan.current = { x: targetX, y: targetY };
           pan.setValue({ x: targetX, y: targetY });
         }
       },
@@ -233,13 +242,12 @@ export default function InteractiveViewer({
           ]).start();
           if (onScaleChange) onScaleChange(1.0);
         } else {
-          // @ts-ignore
-          const finalX = pan.x._value ?? currentPan.current.x;
-          // @ts-ignore
-          const finalY = pan.y._value ?? currentPan.current.y;
-          currentPan.current = { x: finalX, y: finalY };
-          if (onScaleChange) onScaleChange(currentScale.current);
+          if (onScaleChange) onScaleChange(Number(currentScale.current.toFixed(2)));
         }
+      },
+
+      onPanResponderTerminate: () => {
+        initialPinchDist.current = null;
       },
     })
   ).current;

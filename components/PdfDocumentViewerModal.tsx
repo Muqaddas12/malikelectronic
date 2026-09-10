@@ -66,19 +66,22 @@ export default function PdfDocumentViewerModal({
   // Pinch gesture tracking
   const initialDistance = useRef<number | null>(null);
   const pinchStartScale = useRef(1.0);
+  const zoomScaleRef = useRef(1.0);
 
   // Reset when new document opens
   useEffect(() => {
     if (visible) {
       setCurrentPage(1);
       setZoomScale(1.0);
+      zoomScaleRef.current = 1.0;
       currentScrollY.current = 0;
     }
   }, [visible, doc?.chipName]);
 
   const updateZoom = (nextScale: number) => {
     const clamped = Math.min(Math.max(nextScale, 1.0), 3.2);
-    const oldScale = zoomScale;
+    const oldScale = zoomScaleRef.current;
+    zoomScaleRef.current = clamped;
     setZoomScale(clamped);
 
     // Smoothly preserve relative scroll position
@@ -123,8 +126,8 @@ export default function PdfDocumentViewerModal({
   // Double-tap handler on pages
   const handlePageDoubleTap = () => {
     const now = Date.now();
-    if (now - lastTapTime.current < 280) {
-      if (zoomScale > 1.2) {
+    if (now - lastTapTime.current < 350 && now - lastTapTime.current > 40) {
+      if (zoomScaleRef.current > 1.2) {
         updateZoom(1.0);
       } else {
         updateZoom(2.0);
@@ -149,16 +152,21 @@ export default function PdfDocumentViewerModal({
             evt.nativeEvent.touches[0],
             evt.nativeEvent.touches[1]
           );
-          pinchStartScale.current = zoomScale;
+          pinchStartScale.current = zoomScaleRef.current;
         }
       },
 
       onPanResponderMove: (evt) => {
-        if (evt.nativeEvent.touches.length >= 2 && initialDistance.current) {
+        if (evt.nativeEvent.touches.length >= 2) {
           const dist = getTouchDistance(
             evt.nativeEvent.touches[0],
             evt.nativeEvent.touches[1]
           );
+          if (!initialDistance.current || initialDistance.current <= 0) {
+            initialDistance.current = dist;
+            pinchStartScale.current = zoomScaleRef.current;
+            return;
+          }
           const ratio = dist / initialDistance.current;
           const target = Math.min(Math.max(pinchStartScale.current * ratio, 1.0), 3.2);
           updateZoom(Number(target.toFixed(2)));
@@ -166,6 +174,9 @@ export default function PdfDocumentViewerModal({
       },
 
       onPanResponderRelease: () => {
+        initialDistance.current = null;
+      },
+      onPanResponderTerminate: () => {
         initialDistance.current = null;
       },
     })
