@@ -50,6 +50,10 @@ export type InverterFaultDetail = {
 
   /** PCB / circuit diagram image for this specific fault */
   diagramImage?: any;
+  /** Web / Google Drive link for this diagram */
+  diagramLink?: string;
+  /** Microcontroller pins used in this circuit/fault */
+  usedPins?: string;
 
   symptoms: string[];
   basicChecks: string[];

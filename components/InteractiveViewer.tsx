@@ -1,12 +1,14 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
-  Animated,
-  Image,
-  ImageSourcePropType,
-  PanResponder,
-  StyleSheet,
-  useWindowDimensions,
-  View,
+    ActivityIndicator,
+    Animated,
+    Image,
+    ImageSourcePropType,
+    PanResponder,
+    StyleSheet,
+    Text,
+    useWindowDimensions,
+    View,
 } from 'react-native';
 
 type Props = {
@@ -38,6 +40,8 @@ export default function InteractiveViewer({
   onScaleChange,
 }: Props) {
   const { width: windowWidth, height: windowHeight } = useWindowDimensions();
+  const [isLoading, setIsLoading] = useState(false);
+  const [hasError, setHasError] = useState(false);
 
   // Dynamic responsive dimensions for portrait and landscape
   const baseWidth = propWidth ?? (windowWidth - 24);
@@ -258,7 +262,31 @@ export default function InteractiveViewer({
             height: baseHeight,
           }}
           resizeMode="contain"
+          onLoadStart={() => setIsLoading(true)}
+          onLoadStart={() => {
+            setIsLoading(true);
+            setHasError(false);
+          }}
+          onLoadEnd={() => setIsLoading(false)}
+          onError={() => {
+            setIsLoading(false);
+            setHasError(true);
+          }}
         />
+        {isLoading && (
+          <View style={styles.loaderContainer}>
+            <ActivityIndicator size="large" color="#38BDF8" />
+          </View>
+        )}
+        {hasError && (
+          <View style={styles.errorContainer}>
+            <Text style={styles.errorIcon}>⚠️</Text>
+            <Text style={styles.errorTitle}>Diagram Not Accessible</Text>
+            <Text style={styles.errorSubtitle}>
+              Google Drive file access restricted. Please set file sharing to "Anyone with the link can view".
+            </Text>
+          </View>
+        )}
       </Animated.View>
     </View>
   );
@@ -275,5 +303,38 @@ const styles = StyleSheet.create({
   imageWrapper: {
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  loaderContainer: {
+    ...StyleSheet.absoluteFillObject,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(11, 15, 25, 0.6)',
+  },
+  errorContainer: {
+    padding: 24,
+    backgroundColor: '#1F2937',
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    maxWidth: 320,
+    borderWidth: 1,
+    borderColor: '#374151',
+  },
+  errorIcon: {
+    fontSize: 32,
+    marginBottom: 8,
+  },
+  errorTitle: {
+    color: '#F87171',
+    fontSize: 15,
+    fontWeight: '700',
+    textAlign: 'center',
+    marginBottom: 6,
+  },
+  errorSubtitle: {
+    color: '#9CA3AF',
+    fontSize: 12,
+    textAlign: 'center',
+    lineHeight: 18,
   },
 });

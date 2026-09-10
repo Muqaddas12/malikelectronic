@@ -1,9 +1,39 @@
+import luminousConfig from '@/config/Luminous.json';
+import microtekConfig from '@/config/Microtek.json';
+import sukamConfig from '@/config/sukam.json';
+
 /**
- * Diagram map — maps [inverterId][faultId] to authentic hand-drawn / schematic circuit diagrams.
- * Only references genuine, dedicated pin-to-component diagrams.
+ * Converts Google Drive shareable link into direct displayable image URL
+ * Converts Google Drive shareable link into a direct displayable image URL.
+ * Uses Google's direct CDN endpoint (lh3.googleusercontent.com/d/<ID>) which
+ * serves the image directly.
+ */
+export function formatDriveImageUrl(link?: string): string {
+  if (!link) return '';
+  const match =
+    link.match(/\/file\/d\/([a-zA-Z0-9_-]+)/) ||
+    link.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+  if (match && match[1]) {
+    return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w2000`;
+    return `https://lh3.googleusercontent.com/d/${match[1]}`;
+  }
+  return link;
+}
+
+export function getDriveImageSource(link?: string) {
+  if (!link) return undefined;
+  const uri = formatDriveImageUrl(link);
+  return uri ? { uri } : undefined;
+}
+
+/**
+ * Diagram map — maps [inverterId][faultId] to authentic circuit diagrams or links.
+ * Diagram map — strictly populated from the official JSON data files
+ * (Luminous.json, Microtek.json, sukam.json).
  */
 export const diagramMap: Record<string, Record<string, any>> = {
   // ─── Luminous Eco Watt+ ────────────────────────────────────────────────────
+  // ─── Luminous Eco Watt+ (from Luminous.json) ──────────────────────────────
   'LuminousEcoWatt': {
     /**
      * Cooling Fan Circuit:
@@ -32,14 +62,24 @@ export const diagramMap: Record<string, Record<string, any>> = {
      *   Path 2: R1 (10kΩ) → R14 (10kΩ) → Q7 (1F) → R34/R131 to Pin 1 & R4/R19 to Pin 7
      */
     'relay': require('@/assets/diagrams/LuminousEcoWatt+/pin 7 1 change over diagram.jpg'),
+    /** Battery Low | OverCharge | Not Charging | Low Back UP (Pin 4) */
+    'low-battery': getDriveImageSource(luminousConfig['Luminous-Eco-Watt-Plus']?.[0]?.link),
+    /** Main FeedBack | Buzzer Sound On Mains Mode (Pin 3) */
+    'main-feedback': getDriveImageSource(luminousConfig['Luminous-Eco-Watt-Plus']?.[1]?.link),
   },
 
   // ─── Microtek Home UPS (EB 900 / V4–V7 Series) ────────────────────────────
+  // ─── Microtek EB 900 / Semi Sine Wave (from Microtek.json) ────────────────
   'microtek-inverter': {
     /**
      * Microcontroller 28-Pin Details (EB 900 Sine Wave / EBHB-SGP-V3R3):
      */
     'microcontroller-pin-details': require('@/assets/diagrams/Microtek-V4-To-V7-Model/Microcontroller.png'),
+    /** Battery Low | OverCharge | Not Charging | Low Back UP (Pin 3) */
+    'low-battery': getDriveImageSource(microtekConfig['microtek-eb-semi-sine-wave']?.[0]?.link),
+    /** Microcontroller */
+    'microcontroller-pin-details': getDriveImageSource(microtekConfig['microtek-eb-semi-sine-wave']?.[1]?.link),
+  },
 
     /**
      * Battery Low / Overcharge Sensing Circuit:
@@ -75,14 +115,21 @@ export const diagramMap: Record<string, Record<string, any>> = {
      *   PIC16F72 Pins 11-15 (LEDs) + Q6 (1F) + Pin 25 → R80 (4.7k) → Q16 → Buzzer BZ1
      */
     'no-output': require('@/assets/diagrams/Microtek-V4-To-V7-Model/11 12 13 14 15 23 25 microtek display diagram.png'),
+  // ─── Microtek Square Wave (from Microtek.json) ────────────────────────────
+  'microtek-square-wave': {
+    /** Microcontroller */
+    'microcontroller-pin-details': getDriveImageSource(microtekConfig['microtek-eb-square-wave']?.[0]?.link),
   },
 
   // ─── Microtek 24x7 Hybrid Series ──────────────────────────────────────────
+  // ─── Microtek 24x7 Non-SMD (from Microtek.json) ───────────────────────────
   'microtek-24x7': {
     /**
      * Microcontroller 20-Pin Details (Non-SMD DIP IC):
      */
     'microcontroller-pin-details': require('@/assets/diagrams/Microtek-24x7/Microcontroller.png'),
+    /** Microcontroller */
+    'microcontroller-pin-details': getDriveImageSource(microtekConfig['microtek-24x7-Non-Smd']?.[0]?.link),
   },
 
   // ─── Microtek Square Wave (JM1250 / Classic Series) ────────────────────────
@@ -94,26 +141,39 @@ export const diagramMap: Record<string, Record<string, any>> = {
   },
 
   // ─── Su-Kam Shark SMD / DIP (Square Wave) ──────────────────────────────────
+  // ─── Su-Kam Shark SMD / DIP (from sukam.json) ─────────────────────────────
   'sukam-shark-inverter': {
-    /**
-     * Microcontroller 28-Pin Details & Voltage Guide:
-     *   Pins 1-28 complete functions, sensing, relay drives, switching & LED voltages
-     */
-    'microcontroller-pin-details': require('@/assets/diagrams/Sukam-Shark-Smd-Dip-Old-Model/Microcontroller.png'),
+    /** Dead inverter | Only beep sound | Vcc supply problem (Pins 1, 20) */
+    'dead-vcc': getDriveImageSource(sukamConfig['sukam-shark'][0]?.link),
+    'dead-vcc': getDriveImageSource(sukamConfig['sukam-shark']?.[0]?.link),
+    /** Change Over | Zero Cross Sense | Main Feedback (Pins 2, 22, 18) */
+    'changeover': getDriveImageSource(sukamConfig['sukam-shark'][1]?.link),
+    'changeover': getDriveImageSource(sukamConfig['sukam-shark']?.[1]?.link),
+    /** Battery Low | OverCharge | Not Charging | Low Back UP (Pin 3) */
+    'low-battery': getDriveImageSource(sukamConfig['sukam-shark'][2]?.link),
+    'low-battery': getDriveImageSource(sukamConfig['sukam-shark']?.[2]?.link),
+    /** Switch Not Working | Only Charging Light Blinking | Inverter on But Not Output | Relay Not Operating (Pins 6, 11, 23) */
+    'switch-relay': getDriveImageSource(sukamConfig['sukam-shark'][3]?.link),
+    'switch-relay': getDriveImageSource(sukamConfig['sukam-shark']?.[3]?.link),
+    /** Fan | Buzzer | Heat Sensor | Inverter OverHeating (Pins 7, 17, 24) */
+    'fan-overheating': getDriveImageSource(sukamConfig['sukam-shark'][4]?.link),
+    /** Microcontroller 28-Pin Details & Voltage Guide */
+    'microcontroller-pin-details': getDriveImageSource(sukamConfig['sukam-shark'][5]?.link),
+    'fan-overheating': getDriveImageSource(sukamConfig['sukam-shark']?.[4]?.link),
+    /** Microcontroller */
+    'microcontroller-pin-details': getDriveImageSource(sukamConfig['sukam-shark']?.[5]?.link),
   },
 
   // ─── Su-Kam Shiny Sine Wave ───────────────────────────────────────────────
+  // ─── Su-Kam Shiny Sine Wave (from sukam.json) ─────────────────────────────
   'sukam-shiny-inverter': {
-    /**
-     * Changeover Circuit:
-     *   Mains 230V (N, FB) → 23-0-23/400V Step Down Transformer → D9, D16 (M7) Bridge → R52 (15kΩ) & R73 (1kΩ) + C21 (0.47µF/63V) → Micro IC Pin 2 (~1.6V)
-     */
-    'changeover': require('@/assets/diagrams/Sukam-Shiny-Sinewave/ChangeOver.png'),
-
-    /**
-     * Microcontroller 28-Pin Details (PIC16F72):
-     */
-    'microcontroller-pin-details': require('@/assets/diagrams/Sukam-Shiny-Sinewave/Microcontroller.png'),
+    /** Change Over (Pin 2) */
+    'changeover': getDriveImageSource(sukamConfig['sukam-shiny'][0]?.link),
+    /** Microcontroller 28-Pin Details (PIC16F72) */
+    'microcontroller-pin-details': getDriveImageSource(sukamConfig['sukam-shiny'][1]?.link),
+    'changeover': getDriveImageSource(sukamConfig['sukam-shiny']?.[0]?.link),
+    /** Microcontroller */
+    'microcontroller-pin-details': getDriveImageSource(sukamConfig['sukam-shiny']?.[1]?.link),
   },
 
   // ─── Livguard LG-E Model ──────────────────────────────────────────────────
@@ -135,8 +195,9 @@ export const diagramMap: Record<string, Record<string, any>> = {
 };
 
 /**
- * Get the circuit diagram image for a specific inverter fault.
- * Returns the diagram image or undefined if not available.
+ * Get the circuit diagram image source for a specific inverter fault.
+ * Returns { uri: string } or require(...) asset, or undefined if not available.
+ * Returns { uri: string } or undefined if not in JSON data.
  */
 export function getDiagramImage(
   inverterId?: string,
@@ -144,4 +205,61 @@ export function getDiagramImage(
 ): any | undefined {
   if (!inverterId || !faultId) return undefined;
   return diagramMap[inverterId]?.[faultId];
+}
+
+/**
+ * Get the web / Google Drive link for a circuit diagram if available.
+ * Get the Google Drive link for a circuit diagram strictly from JSON files.
+ */
+export function getDiagramLink(
+  inverterId?: string,
+  faultId?: string,
+): string | undefined {
+  if (!inverterId || !faultId) return undefined;
+
+  if (inverterId === 'LuminousEcoWatt') {
+    const list = luminousConfig['Luminous-Eco-Watt-Plus'];
+    if (faultId === 'low-battery') return list?.[0]?.link;
+    if (faultId === 'main-feedback') return list?.[1]?.link;
+  }
+
+  if (inverterId === 'microtek-inverter') {
+    const list = microtekConfig['microtek-eb-semi-sine-wave'];
+    if (faultId === 'low-battery') return list?.[0]?.link;
+    if (faultId === 'microcontroller-pin-details') return list?.[1]?.link;
+  }
+
+  if (inverterId === 'microtek-square-wave') {
+    return microtekConfig['microtek-eb-square-wave']?.[0]?.link;
+  }
+
+  if (inverterId === 'microtek-24x7') {
+    return microtekConfig['microtek-24x7-Non-Smd']?.[0]?.link;
+  }
+
+  if (inverterId === 'sukam-shark-inverter' || inverterId === 'sukam-shark') {
+    const shark = sukamConfig['sukam-shark'];
+    if (faultId === 'dead-vcc') return shark[0]?.link;
+    if (faultId === 'changeover') return shark[1]?.link;
+    if (faultId === 'low-battery') return shark[2]?.link;
+    if (faultId === 'switch-relay') return shark[3]?.link;
+    if (faultId === 'fan-overheating') return shark[4]?.link;
+    if (faultId === 'microcontroller-pin-details') return shark[5]?.link;
+    if (faultId === 'dead-vcc') return shark?.[0]?.link;
+    if (faultId === 'changeover') return shark?.[1]?.link;
+    if (faultId === 'low-battery') return shark?.[2]?.link;
+    if (faultId === 'switch-relay') return shark?.[3]?.link;
+    if (faultId === 'fan-overheating') return shark?.[4]?.link;
+    if (faultId === 'microcontroller-pin-details') return shark?.[5]?.link;
+  }
+
+  if (inverterId === 'sukam-shiny-inverter' || inverterId === 'sukam-shiny') {
+    const shiny = sukamConfig['sukam-shiny'];
+    if (faultId === 'changeover') return shiny[0]?.link;
+    if (faultId === 'microcontroller-pin-details') return shiny[1]?.link;
+    if (faultId === 'changeover') return shiny?.[0]?.link;
+    if (faultId === 'microcontroller-pin-details') return shiny?.[1]?.link;
+  }
+
+  return undefined;
 }

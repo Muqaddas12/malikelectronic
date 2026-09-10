@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Image, Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -7,13 +8,13 @@ import { useLocalSearchParams } from 'expo-router';
 import AppHeader from '@/components/AppHeader';
 import DiagramViewerModal from '@/components/DiagramViewerModal';
 import {
-  layout,
-  lineFor,
-  mono,
-  radius,
-  size,
-  space,
-  weight,
+    layout,
+    lineFor,
+    mono,
+    radius,
+    size,
+    space,
+    weight,
 } from '@/constants/theme';
 import { useLanguage } from '@/context/LanguageContext';
 import { useTheme } from '@/context/ThemeContext';
@@ -474,6 +475,7 @@ export default function FaultDetailScreen() {
       <DiagramViewerModal
         visible={isImageModalOpen}
         source={fault.diagramImage}
+        link={fault.diagramLink}
         title={fault.title}
         subtitle={tr(language, 'zoomHint')}
         onClose={() => setIsImageModalOpen(false)}
@@ -500,6 +502,32 @@ export default function FaultDetailScreen() {
             </Text>
           </View>
         </View>
+
+        {fault.usedPins ? (
+          <View
+            style={[
+              styles.pinsBar,
+              { backgroundColor: colors.panel, borderColor: colors.rule },
+            ]}
+          >
+            <Text style={[styles.pinsLabel, { color: colors.textDim }]}>
+              {isHindi ? 'IC पिन विवरण:' : 'Microcontroller Pins:'}
+            </Text>
+            <View
+              style={[
+                styles.pinsBadge,
+                {
+                  backgroundColor: colors.panelSunken,
+                  borderColor: colors.ruleStrong,
+                },
+              ]}
+            >
+              <Text style={[styles.pinsValue, { color: colors.readout }]}>
+                Pins: {fault.usedPins}
+              </Text>
+            </View>
+          </View>
+        ) : null}
 
         <BulletSection
           title={tr(language, 'symptoms')}
@@ -540,6 +568,31 @@ export default function FaultDetailScreen() {
                 </Text>
               </View>
             </Pressable>
+          ) : null}
+
+          {fault.diagramLink ? (
+            <Pressable
+              onPress={() => Linking.openURL(fault.diagramLink!)}
+              accessibilityRole="link"
+              accessibilityLabel={isHindi ? 'ड्राइव में आरेख खोलें' : 'Open diagram in Google Drive'}
+              style={({ pressed }) => [
+                styles.diagramLinkButton,
+                {
+                  backgroundColor: pressed ? colors.panelRaised : colors.panelSunken,
+                  borderColor: colors.rule,
+                  marginTop: fault.diagramImage ? space.md : 0,
+                },
+              ]}
+            >
+              <Text style={styles.diagramLinkIcon}>🌐</Text>
+              <Text style={[styles.diagramLinkText, { color: colors.readout }]}>
+                {isHindi ? 'गूगल ड्राइव में आरेख खोलें' : 'View Full Diagram on Google Drive'}
+              </Text>
+              <Text style={[styles.diagramLinkArrow, { color: colors.readout }]}>↗</Text>
+            </Pressable>
+          ) : null}
+
+          {!fault.diagramImage && !fault.diagramLink ? (
           ) : (
             <View
               style={[
@@ -568,6 +621,7 @@ export default function FaultDetailScreen() {
                 {tr(language, 'noDiagramText')}
               </Text>
             </View>
+          ) : null}
           )}
         </Card>
 
@@ -896,6 +950,63 @@ const styles = StyleSheet.create({
   stepBody: {
     fontSize: size.small,
     marginTop: 2,
+  },
+
+  /* PINS BAR */
+
+  pinsBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: space.md,
+    paddingVertical: space.sm,
+    borderRadius: radius.md,
+    borderWidth: StyleSheet.hairlineWidth,
+    gap: space.sm,
+  },
+
+  pinsLabel: {
+    fontSize: size.small,
+    fontWeight: weight.semi,
+  },
+
+  pinsBadge: {
+    paddingHorizontal: space.sm,
+    paddingVertical: 2,
+    borderRadius: radius.sm,
+    borderWidth: StyleSheet.hairlineWidth,
+  },
+
+  pinsValue: {
+    fontFamily: mono,
+    fontSize: size.small,
+    fontWeight: weight.bold,
+  },
+
+  /* DIAGRAM LINK BUTTON */
+
+  diagramLinkButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: space.md,
+    paddingHorizontal: space.lg,
+    borderRadius: radius.md,
+    borderWidth: StyleSheet.hairlineWidth,
+    gap: space.sm,
+  },
+
+  diagramLinkIcon: {
+    fontSize: 16,
+  },
+
+  diagramLinkText: {
+    fontSize: size.body,
+    fontWeight: weight.bold,
+  },
+
+  diagramLinkArrow: {
+    fontSize: 16,
+    fontWeight: weight.bold,
   },
 
   /* DIAGRAM */

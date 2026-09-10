@@ -1,3 +1,7 @@
+import microtekConfig from '@/config/Microtek.json';
+import sukamConfig from '@/config/sukam.json';
+import { getDriveImageSource } from '@/data/diagrams';
+
 export interface MicrocontrollerDoc {
   inverterId: string;
   chipName: string;
@@ -26,8 +30,10 @@ export const microcontrollerDocs: Record<string, MicrocontrollerDoc> = {
     subtitle: 'Complete 28-Pin voltage chart in Mains, UPS & Normal modes with pin functions',
     pages: [
       require('@/assets/diagrams/Microtek-V4-To-V7-Model/Microcontroller.png'),
+      getDriveImageSource(microtekConfig['microtek-eb-semi-sine-wave']?.[1]?.link),
       require('@/assets/microcontroller/microtek/microtek_mc_pindetails_page_1.png'),
     ],
+    ].filter(Boolean),
   },
 
   'microtek-24x7': {
@@ -38,6 +44,8 @@ export const microcontrollerDocs: Record<string, MicrocontrollerDoc> = {
     pages: [
       require('@/assets/diagrams/Microtek-24x7/Microcontroller.png'),
     ],
+      getDriveImageSource(microtekConfig['microtek-24x7-Non-Smd']?.[0]?.link),
+    ].filter(Boolean),
   },
 
   'microtek-square-wave': {
@@ -48,6 +56,8 @@ export const microcontrollerDocs: Record<string, MicrocontrollerDoc> = {
     pages: [
       require('@/assets/diagrams/Microtek-Square-wave/Microcontroller.png'),
     ],
+      getDriveImageSource(microtekConfig['microtek-eb-square-wave']?.[0]?.link),
+    ].filter(Boolean),
   },
 
   'sukam-shark-inverter': {
@@ -56,8 +66,8 @@ export const microcontrollerDocs: Record<string, MicrocontrollerDoc> = {
     title: 'Su-Kam Shark SMD / DIP Microprocessor Pin Details',
     subtitle: 'Complete 28-Pin voltage chart across Mains & Inverter modes',
     pages: [
-      require('@/assets/diagrams/Sukam-Shark-Smd-Dip-Old-Model/Microcontroller.png'),
-    ],
+      getDriveImageSource(sukamConfig['sukam-shark'][5]?.link),
+    ].filter(Boolean),
   },
 
   'sukam-shiny-inverter': {
@@ -66,8 +76,8 @@ export const microcontrollerDocs: Record<string, MicrocontrollerDoc> = {
     title: 'Su-Kam Shiny Sine Wave Microcontroller Pin Details',
     subtitle: 'Complete 28-Pin live voltages, pinouts, and testing guide for PIC16F72',
     pages: [
-      require('@/assets/diagrams/Sukam-Shiny-Sinewave/Microcontroller.png'),
-    ],
+      getDriveImageSource(sukamConfig['sukam-shiny'][1]?.link),
+    ].filter(Boolean),
   },
 };
 

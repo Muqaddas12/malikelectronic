@@ -1,4 +1,4 @@
-import { getDiagramImage } from '@/data/diagrams';
+import { getDiagramImage, getDiagramLink } from '@/data/diagrams';
 import { InverterFaultDetail } from '@/types/faultDetail';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -4338,6 +4338,281 @@ export const inverterFaultsMap: Record<
 
   // ─── Su-Kam Shark SMD / DIP (Square Wave) ──────────────────────────────────
   'sukam-shark-inverter': {
+    'dead-vcc': {
+      id: 'dead-vcc',
+      title: 'Dead Inverter | Only Beep Sound | VCC Supply Problem',
+      subtitle:
+        'Su-Kam Shark inverter dead hone, continuous beep sound aane ya VCC supply fail hone par Microcontroller Pin 1 (Reset) aur Pin 20 (+5V VCC) supply circuit ki jaanch karein.',
+      icon: '⚡',
+      severity: 'critical',
+      usedPins: '1, 20',
+      diagramLink: 'https://drive.google.com/file/d/1E25l442ugAOP9i7vQC3UawcO4xyfFVlf/view?usp=drive_link',
+
+      symptoms: [
+        'Inverter switch dabane par bilkul dead hai — koi display ya response nahi',
+        'Inverter power dete hi sirf single ya continuous beep sound karta rehta hai',
+        'Microcontroller Pin 20 par +5.0V VCC power supply missing ya drop hai (below 4.5V)',
+        'Pin 1 Master Reset line par continuous 0V ground mil rahi hai',
+      ],
+
+      basicChecks: [
+        '7805 regulator ke Output pin par exact +5.0V DC multimeter se check karein',
+        'Microcontroller Pin 20 par +5.0V VCC supply measure karein',
+        'Microcontroller Pin 1 (Reset pin) par 5.0V logic high verify karein',
+        'Pin 8 aur Pin 19 par ground continuity (0V) verify karein',
+        'Pins 9 & 10 Crystal Oscillator par ~2.4V DC check karein',
+        '5V power rail filter capacitor par short circuit check karein',
+      ],
+
+      technicalExplanation: {
+        title: 'Su-Kam Shark VCC & Reset Control Circuit (Pins 1 & 20)',
+        explanation:
+          '12V battery power se LM7805 voltage regulator +5V DC banata hai jo Microcontroller ke Pin 20 (VCC) ko run karta hai. Pin 1 (Master Clear Reset) par pull-up resistor se continuous +5V aana zaroori hai. Agar Pin 20 par 5V missing ho ya Pin 1 ground se short ho to microcontroller start nahi hota aur continuous beep alert deta hai.',
+        components: [
+          { component: 'Pin 20 (VCC)', function: 'Microcontroller +5V DC regulated power supply input.', value: '5.0V DC' },
+          { component: 'Pin 1 (RESET)', function: 'Active-low CPU reset line. Running par 5V pull-up hona chahiye.', value: '5.0V DC' },
+          { component: '7805 Regulator', function: 'Main 5V voltage regulator IC.', value: 'LM7805 / 5V Reg' },
+          { component: 'Crystal (Pins 9/10)', function: 'Clock oscillator inputs for CPU instruction timing.', value: '2.4V DC' },
+        ],
+      },
+
+      possibleCauses: [
+        { cause: '7805 Regulator damaged', explanation: '7805 kharab hone se Pin 20 par 5V nahi pahunchti aur pura system dead rehta hai.' },
+        { cause: 'Pin 1 Reset pin ground short', explanation: 'Reset line low rehne par CPU execution freeze ho jati hai.' },
+        { cause: '5V line filter capacitor short', explanation: 'Ceramic capacitor leak hone se 5V rail ground se short ho jati hai.' },
+        { cause: 'Crystal oscillator fail', explanation: 'Clock missing hone se chip boot nahi hoti aur beep alert trigger hota hai.' },
+      ],
+
+      repairProcedure: [
+        { step: 1, title: '7805 Output Test', explanation: 'Regulator ke Pin 3 par +5.0V DC check karein. Agar 0V ya drop ho to regulator replace karein.' },
+        { step: 2, title: 'Pin 20 & Pin 1 Voltages Test', explanation: 'Microcontroller ke Pin 20 aur Pin 1 par exactly 5.0V DC multimeter se verify karein.' },
+        { step: 3, title: 'Crystal & Ground Test', explanation: 'Pin 8/19 GND confirm karein aur Pins 9/10 par 2.4V DC clock check karein.' },
+        { step: 4, title: 'Filter Capacitor Replacement', explanation: 'Agar 5V rail par resistance low/zero aaye to short filter capacitor replace karein.' },
+      ],
+
+      circuitFlow: '12V Battery ➔ 7805 Regulator (Pin 3 Out) ➔ Micro Pin 20 (5.0V VCC) & Pin 1 (5.0V Reset) ➔ Crystal 2.4V (Pins 9/10) ➔ Boot',
+      importantNote: 'Pin 1 aur Pin 20 dono par 5V hona lazmi hai. 4.5V se kam aane par chip reset loop me fass jati hai.',
+      diagnosis: 'Pin 20 = 5V aur Pin 1 = 5V hone par bhi agar beep aaye to Crystal (Pins 9/10) ya microcontroller badlein.',
+    },
+
+    'changeover': {
+      id: 'changeover',
+      title: 'Change Over | Zero Cross Sense | Main Feedback',
+      subtitle:
+        'Su-Kam Shark inverter mein Mains detection, Zero Cross phase sensing aur Main Feedback ke liye Microcontroller ke Pins 2, 22 aur 18 check karein.',
+      icon: '🔄',
+      severity: 'high',
+      usedPins: '2, 22, 18',
+      diagramLink: 'https://drive.google.com/file/d/1dFxhRFY1ZgQMA6pC9-2lXjkq3QAX7l5f/view?usp=drive_link',
+
+      symptoms: [
+        'Mains 230V AC aane par bhi inverter backup mode se switch nahi hota',
+        'Inverter bar-bar mains connect aur disconnect karta hai (Hunting problem)',
+        'Mains line par Fuse Blown error show karta hai jabki fuse theek hai',
+        'Changeover switch hone ke dauran connected load band ya restart ho jata hai',
+      ],
+
+      basicChecks: [
+        'Mains connected hone par Pin 2 (Mains Sense) par 1.4V DC check karein',
+        'Pin 22 (Zero Cross / AC Volt) par Mains mein 2.5V aur Inv mein 5.0V DC check karein',
+        'Pin 18 (AC Fuse Blown feedback) par 5.0V DC logic level check karein',
+        'Mains sensing step-down transformer aur rectifier diodes test karein',
+        'Pin 2 aur Pin 22 ke filter capacitors par leakage test karein',
+      ],
+
+      technicalExplanation: {
+        title: 'Su-Kam Shark Mains Sensing & Zero Cross Circuit (Pins 2, 22, 18)',
+        explanation:
+          'AC Mains aane par sensing network Pin 2 par 1.4V DC mains presence signal deta hai. Pin 22 zero-crossing phase sync input signal (2.5V DC) banata hai taaki relay synchronous point par switch kare. Pin 18 input AC glass fuse ki status monitoring line hai jo normal rehne par 5V high rehti hai.',
+        components: [
+          { component: 'Pin 2 (Mains Sense)', function: 'AC mains detection input signal.', value: '1.4V (Mains) / 0V (Inv)' },
+          { component: 'Pin 22 (Zero Cross / AC Volt)', function: 'Zero-crossing phase detection and line voltage monitoring input.', value: '2.5V (Mains) / 5.0V (Inv)' },
+          { component: 'Pin 18 (Fuse Monitor)', function: 'AC input glass fuse health feedback input.', value: '5.0V DC' },
+        ],
+      },
+
+      possibleCauses: [
+        { cause: 'Pin 2 sensing resistor drift', explanation: 'Resistors open hone se Pin 2 par 1.4V nahi banti aur inverter mains detect nahi karta.' },
+        { cause: 'Pin 22 zero cross network fail', explanation: 'Zero cross signal missing hone par microcontroller changeover abort kar deta hai.' },
+        { cause: 'Pin 18 fuse sense line broken', explanation: 'Pin 18 par 0V ground aane se inverter "Fuse Blown" protection trip kar deta hai.' },
+      ],
+
+      repairProcedure: [
+        { step: 1, title: 'Pin 2 Mains Sense Measure', explanation: 'Mains ON karke Pin 2 par exactly 1.4V DC multimeter se check karein.' },
+        { step: 2, title: 'Pin 22 Zero Cross Voltage Test', explanation: 'Pin 22 par Mains mein 2.5V DC aur Inv mode mein 5.0V DC confirm karein.' },
+        { step: 3, title: 'Pin 18 Fuse Line Verify', explanation: 'Pin 18 par 5.0V verify karein. Agar 0V ho to track aur glass fuse check karein.' },
+        { step: 4, title: 'Divider Network Replacement', explanation: 'Mains sensing transformer, diode bridge ya defective resistor replace karein.' },
+      ],
+
+      circuitFlow: 'Mains 230V ➔ Sense Transformer & Diodes ➔ Pin 2 (1.4V) + Pin 22 (2.5V) + Pin 18 (5V) ➔ MCU Relay Trigger (Pins 11/23)',
+      importantNote: 'Mains hunting me Pin 2 ka 1.4V divider aur Pin 22 ka filter capacitor sabse common faults hote hain.',
+      diagnosis: 'Mains input par Pin 2 = 1.4V aur Pin 22 = 2.5V aane par changeover na ho to Relay Driver transistors (Pins 11, 23) check karein.',
+    },
+
+    'low-battery': {
+      id: 'low-battery',
+      title: 'Battery Low | OverCharge | Not Charging | Low Backup',
+      subtitle:
+        'Su-Kam Shark inverter mein Battery sensing divider, low battery cutoff aur charging cut-off logic Microcontroller ke Pin 3 par depend hota hai.',
+      icon: '🔋',
+      severity: 'high',
+      usedPins: '3',
+      diagramLink: 'https://drive.google.com/file/d/1BoshtdM1jf1pAInusF9wa9w0ltX4py0L/view?usp=drive_link',
+
+      symptoms: [
+        'Battery charged hone ke bawajood inverter "Low Battery" buzzer alarm dekar band ho jata hai',
+        'Inverter battery ko overcharge karta hai jisse battery boiling aur damage hone lagti hai',
+        'Battery charge nahi ho rahi ya charging current zero rehti hai',
+        'Backup time normal se bahut kam mil raha hai',
+      ],
+
+      basicChecks: [
+        '12V nominal battery par Pin 3 par exactly 3.4V DC multimeter se check karein',
+        'Battery terminals par multimeter se actual open circuit voltage (12V–14.4V) measure karein',
+        'Pin 3 voltage divider network ke resistors aur ground capacitor check karein',
+        'Pin 26 par charging drive PWM signal (Mains mode mein ~2.0V DC) verify karein',
+      ],
+
+      technicalExplanation: {
+        title: 'Su-Kam Shark Battery Sensing Circuit (Pin 3)',
+        explanation:
+          '12V battery terminal voltage ko precision resistor divider se scale down karke Microcontroller ke Pin 3 par feed kiya jata hai (12V nominal par approx 3.4V DC). Microcontroller isi voltage se Low Battery Cutoff (~10.5V battery par ~2.8V Pin 3) aur Overcharge Cutoff (~14.4V battery par ~4.0V Pin 3) handle karta hai.',
+        components: [
+          { component: 'Pin 3 (Batt Sense)', function: 'Analog battery voltage divider sensing input.', value: '3.4V DC (at 12V Nom)' },
+          { component: 'Divider Network', function: 'Battery to Pin 3 sensing scaling resistors.', value: 'Precision Resistors' },
+          { component: 'Filter Capacitor', function: 'Ground ripple suppression filter capacitor.', value: 'SMD Cap' },
+          { component: 'Pin 26 (Charging Drive)', function: 'Charging SCR/MOSFET control PWM output.', value: '2.0V DC (Mains)' },
+        ],
+      },
+
+      possibleCauses: [
+        { cause: 'Pin 3 divider resistor value shifted', explanation: 'Resistor drift hone se Pin 3 par wrong reading banti hai aur false low battery trip lag jata hai.' },
+        { cause: 'Filter capacitor leaky to GND', explanation: 'Capacitor leakage se Pin 3 voltage drop ho jati hai jisse inverter battery dead samajhta hai.' },
+        { cause: 'Pin 26 charging line open', explanation: 'Charging drive missing hone par SCR trigger nahi hota aur battery charge nahi hoti.' },
+      ],
+
+      repairProcedure: [
+        { step: 1, title: 'Pin 3 Sensed Voltage Measure', explanation: 'Multimeter DC par Pin 3 check karein — 12.0V battery par 3.4V DC aani chahiye.' },
+        { step: 2, title: 'Divider Resistors Test', explanation: 'Power OFF karke divider resistors ki exact value multimeter se test karein.' },
+        { step: 3, title: 'Filter Capacitor Leakage Check', explanation: 'Pin 3 se ground ke capacitor par leakage ya short verify karein.' },
+        { step: 4, title: 'Pin 26 Charging Trigger Test', explanation: 'Mains dekar Pin 26 par 2.0V DC charging pulse verify karein.' },
+      ],
+
+      circuitFlow: '12V Battery ➔ Precision Divider ➔ Pin 3 (3.4V DC) ➔ MCU ADC ➔ Charging PWM Output (Pin 26: 2.0V)',
+      importantNote: 'Battery low fault solve karne se pehle actual battery voltage multimeter se confirm karein.',
+      diagnosis: 'Actual battery 12.5V hone par agar Pin 3 par 3.0V se kam aa raha hai to Pin 3 divider resistor ya capacitor replace karein.',
+    },
+
+    'switch-relay': {
+      id: 'switch-relay',
+      title: 'Switch Not Working | Charging Blinking | No Output | Relay Fault',
+      subtitle:
+        'Su-Kam Shark inverter mein Front Panel Switch (Pin 6), Relay 1 Drive (Pin 11) aur Output Relay Drive (Pin 23) circuit troubleshooting.',
+      icon: '🔌',
+      severity: 'high',
+      usedPins: '6, 11, 23',
+      diagramLink: 'https://drive.google.com/file/d/1KVZEvEz5Il2xKFSwFY9CeFZpQCDtG64J/view?usp=drive_link',
+
+      symptoms: [
+        'Front panel push switch dabane par inverter ON ya OFF toggle nahi hota',
+        'Sirf charging light blink karti rehti hai lekin inverter on nahi hota',
+        'Inverter on ho raha hai lekin 230V AC output socket par koi voltage nahi aati',
+        'Changeover ya output relay click nahi karti (Relay not operating)',
+      ],
+
+      basicChecks: [
+        'Pin 6 (Power Switch) par release par 5.0V aur press karne par 0V ground check karein',
+        'Pin 11 (Relay 1 Drive) par 0V Mains aur 5.0V Inverter mode test karein',
+        'Pin 23 (Output Relay Drive) par 0V Mains aur 4.9V Inverter mode test karein',
+        'Relay driver transistors (1F / NPN) aur free-wheeling diodes test karein',
+        '12V Relay coil resistance aur contacts continuity check karein',
+      ],
+
+      technicalExplanation: {
+        title: 'Su-Kam Shark Switch & Relay Driver System (Pins 6, 11, 23)',
+        explanation:
+          'Front panel push button press hone par Micro Pin 6 ground hoti hai jisse MCU ON/OFF state toggle karta hai. Pin 11 aur Pin 23 driver transistors (1F) ke base par 5V logic signal dekar 12V relays ko activate karte hain. Agar Pin 6 par ground signal na mile ya Pin 11/23 ke driver transistors open ho jayein to relay click nahi karegi aur output dead rahegi.',
+        components: [
+          { component: 'Pin 6 (UPS Switch)', function: 'Front panel push switch toggle control input.', value: '5.0V (High) / 0V (Low)' },
+          { component: 'Pin 11 (Relay 1 Drive)', function: 'Changeover relay driver output.', value: '0V (Mains) / 5.0V (Inv)' },
+          { component: 'Pin 23 (Output Relay)', function: 'Main AC output relay driver trigger line.', value: '0V (Mains) / 4.9V (Inv)' },
+          { component: 'Driver Transistors', function: 'Relay coil ground switching NPN transistors.', value: '1F (NPN SMD)' },
+        ],
+      },
+
+      possibleCauses: [
+        { cause: 'Front push switch carbonized or open', explanation: 'Switch press hone par Pin 6 ground nahi hoti jisse MCU start nahi hota.' },
+        { cause: 'Driver transistor open', explanation: 'Pin 11 ya 23 se connected 1F transistor kharab hone se relay operate nahi karti.' },
+        { cause: 'Relay coil open ya burnt contacts', explanation: 'Relay defective hone se AC voltage output socket par pass nahi hoti.' },
+      ],
+
+      repairProcedure: [
+        { step: 1, title: 'Pin 6 Switch Toggle Test', explanation: 'Push button dabakar Pin 6 par 5V se 0V ka transition multimeter se measure karein.' },
+        { step: 2, title: 'Pin 11 & Pin 23 Drive Measure', explanation: 'Inverter ON condition par Pin 11 aur Pin 23 par ~4.9V high logic verify karein.' },
+        { step: 3, title: '1F Transistors Test', explanation: 'Driver transistors ke base-emitter drop aur collector ground switching test karein.' },
+        { step: 4, title: '12V Relay Replacement', explanation: 'Agar transistor collector low hota hai par relay click nahi karti to relay replace karein.' },
+      ],
+
+      circuitFlow: 'Front Switch ➔ Pin 6 (0V Low) ➔ MCU Toggle ➔ Pin 11/23 (4.9V High) ➔ 1F Transistors ➔ 12V Relays ➔ AC Output',
+      importantNote: 'Inverter ON par agar output missing ho to sabse pehle Pin 23 par 4.9V aur relay driver transistor check karein.',
+      diagnosis: 'Pin 6 toggle OK hone par agar Pin 23 par 4.9V ban rahi hai lekin relay operate nahi ho rahi to 1F driver transistor ya relay kharab hai.',
+    },
+
+    'fan-overheating': {
+      id: 'fan-overheating',
+      title: 'Fan | Buzzer | Heat Sensor | Inverter Overheating',
+      subtitle:
+        'Su-Kam Shark inverter mein Heatsink Heat Sensor (Pin 7), Buzzer Alarm (Pin 17) aur Fan Drive (Pin 24) thermal protection circuit.',
+      icon: '🌀',
+      severity: 'medium',
+      usedPins: '7, 17, 24',
+      diagramLink: 'https://drive.google.com/file/d/1QqZtXvVOImr17JeMInUYSbm3168xQUR7/view?usp=drive_link',
+
+      symptoms: [
+        'Inverter load par aane ke thodi der baad overheat alert hokar band ho jata hai',
+        'Cooling fan bilkul nahi chalta ya non-stop high speed par chalta rehta hai',
+        'Buzzer continuous beep karta rehta hai ya bilkul aawaz nahi aati',
+        'Bina kisi load ke bhi false overheat warning trip aati hai',
+      ],
+
+      basicChecks: [
+        'Pin 7 (Heat Sensor / Thermistor) par normal condition mein 0V DC check karein',
+        'Pin 17 (Buzzer Drive) par alarm ke dauran 5.0V pulse verify karein',
+        'Pin 24 (Fan Drive) par normal par 0V aur load/heat par 4.9V logic high check karein',
+        'Fan driver transistor aur 12V cooling fan motor check karein',
+        'Heatsink par mounted thermal sensor / thermistor testing karein',
+      ],
+
+      technicalExplanation: {
+        title: 'Su-Kam Shark Thermal Protection & Fan/Buzzer Circuit (Pins 7, 17, 24)',
+        explanation:
+          'Heatsink par laga thermistor sensor over-temperature par Microcontroller Pin 7 ko sensing signal deta hai. Microcontroller Pin 24 ke zariye fan driver transistor ko 4.9V high karke fan chalu karta hai aur Pin 17 se warning buzzer sound karta hai. Agar Pin 7 sensor circuit short ho jaye to inverter false overheating shutdown me chala jata hai.',
+        components: [
+          { component: 'Pin 7 (Thermistor)', function: 'Thermal sensor input for heatsink overheat protection.', value: '0V (Normal) / High (Trip)' },
+          { component: 'Pin 17 (Buzzer Drive)', function: 'Audio alarm warning driver output.', value: '5.0V DC (Active Alarm)' },
+          { component: 'Pin 24 (Fan Drive)', function: '12V DC cooling fan switching trigger line.', value: '0V (OFF) / 4.9V (ON)' },
+          { component: 'Fan Driver', function: 'Fan negative terminal ground switching transistor.', value: 'Driver Transistor' },
+        ],
+      },
+
+      possibleCauses: [
+        { cause: 'Pin 24 fan driver transistor open', explanation: 'Transistor open hone se Pin 24 high hone par bhi fan ko ground nahi milti.' },
+        { cause: 'Pin 7 thermistor short', explanation: 'Thermistor short hone par MCU false thermal trip me inverter shut down kar deta hai.' },
+        { cause: 'Fan motor jam ya wire disconnected', explanation: 'Fan motor physically jam hone se MOSFETs overheat hokar blast ho sakte hain.' },
+      ],
+
+      repairProcedure: [
+        { step: 1, title: 'Pin 7 Thermal Sensor Measure', explanation: 'Pin 7 par multimeter se DC voltage check karein; normal cooling par 0V honi chahiye.' },
+        { step: 2, title: 'Fan Motor External 12V Test', explanation: 'Fan connector nikaal kar directly 12V battery se verify karein ki fan chal raha hai.' },
+        { step: 3, title: 'Pin 24 Fan Drive Check', explanation: 'Load connect karke Pin 24 par 4.9V high logic multimeter se confirm karein.' },
+        { step: 4, title: 'Driver Transistor & Diode Replace', explanation: 'Agar Pin 24 par 4.9V hai lekin fan nahi chalta to driver transistor replace karein.' },
+      ],
+
+      circuitFlow: 'Heatsink Thermistor ➔ Pin 7 (Sensing) ➔ MCU Logic ➔ Pin 24 (Fan Drive 4.9V) ➔ Fan Driver ➔ 12V Fan + Pin 17 Buzzer',
+      importantNote: 'Fan band rehne se MOSFETs 5 se 10 minute me overheat hokar short ho sakte hain. Fan driver ka repair high priority par karein.',
+      diagnosis: 'Pin 24 par 4.9V aane par agar fan nahi chal raha to fan driver transistor ya fan motor kharab hai.',
+    },
+
     'microcontroller-pin-details': {
       id: 'microcontroller-pin-details',
       title: 'Microcontroller 28-Pin Details & Voltage Guide',
@@ -4345,6 +4620,8 @@ export const inverterFaultsMap: Record<
         'Su-Kam Shark SMD & DIP Square Wave Inverter — Complete 28-Pin voltage readings in Mains and Inverter modes with fault testing guide.',
       icon: '📟',
       severity: 'high',
+      usedPins: '1–28',
+      diagramLink: 'https://drive.google.com/file/d/1hEhQTEWwLDIn62X39Ndh9bkfaC0XyX6G/view?usp=drive_link',
 
       symptoms: [
         'Inverter output switching signals nahi de raha (Pin 27/28 par 0V hai)',
@@ -4801,6 +5078,8 @@ export const inverterFaultsMap: Record<
         'Su-Kam Shiny Sine Wave inverter mein Mains Sensing aur Changeover circuit: 23-0-23/400V Step Down Transformer, D9 & D16 (M7) Bridge, R52 (15kΩ), R73 (1kΩ), C21 (0.47µF/63V) se Micro IC Pin 2 (~1.6V DC).',
       icon: '🔄',
       severity: 'high',
+      usedPins: '2',
+      diagramLink: 'https://drive.google.com/file/d/1KrSQv6LqqXeoZOVPNbNDbF0QlFuliSHD/view?usp=drive_link',
 
       symptoms: [
         'Mains 230V AC aane par bhi inverter backup mode se switch nahi karta (Changeover fail)',
@@ -4914,6 +5193,8 @@ export const inverterFaultsMap: Record<
         'Su-Kam Shiny Pure Sine Wave Inverter PIC16F72 (28-Pin) complete operating voltages, pinouts, and test procedures.',
       icon: '🎛️',
       severity: 'high',
+      usedPins: '1–28',
+      diagramLink: 'https://drive.google.com/file/d/1jmAu5TKOcYtlOI9INPygfRTHdoDDPOUD/view?usp=drive_link',
 
       symptoms: [
         'Inverter completely dead hai ya switch press karne par response nahi deta',
@@ -5038,14 +5319,16 @@ export function getFaultsForInverter(
   for (const fault of Object.values(map)) {
     if (!fault || !fault.id) continue;
     const diagram = getDiagramImage(inverterId, fault.id);
+    const diagramLink = getDiagramLink(inverterId, fault.id) ?? fault.diagramLink;
     const diagramImg = diagram ?? fault.diagramImage;
 
-    // Only include faults that have real circuit diagram assets
-    if (!diagramImg) continue;
+    // Include faults that have real circuit diagram assets or links
+    if (!diagramImg && !diagramLink) continue;
 
     const faultWithDiagram: InverterFaultDetail = {
       ...fault,
       diagramImage: diagramImg,
+      diagramLink,
     };
 
     const translated = getTranslatedFault(
@@ -5074,9 +5357,11 @@ export function getInverterFault(
   const fault = inverterFaultsMap[inverterId]?.[faultId];
   if (!fault) return undefined;
   const diagram = getDiagramImage(inverterId, faultId);
+  const diagramLink = getDiagramLink(inverterId, faultId) ?? fault.diagramLink;
   const faultWithDiagram = {
     ...fault,
     diagramImage: diagram ?? fault.diagramImage,
+    diagramLink,
   };
   return getTranslatedFault(inverterId, faultWithDiagram, language);
 } 

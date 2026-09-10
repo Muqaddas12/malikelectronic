@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import {
     Dimensions,
     ImageSourcePropType,
+    Linking,
     Modal,
     Pressable,
     StyleSheet,
@@ -19,6 +20,7 @@ const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 type Props = {
   visible: boolean;
   source: ImageSourcePropType | undefined;
+  link?: string;
   title: string;
   subtitle?: string;
   onClose: () => void;
@@ -27,6 +29,7 @@ type Props = {
 export default function DiagramViewerModal({
   visible,
   source,
+  link,
   title,
   subtitle,
   onClose,
@@ -59,6 +62,30 @@ export default function DiagramViewerModal({
               </Text>
             </View>
 
+            <View style={styles.headerActions}>
+              {link ? (
+                <Pressable
+                  onPress={() => Linking.openURL(link)}
+                  style={styles.driveBtn}
+                  hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+                >
+                  <Text style={styles.driveBtnText}>↗ Drive</Text>
+                </Pressable>
+              ) : null}
+
+              <Pressable
+                onPress={() => {
+                  setCurrentScale(1.0);
+                  onClose();
+                }}
+                style={styles.closeBtn}
+                hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+              >
+                <Text style={styles.closeBtnText}>
+                  {tr(language, 'closeImage')}
+                </Text>
+              </Pressable>
+            </View>
             <Pressable
               onPress={() => {
                 setCurrentScale(1.0);
@@ -156,6 +183,25 @@ const styles = StyleSheet.create({
     color: '#9CA3AF',
     fontSize: 11,
     marginTop: 2,
+  },
+
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+
+  driveBtn: {
+    backgroundColor: '#2563EB',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+
+  driveBtnText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '800',
   },
 
   closeBtn: {

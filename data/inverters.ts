@@ -12,6 +12,7 @@ export const inverters: Inverter[] = [
     typeHi: 'होम यूपीएस / इन्वर्टर',
     image: require('@/assets/inverters/LuminousEcoWatt.png'),
     pcbImage: require('@/assets/diagrams/LuminousEcoWatt+/PCB IMAGE.jpg'),
+    pcbImage: null,
     faults: [
       'fan',
       'low-battery',
@@ -32,6 +33,7 @@ export const inverters: Inverter[] = [
     image: require('@/assets/inverters/microtek.png'),
     pcbImage: null,
     faults: [
+      'low-battery',
       'microcontroller-pin-details',
       'low-battery',
       'fan',
@@ -85,6 +87,11 @@ export const inverters: Inverter[] = [
     image: require('@/assets/inverters/sukam-shark.png'),
     pcbImage: null,
     faults: [
+      'dead-vcc',
+      'changeover',
+      'low-battery',
+      'switch-relay',
+      'fan-overheating',
       'microcontroller-pin-details',
     ],
   },
@@ -121,5 +128,6 @@ export const inverters: Inverter[] = [
       'low-battery',
       'charging',
     ],
+    faults: [],
   },
 ];
