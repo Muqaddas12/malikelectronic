@@ -18,13 +18,13 @@ import {
   ResistorColor,
 } from '@/utils/resistorCalculators';
 
-type BandInfo = {
-  id: number;
-  key: 'band1' | 'band2' | 'band3' | 'mult' | 'tol';
-  shortLabel: string;
-  fullLabel: string;
-  colorIdx: number;
+type BandColumnConfig = {
+  id: string;
+  title: string;
+  selectedColorIdx: number;
   type: 'digit' | 'multiplier' | 'tolerance';
+  colors: ResistorColor[];
+  onSelect: (colorIdx: number) => void;
 };
 
 export default function DipCalculatorScreen() {
@@ -32,8 +32,6 @@ export default function DipCalculatorScreen() {
   const isHi = language === 'hi';
 
   const [dipBandsMode, setDipBandsMode] = useState<4 | 5>(4);
-  const [selectedBandIndex, setSelectedBandIndex] = useState<number>(0);
-  const [viewMode, setViewMode] = useState<'list' | 'table'>('list');
 
   const [band1, setBand1] = useState(3); // Orange (3)
   const [band2, setBand2] = useState(7); // Violet (7)
@@ -55,136 +53,137 @@ export default function DipCalculatorScreen() {
     (c) => c.tolerance !== undefined,
   );
 
-  // Band list definitions
-  const bands: BandInfo[] =
+  const getMultiplierShort = (val: number | undefined): string => {
+    if (val === undefined) return '-';
+    if (val >= 1_000_000_000) return '1G';
+    if (val >= 1_000_000) return `${val / 1_000_000}M`;
+    if (val >= 1_000) return `${val / 1_000}k`;
+    if (val === 0.1) return '0.1';
+    if (val === 0.01) return '0.01';
+    return `${val}`;
+  };
+
+  const getButtonLabel = (
+    color: ResistorColor,
+    type: 'digit' | 'multiplier' | 'tolerance',
+  ): string => {
+    if (type === 'digit') {
+      if (dipBandsMode === 4) {
+        const shortName = isHi ? color.nameHi : color.name.slice(0, 4);
+        return `${color.digit} • ${shortName}`;
+      }
+      return `${color.digit}`;
+    }
+    if (type === 'multiplier') {
+      const multStr = getMultiplierShort(color.multiplier);
+      if (dipBandsMode === 4) {
+        const shortName = isHi ? color.nameHi : color.name.slice(0, 4);
+        return `${multStr} • ${shortName}`;
+      }
+      return multStr;
+    }
+    if (type === 'tolerance') {
+      const tolStr = `±${color.tolerance}%`;
+      if (dipBandsMode === 4) {
+        const shortName = isHi ? color.nameHi : color.name.slice(0, 4);
+        return `${tolStr} • ${shortName}`;
+      }
+      return tolStr;
+    }
+    return '';
+  };
+
+  const getHeaderValue = (
+    colorIdx: number,
+    type: 'digit' | 'multiplier' | 'tolerance',
+  ): string => {
+    const c = RESISTOR_COLORS[colorIdx];
+    if (!c) return '';
+    if (type === 'digit') return `${c.digit}`;
+    if (type === 'multiplier') return `×${getMultiplierShort(c.multiplier)}`;
+    if (type === 'tolerance') return `±${c.tolerance}%`;
+    return '';
+  };
+
+  // Define columns for 4-band vs 5-band
+  const columns: BandColumnConfig[] =
     dipBandsMode === 4
       ? [
           {
-            id: 0,
-            key: 'band1',
-            shortLabel: isHi ? '1st बैंड' : '1st Band',
-            fullLabel: isHi ? 'पहला अंक (1st Band)' : '1st Band (Digit 1)',
-            colorIdx: band1,
+            id: 'band1',
+            title: isHi ? '1st बैंड' : '1st Band',
+            selectedColorIdx: band1,
             type: 'digit',
+            colors: digitColors,
+            onSelect: (idx) => setBand1(idx),
           },
           {
-            id: 1,
-            key: 'band2',
-            shortLabel: isHi ? '2nd बैंड' : '2nd Band',
-            fullLabel: isHi ? 'दूसरा अंक (2nd Band)' : '2nd Band (Digit 2)',
-            colorIdx: band2,
+            id: 'band2',
+            title: isHi ? '2nd बैंड' : '2nd Band',
+            selectedColorIdx: band2,
             type: 'digit',
+            colors: digitColors,
+            onSelect: (idx) => setBand2(idx),
           },
           {
-            id: 2,
-            key: 'mult',
-            shortLabel: isHi ? 'गुणा (×)' : 'Multiplier',
-            fullLabel: isHi ? 'मल्टीप्लायर (Multiplier)' : 'Multiplier Band',
-            colorIdx: multBand,
+            id: 'mult',
+            title: isHi ? 'गुणा (×)' : 'Multiplier',
+            selectedColorIdx: multBand,
             type: 'multiplier',
+            colors: multiplierColors,
+            onSelect: (idx) => setMultBand(idx),
           },
           {
-            id: 3,
-            key: 'tol',
-            shortLabel: isHi ? 'टॉलरेंस' : 'Tolerance',
-            fullLabel: isHi ? 'टॉलरेंस (Tolerance)' : 'Tolerance Band',
-            colorIdx: tolBand,
+            id: 'tol',
+            title: isHi ? 'टॉलरेंस' : 'Tolerance',
+            selectedColorIdx: tolBand,
             type: 'tolerance',
+            colors: toleranceColors,
+            onSelect: (idx) => setTolBand(idx),
           },
         ]
       : [
           {
-            id: 0,
-            key: 'band1',
-            shortLabel: isHi ? '1st' : '1st Band',
-            fullLabel: isHi ? 'पहला अंक (1st Band)' : '1st Band (Digit 1)',
-            colorIdx: band1,
+            id: 'band1',
+            title: isHi ? '1st' : '1st Band',
+            selectedColorIdx: band1,
             type: 'digit',
+            colors: digitColors,
+            onSelect: (idx) => setBand1(idx),
           },
           {
-            id: 1,
-            key: 'band2',
-            shortLabel: isHi ? '2nd' : '2nd Band',
-            fullLabel: isHi ? 'दूसरा अंक (2nd Band)' : '2nd Band (Digit 2)',
-            colorIdx: band2,
+            id: 'band2',
+            title: isHi ? '2nd' : '2nd Band',
+            selectedColorIdx: band2,
             type: 'digit',
+            colors: digitColors,
+            onSelect: (idx) => setBand2(idx),
           },
           {
-            id: 2,
-            key: 'band3',
-            shortLabel: isHi ? '3rd' : '3rd Band',
-            fullLabel: isHi ? 'तीसरा अंक (3rd Band)' : '3rd Band (Digit 3)',
-            colorIdx: band3,
+            id: 'band3',
+            title: isHi ? '3rd' : '3rd Band',
+            selectedColorIdx: band3,
             type: 'digit',
+            colors: digitColors,
+            onSelect: (idx) => setBand3(idx),
           },
           {
-            id: 3,
-            key: 'mult',
-            shortLabel: isHi ? 'गुणा (×)' : 'Multiplier',
-            fullLabel: isHi ? 'मल्टीप्लायर (Multiplier)' : 'Multiplier Band',
-            colorIdx: multBand,
+            id: 'mult',
+            title: isHi ? 'गुणा (×)' : 'Multiplier',
+            selectedColorIdx: multBand,
             type: 'multiplier',
+            colors: multiplierColors,
+            onSelect: (idx) => setMultBand(idx),
           },
           {
-            id: 4,
-            key: 'tol',
-            shortLabel: isHi ? 'टॉलरेंस' : 'Tolerance',
-            fullLabel: isHi ? 'टॉलरेंस (Tolerance)' : 'Tolerance Band',
-            colorIdx: tolBand,
+            id: 'tol',
+            title: isHi ? 'टॉलरेंस' : 'Tolerance',
+            selectedColorIdx: tolBand,
             type: 'tolerance',
+            colors: toleranceColors,
+            onSelect: (idx) => setTolBand(idx),
           },
         ];
-
-  // Active band safety
-  const safeActiveIndex = Math.min(selectedBandIndex, bands.length - 1);
-  const activeBand = bands[safeActiveIndex];
-
-  // Colors applicable for current active band
-  const activeColors: ResistorColor[] =
-    activeBand.type === 'digit'
-      ? digitColors
-      : activeBand.type === 'multiplier'
-      ? multiplierColors
-      : toleranceColors;
-
-  const handleColorSelect = (colorIdx: number) => {
-    if (activeBand.key === 'band1') setBand1(colorIdx);
-    else if (activeBand.key === 'band2') setBand2(colorIdx);
-    else if (activeBand.key === 'band3') setBand3(colorIdx);
-    else if (activeBand.key === 'mult') setMultBand(colorIdx);
-    else if (activeBand.key === 'tol') setTolBand(colorIdx);
-
-    // Auto-advance to next band for ultra-fast sequential selection
-    if (safeActiveIndex < bands.length - 1) {
-      setSelectedBandIndex(safeActiveIndex + 1);
-    }
-  };
-
-  const handleModeChange = (mode: 4 | 5) => {
-    setDipBandsMode(mode);
-    if (mode === 4 && selectedBandIndex > 3) {
-      setSelectedBandIndex(3);
-    }
-  };
-
-  const getBandValueLabel = (color: ResistorColor, type: 'digit' | 'multiplier' | 'tolerance') => {
-    if (type === 'digit') {
-      return color.digit !== undefined ? `${color.digit}` : '-';
-    }
-    if (type === 'multiplier') {
-      if (color.multiplier === undefined) return '-';
-      if (color.multiplier >= 1_000_000_000) return '×1 GΩ';
-      if (color.multiplier >= 1_000_000) return `×${color.multiplier / 1_000_000} MΩ`;
-      if (color.multiplier >= 1_000) return `×${color.multiplier / 1_000} kΩ`;
-      if (color.multiplier === 0.1) return '×0.1 Ω';
-      if (color.multiplier === 0.01) return '×0.01 Ω';
-      return `×${color.multiplier} Ω`;
-    }
-    if (type === 'tolerance') {
-      return color.tolerance !== undefined ? `±${color.tolerance}%` : '-';
-    }
-    return '';
-  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -200,15 +199,14 @@ export default function DipCalculatorScreen() {
 
       <View style={styles.container}>
         {/* =========================================================
-            TOP CONTROLS & RESISTOR CARD (COMPACT, NO-SCROLL)
+            TOP SECTION: MODE TOGGLE & RESISTOR RESULT CARD (COMPACT)
             ========================================================= */}
         <View style={styles.topSection}>
-          {/* Header Row: 4-Band / 5-Band Toggle + View Mode Toggle */}
+          {/* Row 1: Mode Switcher */}
           <View style={styles.topControlRow}>
-            {/* 4-Band / 5-Band Toggle */}
             <View style={styles.segmentedToggle}>
               <Pressable
-                onPress={() => handleModeChange(4)}
+                onPress={() => setDipBandsMode(4)}
                 style={[
                   styles.segmentBtn,
                   dipBandsMode === 4 && styles.segmentBtnActive,
@@ -224,7 +222,7 @@ export default function DipCalculatorScreen() {
                 </Text>
               </Pressable>
               <Pressable
-                onPress={() => handleModeChange(5)}
+                onPress={() => setDipBandsMode(5)}
                 style={[
                   styles.segmentBtn,
                   dipBandsMode === 5 && styles.segmentBtnActive,
@@ -241,106 +239,62 @@ export default function DipCalculatorScreen() {
               </Pressable>
             </View>
 
-            {/* View Mode Toggle: List View vs Table View */}
-            <View style={styles.viewModeToggle}>
-              <Pressable
-                onPress={() => setViewMode('list')}
-                style={[
-                  styles.viewModeBtn,
-                  viewMode === 'list' && styles.viewModeBtnActive,
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.viewModeText,
-                    viewMode === 'list' && styles.viewModeTextActive,
-                  ]}
-                >
-                  📋 {isHi ? 'सूची' : 'List'}
-                </Text>
-              </Pressable>
-              <Pressable
-                onPress={() => setViewMode('table')}
-                style={[
-                  styles.viewModeBtn,
-                  viewMode === 'table' && styles.viewModeBtnActive,
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.viewModeText,
-                    viewMode === 'table' && styles.viewModeTextActive,
-                  ]}
-                >
-                  📊 {isHi ? 'टेबल' : 'Table'}
-                </Text>
-              </Pressable>
-            </View>
+            <Text style={styles.hintText}>
+              {isHi ? 'सीधे रंग चुनें (Tap colors directly)' : 'Tap colors below directly'}
+            </Text>
           </View>
 
-          {/* Unified Resistor Graphic & Live Result */}
+          {/* Row 2: Unified Resistor Graphic & Live Result */}
           <View style={styles.resistorResultCard}>
-            {/* Resistor Visual */}
+            {/* Graphic Resistor Body with Colored Stripes */}
             <View style={styles.dipResistorGraphic}>
               <View style={styles.leadLeft} />
               <View style={styles.resistorBody}>
                 {/* Band 1 */}
-                <Pressable
-                  onPress={() => setSelectedBandIndex(0)}
+                <View
                   style={[
                     styles.colorStripe,
                     { backgroundColor: RESISTOR_COLORS[band1].hex },
-                    safeActiveIndex === 0 && styles.colorStripeActive,
                   ]}
                 />
                 {/* Band 2 */}
-                <Pressable
-                  onPress={() => setSelectedBandIndex(1)}
+                <View
                   style={[
                     styles.colorStripe,
                     { backgroundColor: RESISTOR_COLORS[band2].hex },
-                    safeActiveIndex === 1 && styles.colorStripeActive,
                   ]}
                 />
                 {/* Band 3 (5-Band only) */}
                 {dipBandsMode === 5 && (
-                  <Pressable
-                    onPress={() => setSelectedBandIndex(2)}
+                  <View
                     style={[
                       styles.colorStripe,
                       { backgroundColor: RESISTOR_COLORS[band3].hex },
-                      safeActiveIndex === 2 && styles.colorStripeActive,
                     ]}
                   />
                 )}
                 {/* Multiplier Band */}
-                <Pressable
-                  onPress={() => setSelectedBandIndex(dipBandsMode === 4 ? 2 : 3)}
+                <View
                   style={[
                     styles.colorStripe,
                     { backgroundColor: RESISTOR_COLORS[multBand].hex },
-                    safeActiveIndex === (dipBandsMode === 4 ? 2 : 3) &&
-                      styles.colorStripeActive,
                   ]}
                 />
-                {/* Space before Tolerance */}
+                {/* Spacing before Tolerance */}
                 <View style={{ flex: 1 }} />
                 {/* Tolerance Band */}
-                <Pressable
-                  onPress={() => setSelectedBandIndex(dipBandsMode === 4 ? 3 : 4)}
+                <View
                   style={[
                     styles.colorStripe,
                     styles.toleranceStripe,
                     { backgroundColor: RESISTOR_COLORS[tolBand].hex },
-                    safeActiveIndex === (dipBandsMode === 4 ? 3 : 4) &&
-                      styles.colorStripeActive,
                   ]}
                 />
               </View>
               <View style={styles.leadRight} />
             </View>
 
-            {/* Calculated Result Display */}
+            {/* Live Calculated Resistance */}
             <View style={styles.resultDisplay}>
               <Text style={styles.resultValueText} numberOfLines={1}>
                 {dipResult.formatted}
@@ -352,216 +306,89 @@ export default function DipCalculatorScreen() {
               </View>
             </View>
           </View>
-
-          {/* Band Selector Tabs (In List View mode) */}
-          {viewMode === 'list' && (
-            <View style={styles.bandTabsRow}>
-              {bands.map((b, idx) => {
-                const isTabActive = idx === safeActiveIndex;
-                const bandColor = RESISTOR_COLORS[b.colorIdx];
-                const valLabel = getBandValueLabel(bandColor, b.type);
-                return (
-                  <Pressable
-                    key={b.key}
-                    onPress={() => setSelectedBandIndex(idx)}
-                    style={[
-                      styles.bandTab,
-                      isTabActive && styles.bandTabActive,
-                    ]}
-                  >
-                    <View style={styles.bandTabHeader}>
-                      <View
-                        style={[
-                          styles.tabColorDot,
-                          { backgroundColor: bandColor.hex },
-                        ]}
-                      />
-                      <Text
-                        style={[
-                          styles.bandTabLabel,
-                          isTabActive && styles.bandTabLabelActive,
-                        ]}
-                        numberOfLines={1}
-                      >
-                        {b.shortLabel}
-                      </Text>
-                    </View>
-                    <Text
-                      style={[
-                        styles.bandTabVal,
-                        isTabActive && styles.bandTabValActive,
-                      ]}
-                      numberOfLines={1}
-                    >
-                      {valLabel}
-                    </Text>
-                  </Pressable>
-                );
-              })}
-            </View>
-          )}
         </View>
 
         {/* =========================================================
-            LIST VIEW: ALL COLORS FOR ACTIVE BAND FIT ON SCREEN
+            COLUMNS: BAND HEADERS AT TOP & ALL COLORS BELOW EACH BAND
+            (ZERO SCROLLING - USERS DIRECTLY TAP COLORS IN ANY COLUMN)
             ========================================================= */}
-        {viewMode === 'list' ? (
-          <View style={styles.listViewCard}>
-            <View style={styles.listHeaderRow}>
-              <Text style={styles.listHeaderTitle}>
-                {activeBand.fullLabel}
-              </Text>
-              <Text style={styles.listHeaderSub}>
-                {isHi ? 'रंग चुनें (Tap to pick)' : 'Tap color to select'}
-              </Text>
-            </View>
+        <View style={styles.matrixCard}>
+          <View style={styles.columnsRow}>
+            {columns.map((col) => {
+              const selectedColor = RESISTOR_COLORS[col.selectedColorIdx];
+              const headerVal = getHeaderValue(col.selectedColorIdx, col.type);
 
-            <View style={styles.listItemsWrapper}>
-              {activeColors.map((c) => {
-                const colorIdx = RESISTOR_COLORS.findIndex(
-                  (item) => item.name === c.name,
-                );
-                const isSelected = activeBand.colorIdx === colorIdx;
-                const valStr = getBandValueLabel(c, activeBand.type);
-
-                return (
-                  <Pressable
-                    key={c.name}
-                    onPress={() => handleColorSelect(colorIdx)}
-                    style={[
-                      styles.colorRow,
-                      isSelected && styles.colorRowSelected,
-                    ]}
-                  >
-                    {/* Left: Color swatch circle */}
-                    <View
-                      style={[
-                        styles.colorSwatch,
-                        { backgroundColor: c.hex },
-                      ]}
-                    >
-                      {activeBand.type === 'digit' && c.digit !== undefined && (
-                        <Text
-                          style={[
-                            styles.colorSwatchDigit,
-                            { color: c.textColor ?? '#FFFFFF' },
-                          ]}
-                        >
-                          {c.digit}
-                        </Text>
-                      )}
-                    </View>
-
-                    {/* Middle: Color Name in English and Hindi */}
-                    <View style={styles.colorNameBlock}>
-                      <Text
+              return (
+                <View key={col.id} style={styles.columnWrapper}>
+                  {/* Band Header at Top */}
+                  <View style={styles.columnHeaderCard}>
+                    <Text style={styles.columnTitle} numberOfLines={1}>
+                      {col.title}
+                    </Text>
+                    <View style={styles.columnSelectedChip}>
+                      <View
                         style={[
-                          styles.colorNameTitle,
-                          isSelected && styles.colorNameTitleSelected,
+                          styles.chipColorDot,
+                          { backgroundColor: selectedColor.hex },
                         ]}
+                      />
+                      <Text
+                        style={styles.chipValText}
                         numberOfLines={1}
                       >
-                        {c.name}
-                        {c.nameHi ? (
-                          <Text style={styles.colorNameHi}> • {c.nameHi}</Text>
-                        ) : null}
+                        {headerVal}
                       </Text>
-                    </View>
-
-                    {/* Right: Value badge */}
-                    <View
-                      style={[
-                        styles.valBadge,
-                        isSelected && styles.valBadgeSelected,
-                      ]}
-                    >
-                      <Text
-                        style={[
-                          styles.valBadgeText,
-                          isSelected && styles.valBadgeTextSelected,
-                        ]}
-                      >
-                        {valStr}
-                      </Text>
-                    </View>
-
-                    {/* Selection Indicator */}
-                    <View
-                      style={[
-                        styles.selectionCheck,
-                        isSelected && styles.selectionCheckActive,
-                      ]}
-                    >
-                      {isSelected && <Text style={styles.checkText}>✓</Text>}
-                    </View>
-                  </Pressable>
-                );
-              })}
-            </View>
-          </View>
-        ) : (
-          /* =========================================================
-             TABLE VIEW: ALL BANDS SHOWN IN SIDE-BY-SIDE COLUMNS
-             ========================================================= */
-          <View style={styles.tableCard}>
-            <View style={styles.tableColumnsRow}>
-              {bands.map((bandCol) => {
-                const colColors =
-                  bandCol.type === 'digit'
-                    ? digitColors
-                    : bandCol.type === 'multiplier'
-                    ? multiplierColors
-                    : toleranceColors;
-
-                return (
-                  <View key={bandCol.key} style={styles.tableCol}>
-                    <Text style={styles.tableColHeader} numberOfLines={1}>
-                      {bandCol.shortLabel}
-                    </Text>
-                    <View style={styles.tableColItems}>
-                      {colColors.map((c) => {
-                        const colorIdx = RESISTOR_COLORS.findIndex(
-                          (item) => item.name === c.name,
-                        );
-                        const isSelected = bandCol.colorIdx === colorIdx;
-                        const shortVal = getBandValueLabel(c, bandCol.type);
-
-                        return (
-                          <Pressable
-                            key={c.name}
-                            onPress={() => {
-                              if (bandCol.key === 'band1') setBand1(colorIdx);
-                              else if (bandCol.key === 'band2') setBand2(colorIdx);
-                              else if (bandCol.key === 'band3') setBand3(colorIdx);
-                              else if (bandCol.key === 'mult') setMultBand(colorIdx);
-                              else if (bandCol.key === 'tol') setTolBand(colorIdx);
-                            }}
-                            style={[
-                              styles.tablePill,
-                              { backgroundColor: c.hex },
-                              isSelected && styles.tablePillSelected,
-                            ]}
-                          >
-                            <Text
-                              style={[
-                                styles.tablePillText,
-                                { color: c.textColor ?? '#FFFFFF' },
-                                isSelected && styles.tablePillTextSelected,
-                              ]}
-                              numberOfLines={1}
-                            >
-                              {shortVal}
-                            </Text>
-                          </Pressable>
-                        );
-                      })}
                     </View>
                   </View>
-                );
-              })}
-            </View>
+
+                  {/* All Colors for this Band Listed Directly Below */}
+                  <View style={styles.columnItemsList}>
+                    {col.colors.map((colorItem) => {
+                      const colorIdx = RESISTOR_COLORS.findIndex(
+                        (item) => item.name === colorItem.name,
+                      );
+                      const isSelected = col.selectedColorIdx === colorIdx;
+                      const label = getButtonLabel(colorItem, col.type);
+
+                      return (
+                        <Pressable
+                          key={colorItem.name}
+                          onPress={() => col.onSelect(colorIdx)}
+                          style={[
+                            styles.colorButton,
+                            { backgroundColor: colorItem.hex },
+                            isSelected && styles.colorButtonSelected,
+                          ]}
+                        >
+                          <Text
+                            style={[
+                              styles.colorButtonText,
+                              { color: colorItem.textColor ?? '#FFFFFF' },
+                              isSelected && styles.colorButtonTextSelected,
+                            ]}
+                            numberOfLines={1}
+                          >
+                            {label}
+                          </Text>
+                          {isSelected && (
+                            <Text
+                              style={[
+                                styles.checkMarkIcon,
+                                { color: colorItem.textColor ?? '#FFFFFF' },
+                              ]}
+                            >
+                              ✓
+                            </Text>
+                          )}
+                        </Pressable>
+                      );
+                    })}
+                  </View>
+                </View>
+              );
+            })}
           </View>
-        )}
+        </View>
       </View>
     </SafeAreaView>
   );
@@ -575,9 +402,9 @@ const styles = StyleSheet.create({
 
   container: {
     flex: 1,
-    paddingHorizontal: 12,
+    paddingHorizontal: 8,
     paddingTop: 4,
-    paddingBottom: 8,
+    paddingBottom: 6,
   },
 
   /* TOP SECTION */
@@ -590,7 +417,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 6,
-    gap: 8,
   },
 
   segmentedToggle: {
@@ -601,7 +427,7 @@ const styles = StyleSheet.create({
   },
 
   segmentBtn: {
-    paddingVertical: 5,
+    paddingVertical: 4,
     paddingHorizontal: 12,
     borderRadius: 7,
   },
@@ -625,52 +451,26 @@ const styles = StyleSheet.create({
     fontWeight: '900',
   },
 
-  viewModeToggle: {
-    flexDirection: 'row',
-    backgroundColor: '#E5E7EB',
-    borderRadius: 9,
-    padding: 2,
-  },
-
-  viewModeBtn: {
-    paddingVertical: 5,
-    paddingHorizontal: 10,
-    borderRadius: 7,
-  },
-
-  viewModeBtnActive: {
-    backgroundColor: '#FFFFFF',
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 1,
-  },
-
-  viewModeText: {
+  hintText: {
     fontSize: 11,
     fontWeight: '700',
-    color: '#6B7280',
+    color: '#64748B',
   },
 
-  viewModeTextActive: {
-    color: '#1E293B',
-    fontWeight: '900',
-  },
-
-  /* RESISTOR & RESULT CARD */
+  /* RESISTOR & LIVE RESULT CARD */
   resistorResultCard: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 14,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
+    borderRadius: 12,
+    paddingVertical: 7,
+    paddingHorizontal: 10,
     borderWidth: 1,
     borderColor: '#E2E8F0',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     shadowColor: '#000',
-    shadowOpacity: 0.04,
-    shadowRadius: 4,
+    shadowOpacity: 0.03,
+    shadowRadius: 3,
     elevation: 2,
   },
 
@@ -680,44 +480,37 @@ const styles = StyleSheet.create({
   },
 
   leadLeft: {
-    width: 14,
+    width: 12,
     height: 4,
     backgroundColor: '#94A3B8',
     borderRadius: 2,
   },
 
   leadRight: {
-    width: 14,
+    width: 12,
     height: 4,
     backgroundColor: '#94A3B8',
     borderRadius: 2,
   },
 
   resistorBody: {
-    width: 110,
-    height: 34,
+    width: 105,
+    height: 32,
     backgroundColor: '#E7D7C1',
-    borderRadius: 9,
+    borderRadius: 8,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 8,
+    paddingHorizontal: 7,
     borderWidth: 1.5,
     borderColor: '#D4C3A3',
     overflow: 'hidden',
   },
 
   colorStripe: {
-    width: 9,
+    width: 8,
     height: '100%',
-    marginRight: 5,
+    marginRight: 4,
     borderRadius: 1,
-  },
-
-  colorStripeActive: {
-    borderTopWidth: 3,
-    borderBottomWidth: 3,
-    borderColor: '#2563EB',
-    transform: [{ scaleY: 1.15 }],
   },
 
   toleranceStripe: {
@@ -732,7 +525,7 @@ const styles = StyleSheet.create({
   },
 
   resultValueText: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '900',
     color: '#15803D',
     letterSpacing: -0.3,
@@ -741,8 +534,8 @@ const styles = StyleSheet.create({
   tolerancePill: {
     backgroundColor: '#DCFCE7',
     paddingHorizontal: 6,
-    paddingVertical: 1.5,
-    borderRadius: 6,
+    paddingVertical: 1,
+    borderRadius: 5,
     marginTop: 2,
   },
 
@@ -752,78 +545,12 @@ const styles = StyleSheet.create({
     color: '#166534',
   },
 
-  /* BAND TABS ROW */
-  bandTabsRow: {
-    flexDirection: 'row',
-    gap: 6,
-    marginTop: 6,
-  },
-
-  bandTab: {
+  /* MAIN MATRIX CARD */
+  matrixCard: {
     flex: 1,
     backgroundColor: '#FFFFFF',
-    borderRadius: 9,
-    paddingVertical: 5,
-    paddingHorizontal: 4,
-    alignItems: 'center',
-    borderWidth: 1.5,
-    borderColor: '#E2E8F0',
-  },
-
-  bandTabActive: {
-    backgroundColor: '#EFF6FF',
-    borderColor: '#2563EB',
-    shadowColor: '#2563EB',
-    shadowOpacity: 0.12,
-    shadowRadius: 3,
-    elevation: 2,
-  },
-
-  bandTabHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-
-  tabColorDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.15)',
-  },
-
-  bandTabLabel: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: '#64748B',
-  },
-
-  bandTabLabelActive: {
-    color: '#1D4ED8',
-    fontWeight: '900',
-  },
-
-  bandTabVal: {
-    fontSize: 10,
-    fontWeight: '800',
-    color: '#334155',
-    marginTop: 1,
-  },
-
-  bandTabValActive: {
-    color: '#1E40AF',
-    fontWeight: '900',
-  },
-
-  /* LIST VIEW CARD */
-  listViewCard: {
-    flex: 1,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 14,
-    paddingHorizontal: 8,
-    paddingTop: 6,
-    paddingBottom: 4,
+    borderRadius: 12,
+    padding: 6,
     borderWidth: 1,
     borderColor: '#E2E8F0',
     shadowColor: '#000',
@@ -832,206 +559,109 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
 
-  listHeaderRow: {
+  columnsRow: {
+    flex: 1,
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 6,
-    paddingBottom: 4,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F1F5F9',
-    marginBottom: 2,
+    gap: 4,
   },
 
-  listHeaderTitle: {
-    fontSize: 12,
+  columnWrapper: {
+    flex: 1,
+    alignItems: 'center',
+  },
+
+  /* COLUMN HEADER */
+  columnHeaderCard: {
+    width: '100%',
+    backgroundColor: '#F8FAFC',
+    borderRadius: 8,
+    paddingVertical: 4,
+    paddingHorizontal: 2,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    marginBottom: 4,
+  },
+
+  columnTitle: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#334155',
+    textAlign: 'center',
+  },
+
+  columnSelectedChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 5,
+    paddingVertical: 1.5,
+    borderRadius: 5,
+    borderWidth: 1,
+    borderColor: '#CBD5E1',
+    marginTop: 2,
+    gap: 3,
+  },
+
+  chipColorDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 3.5,
+    borderWidth: 0.8,
+    borderColor: 'rgba(0,0,0,0.15)',
+  },
+
+  chipValText: {
+    fontSize: 9.5,
     fontWeight: '900',
     color: '#0F172A',
   },
 
-  listHeaderSub: {
-    fontSize: 10,
-    fontWeight: '600',
-    color: '#64748B',
-  },
-
-  listItemsWrapper: {
-    flex: 1,
-    justifyContent: 'space-between',
-    paddingVertical: 2,
-  },
-
-  colorRow: {
-    flex: 1,
-    minHeight: 26,
-    maxHeight: 38,
-    marginVertical: 1,
-    paddingHorizontal: 8,
-    borderRadius: 8,
-    backgroundColor: '#F8FAFC',
-    borderWidth: 1,
-    borderColor: '#F1F5F9',
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-
-  colorRowSelected: {
-    backgroundColor: '#EFF6FF',
-    borderColor: '#3B82F6',
-    borderWidth: 1.5,
-    shadowColor: '#3B82F6',
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 1,
-  },
-
-  colorSwatch: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.18)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 8,
-  },
-
-  colorSwatchDigit: {
-    fontSize: 10,
-    fontWeight: '900',
-  },
-
-  colorNameBlock: {
-    flex: 1,
-    justifyContent: 'center',
-  },
-
-  colorNameTitle: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#1E293B',
-  },
-
-  colorNameTitleSelected: {
-    color: '#1D4ED8',
-    fontWeight: '900',
-  },
-
-  colorNameHi: {
-    fontSize: 10,
-    fontWeight: '500',
-    color: '#64748B',
-  },
-
-  valBadge: {
-    backgroundColor: '#E2E8F0',
-    paddingHorizontal: 7,
-    paddingVertical: 2,
-    borderRadius: 6,
-    marginRight: 8,
-  },
-
-  valBadgeSelected: {
-    backgroundColor: '#DBEAFE',
-  },
-
-  valBadgeText: {
-    fontSize: 11,
-    fontWeight: '800',
-    color: '#334155',
-  },
-
-  valBadgeTextSelected: {
-    color: '#1E40AF',
-    fontWeight: '900',
-  },
-
-  selectionCheck: {
-    width: 18,
-    height: 18,
-    borderRadius: 9,
-    borderWidth: 1.5,
-    borderColor: '#CBD5E1',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-
-  selectionCheckActive: {
-    backgroundColor: '#2563EB',
-    borderColor: '#2563EB',
-  },
-
-  checkText: {
-    fontSize: 10,
-    fontWeight: '900',
-    color: '#FFFFFF',
-    lineHeight: 12,
-  },
-
-  /* TABLE VIEW CARD */
-  tableCard: {
-    flex: 1,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 14,
-    padding: 8,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-  },
-
-  tableColumnsRow: {
-    flex: 1,
-    flexDirection: 'row',
-    gap: 5,
-  },
-
-  tableCol: {
-    flex: 1,
-    alignItems: 'center',
-  },
-
-  tableColHeader: {
-    fontSize: 10,
-    fontWeight: '800',
-    color: '#334155',
-    marginBottom: 4,
-    textAlign: 'center',
-  },
-
-  tableColItems: {
+  /* COLUMN ITEMS LIST */
+  columnItemsList: {
     flex: 1,
     width: '100%',
     justifyContent: 'space-between',
   },
 
-  tablePill: {
+  colorButton: {
     flex: 1,
     width: '100%',
     minHeight: 22,
-    maxHeight: 34,
+    maxHeight: 33,
     marginVertical: 1,
     borderRadius: 6,
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    paddingHorizontal: 3,
     borderWidth: 1,
     borderColor: 'rgba(0,0,0,0.12)',
   },
 
-  tablePillSelected: {
+  colorButtonSelected: {
     borderColor: '#FFFFFF',
-    borderWidth: 2.5,
+    borderWidth: 2.2,
     shadowColor: '#000',
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.35,
     shadowRadius: 3,
-    elevation: 3,
+    elevation: 4,
+    transform: [{ scale: 1.03 }],
   },
 
-  tablePillText: {
-    fontSize: 10,
+  colorButtonText: {
+    fontSize: 9.5,
     fontWeight: '800',
     textAlign: 'center',
   },
 
-  tablePillTextSelected: {
+  colorButtonTextSelected: {
     fontWeight: '900',
+  },
+
+  checkMarkIcon: {
+    fontSize: 9,
+    fontWeight: '900',
+    marginLeft: 2,
   },
 });
