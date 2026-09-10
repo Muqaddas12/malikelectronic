@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import {
     Dimensions,
     ImageSourcePropType,
-    Linking,
     Modal,
     Pressable,
     StyleSheet,
@@ -20,7 +19,6 @@ const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 type Props = {
   visible: boolean;
   source: ImageSourcePropType | undefined;
-  link?: string;
   title: string;
   subtitle?: string;
   onClose: () => void;
@@ -29,7 +27,6 @@ type Props = {
 export default function DiagramViewerModal({
   visible,
   source,
-  link,
   title,
   subtitle,
   onClose,
@@ -63,16 +60,6 @@ export default function DiagramViewerModal({
             </View>
 
             <View style={styles.headerActions}>
-              {link ? (
-                <Pressable
-                  onPress={() => Linking.openURL(link)}
-                  style={styles.driveBtn}
-                  hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-                >
-                  <Text style={styles.driveBtnText}>↗ Drive</Text>
-                </Pressable>
-              ) : null}
-
               <Pressable
                 onPress={() => {
                   setCurrentScale(1.0);
@@ -86,18 +73,6 @@ export default function DiagramViewerModal({
                 </Text>
               </Pressable>
             </View>
-            <Pressable
-              onPress={() => {
-                setCurrentScale(1.0);
-                onClose();
-              }}
-              style={styles.closeBtn}
-              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-            >
-              <Text style={styles.closeBtnText}>
-                {tr(language, 'closeImage')}
-              </Text>
-            </Pressable>
           </View>
 
           {/* CANVAS WITH NATIVE HARDWARE PINCH-TO-ZOOM */}
@@ -150,12 +125,14 @@ export default function DiagramViewerModal({
 const styles = StyleSheet.create({
   modalBackdrop: {
     flex: 1,
-    backgroundColor: '#0B0F19',
+    backgroundColor: 'rgba(0, 0, 0, 0.96)',
   },
 
   safeArea: {
     flex: 1,
   },
+
+  /* HEADER */
 
   header: {
     flexDirection: 'row',
@@ -163,20 +140,20 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: '#111827',
     borderBottomWidth: 1,
     borderBottomColor: '#1F2937',
+    backgroundColor: 'rgba(15, 23, 42, 0.95)',
   },
 
   titleWrapper: {
     flex: 1,
-    paddingRight: 10,
+    marginRight: 12,
   },
 
   title: {
-    color: '#FFFFFF',
+    color: '#F9FAFB',
     fontSize: 15,
-    fontWeight: '900',
+    fontWeight: '700',
   },
 
   subtitle: {
@@ -189,19 +166,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-  },
-
-  driveBtn: {
-    backgroundColor: '#2563EB',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
-  },
-
-  driveBtnText: {
-    color: '#FFFFFF',
-    fontSize: 12,
-    fontWeight: '800',
   },
 
   closeBtn: {

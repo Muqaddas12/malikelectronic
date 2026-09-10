@@ -29,10 +29,8 @@ export const microcontrollerDocs: Record<string, MicrocontrollerDoc> = {
     title: 'Microtek EB 900 / V4–V7 Microcontroller Pin Details',
     subtitle: 'Complete 28-Pin voltage chart in Mains, UPS & Normal modes with pin functions',
     pages: [
-      require('@/assets/diagrams/Microtek-V4-To-V7-Model/Microcontroller.png'),
       getDriveImageSource(microtekConfig['microtek-eb-semi-sine-wave']?.[1]?.link),
       require('@/assets/microcontroller/microtek/microtek_mc_pindetails_page_1.png'),
-    ],
     ].filter(Boolean),
   },
 
@@ -42,8 +40,6 @@ export const microcontrollerDocs: Record<string, MicrocontrollerDoc> = {
     title: 'Microtek 24x7 Microcontroller Pin Details',
     subtitle: '20-Pin Non-SMD DIP IC Pin functions and live operating voltages in Backup & Mains modes',
     pages: [
-      require('@/assets/diagrams/Microtek-24x7/Microcontroller.png'),
-    ],
       getDriveImageSource(microtekConfig['microtek-24x7-Non-Smd']?.[0]?.link),
     ].filter(Boolean),
   },
@@ -54,8 +50,6 @@ export const microcontrollerDocs: Record<string, MicrocontrollerDoc> = {
     title: 'Microtek Square Wave Micro IC Details (JM1250 / Classic)',
     subtitle: '28-Pin Micro IC voltage guide in Mains & Inverter switching modes with complete pinouts',
     pages: [
-      require('@/assets/diagrams/Microtek-Square-wave/Microcontroller.png'),
-    ],
       getDriveImageSource(microtekConfig['microtek-eb-square-wave']?.[0]?.link),
     ].filter(Boolean),
   },

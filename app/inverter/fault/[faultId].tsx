@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Image, Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -475,7 +474,6 @@ export default function FaultDetailScreen() {
       <DiagramViewerModal
         visible={isImageModalOpen}
         source={fault.diagramImage}
-        link={fault.diagramLink}
         title={fault.title}
         subtitle={tr(language, 'zoomHint')}
         onClose={() => setIsImageModalOpen(false)}
@@ -568,31 +566,6 @@ export default function FaultDetailScreen() {
                 </Text>
               </View>
             </Pressable>
-          ) : null}
-
-          {fault.diagramLink ? (
-            <Pressable
-              onPress={() => Linking.openURL(fault.diagramLink!)}
-              accessibilityRole="link"
-              accessibilityLabel={isHindi ? 'ड्राइव में आरेख खोलें' : 'Open diagram in Google Drive'}
-              style={({ pressed }) => [
-                styles.diagramLinkButton,
-                {
-                  backgroundColor: pressed ? colors.panelRaised : colors.panelSunken,
-                  borderColor: colors.rule,
-                  marginTop: fault.diagramImage ? space.md : 0,
-                },
-              ]}
-            >
-              <Text style={styles.diagramLinkIcon}>🌐</Text>
-              <Text style={[styles.diagramLinkText, { color: colors.readout }]}>
-                {isHindi ? 'गूगल ड्राइव में आरेख खोलें' : 'View Full Diagram on Google Drive'}
-              </Text>
-              <Text style={[styles.diagramLinkArrow, { color: colors.readout }]}>↗</Text>
-            </Pressable>
-          ) : null}
-
-          {!fault.diagramImage && !fault.diagramLink ? (
           ) : (
             <View
               style={[
@@ -621,7 +594,6 @@ export default function FaultDetailScreen() {
                 {tr(language, 'noDiagramText')}
               </Text>
             </View>
-          ) : null}
           )}
         </Card>
 

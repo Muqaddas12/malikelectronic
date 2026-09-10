@@ -262,7 +262,6 @@ export default function InteractiveViewer({
             height: baseHeight,
           }}
           resizeMode="contain"
-          onLoadStart={() => setIsLoading(true)}
           onLoadStart={() => {
             setIsLoading(true);
             setHasError(false);
