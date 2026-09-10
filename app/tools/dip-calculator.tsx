@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import {
-  Pressable,
-  StatusBar,
-  StyleSheet,
-  Text,
-  View,
+    Pressable,
+    StatusBar,
+    StyleSheet,
+    Text,
+    View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -12,10 +12,10 @@ import AppHeader from '@/components/AppHeader';
 import { useLanguage } from '@/context/LanguageContext';
 import { tr } from '@/data/translations';
 import {
-  calculate4Band,
-  calculate5Band,
-  RESISTOR_COLORS,
-  ResistorColor,
+    calculate4Band,
+    calculate5Band,
+    RESISTOR_COLORS,
+    ResistorColor,
 } from '@/utils/resistorCalculators';
 
 type BandColumnConfig = {
