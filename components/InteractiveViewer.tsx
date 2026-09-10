@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import {
     ActivityIndicator,
     Animated,
+    Easing,
     Image,
     ImageSourcePropType,
     PanResponder,
@@ -22,20 +23,21 @@ type Props = {
 };
 
 /**
- * Pure Native React Native Interactive Viewer with Dynamic Orientation Support
- * Features:
- *  - Supports both Portrait and Landscape orientations dynamically
- *  - 2-Finger Fluid Pinch-to-Zoom using native animated transforms
- *  - 1-Finger Pan / Drag when zoomed in with boundary protection
- *  - Double-Tap quick zoom (1.0x <-> 2.6x)
- *  - 60/120 FPS hardware-accelerated animations (useNativeDriver: true)
+ * Pure Native React Native Interactive Image/Diagram Viewer
+ *
+ * Enhanced for:
+ *  - Zero dead space: Image fills viewport width in portrait.
+ *  - Strict 2D edge clamping: Prevents black gutters on left, right, top, and bottom when zoomed.
+ *  - Inverted matrix transform order [translateX, translateY, scale]: Gives 1:1 finger tracking without over-translating.
+ *  - 60/120 FPS buttery smooth animations without mid-gesture React re-renders.
+ *  - 2-Finger fluid pinch-to-zoom & double-tap quick toggle (1.0x <-> 2.5x).
  */
 export default function InteractiveViewer({
   source,
   baseWidth: propWidth,
   baseHeight: propHeight,
   minScale = 1.0,
-  maxScale = 5.0,
+  maxScale = 4.5,
   scaleValue,
   onScaleChange,
 }: Props) {
@@ -43,49 +45,66 @@ export default function InteractiveViewer({
   const [isLoading, setIsLoading] = useState(false);
   const [hasError, setHasError] = useState(false);
 
-  // Dynamic responsive dimensions for portrait and landscape
-  const baseWidth = propWidth ?? (windowWidth - 24);
-  const baseHeight = propHeight ?? (windowHeight * (windowWidth > windowHeight ? 0.85 : 0.72));
+  // Full viewport width in portrait to eliminate side gutters
+  const isLandscape = windowWidth > windowHeight;
+  const baseWidth = propWidth ?? (isLandscape ? Math.min(windowWidth, 900) : windowWidth);
+  const baseHeight = propHeight ?? Math.round(windowHeight * (isLandscape ? 0.88 : 0.76));
 
   const pan = useRef(new Animated.ValueXY({ x: 0, y: 0 })).current;
   const scale = useRef(new Animated.Value(1.0)).current;
 
-  // Imperative state for gesture calculations
+  // Imperative state for gestures
   const currentScale = useRef(1.0);
   const currentPan = useRef({ x: 0, y: 0 });
   const initialPinchDist = useRef<number | null>(null);
   const pinchStartScale = useRef(1.0);
   const pinchStartPan = useRef({ x: 0, y: 0 });
-  const pinchStartCenter = useRef<{ x: number; y: number } | null>(null);
   const lastTapTime = useRef(0);
 
-  // Sync external scale changes if provided
+  // Sync external scale changes (from HUD buttons)
   useEffect(() => {
     if (scaleValue !== undefined && Math.abs(scaleValue - currentScale.current) > 0.05) {
       currentScale.current = scaleValue;
       if (scaleValue <= 1.05) {
         currentPan.current = { x: 0, y: 0 };
         Animated.parallel([
-          Animated.spring(scale, {
-            toValue: scaleValue,
+          Animated.timing(scale, {
+            toValue: 1.0,
+            duration: 220,
+            easing: Easing.out(Easing.cubic),
             useNativeDriver: true,
-            friction: 7,
           }),
-          Animated.spring(pan, {
+          Animated.timing(pan, {
             toValue: { x: 0, y: 0 },
+            duration: 220,
+            easing: Easing.out(Easing.cubic),
             useNativeDriver: true,
-            friction: 7,
           }),
         ]).start();
       } else {
-        Animated.spring(scale, {
-          toValue: scaleValue,
-          useNativeDriver: true,
-          friction: 7,
-        }).start();
+        const maxPanX = Math.max(0, (baseWidth * (scaleValue - 1)) / 2);
+        const maxPanY = Math.max(0, (baseHeight * (scaleValue - 1)) / 2);
+        const targetX = Math.min(Math.max(currentPan.current.x, -maxPanX), maxPanX);
+        const targetY = Math.min(Math.max(currentPan.current.y, -maxPanY), maxPanY);
+        currentPan.current = { x: targetX, y: targetY };
+
+        Animated.parallel([
+          Animated.timing(scale, {
+            toValue: scaleValue,
+            duration: 220,
+            easing: Easing.out(Easing.cubic),
+            useNativeDriver: true,
+          }),
+          Animated.timing(pan, {
+            toValue: { x: targetX, y: targetY },
+            duration: 220,
+            easing: Easing.out(Easing.cubic),
+            useNativeDriver: true,
+          }),
+        ]).start();
       }
     }
-  }, [scaleValue]);
+  }, [scaleValue, baseWidth, baseHeight]);
 
   const calcDistance = (t1: any, t2: any) => {
     const dx = t1.pageX - t2.pageX;
@@ -93,44 +112,52 @@ export default function InteractiveViewer({
     return Math.hypot(dx, dy);
   };
 
-  const calcCenter = (t1: any, t2: any) => ({
-    x: (t1.pageX + t2.pageX) / 2,
-    y: (t1.pageY + t2.pageY) / 2,
-  });
-
   const panResponder = useRef(
     PanResponder.create({
-      onStartShouldSetPanResponder: () => true,
-      onMoveShouldSetPanResponder: () => true,
+      onStartShouldSetPanResponder: (evt) => {
+        return evt.nativeEvent.touches.length >= 2 || currentScale.current > 1.05;
+      },
+      onMoveShouldSetPanResponder: (evt) => {
+        return evt.nativeEvent.touches.length >= 2 || currentScale.current > 1.05;
+      },
       onStartShouldSetPanResponderCapture: () => false,
       onMoveShouldSetPanResponderCapture: (evt) => {
-        return evt.nativeEvent.touches.length >= 2;
+        return evt.nativeEvent.touches.length >= 2 || currentScale.current > 1.05;
       },
 
       onPanResponderGrant: (evt) => {
         const touches = evt.nativeEvent.touches;
 
-        // Double-tap handler
+        // Double-tap zoom toggle (1.0x <-> 2.5x)
         const now = Date.now();
-        if (touches.length === 1 && now - lastTapTime.current < 300) {
-          const targetScale = currentScale.current > 1.3 ? 1.0 : 2.6;
+        if (touches.length === 1 && now - lastTapTime.current < 280) {
+          const targetScale = currentScale.current > 1.3 ? 1.0 : 2.5;
           currentScale.current = targetScale;
-          currentPan.current = { x: 0, y: 0 };
 
-          Animated.parallel([
-            Animated.spring(scale, {
+          if (targetScale <= 1.05) {
+            currentPan.current = { x: 0, y: 0 };
+            Animated.parallel([
+              Animated.timing(scale, {
+                toValue: 1.0,
+                duration: 220,
+                easing: Easing.out(Easing.cubic),
+                useNativeDriver: true,
+              }),
+              Animated.timing(pan, {
+                toValue: { x: 0, y: 0 },
+                duration: 220,
+                easing: Easing.out(Easing.cubic),
+                useNativeDriver: true,
+              }),
+            ]).start();
+          } else {
+            Animated.timing(scale, {
               toValue: targetScale,
+              duration: 220,
+              easing: Easing.out(Easing.cubic),
               useNativeDriver: true,
-              friction: 6,
-              tension: 40,
-            }),
-            Animated.spring(pan, {
-              toValue: { x: 0, y: 0 },
-              useNativeDriver: true,
-              friction: 6,
-              tension: 40,
-            }),
-          ]).start();
+            }).start();
+          }
 
           if (onScaleChange) onScaleChange(targetScale);
           lastTapTime.current = 0;
@@ -138,107 +165,83 @@ export default function InteractiveViewer({
         }
         lastTapTime.current = now;
 
-        if (touches.length === 2) {
+        if (touches.length >= 2) {
           initialPinchDist.current = calcDistance(touches[0], touches[1]);
           pinchStartScale.current = currentScale.current;
-          pinchStartCenter.current = calcCenter(touches[0], touches[1]);
           pinchStartPan.current = { ...currentPan.current };
-        } else {
-          pan.setOffset({
-            x: currentPan.current.x,
-            y: currentPan.current.y,
-          });
-          pan.setValue({ x: 0, y: 0 });
+        } else if (currentScale.current > 1.05) {
+          pinchStartPan.current = { ...currentPan.current };
         }
       },
 
       onPanResponderMove: (evt, gestureState) => {
         const touches = evt.nativeEvent.touches;
 
-        // TWO-FINGER PINCH-TO-ZOOM
-        if (touches.length === 2) {
+        // 2-FINGER FLUID PINCH-TO-ZOOM (60/120 FPS native transforms without mid-gesture re-renders)
+        if (touches.length >= 2 && initialPinchDist.current) {
           const dist = calcDistance(touches[0], touches[1]);
+          const ratio = dist / initialPinchDist.current;
+          const nextScale = Math.min(Math.max(pinchStartScale.current * ratio, minScale), maxScale);
 
-          if (!initialPinchDist.current || initialPinchDist.current <= 0) {
-            initialPinchDist.current = dist;
-            pinchStartScale.current = currentScale.current;
-            pinchStartCenter.current = calcCenter(touches[0], touches[1]);
-            pinchStartPan.current = { ...currentPan.current };
-          } else {
-            const factor = dist / initialPinchDist.current;
-            let newScale = pinchStartScale.current * factor;
-            newScale = Math.max(0.75, Math.min(newScale, maxScale));
-            currentScale.current = newScale;
-            scale.setValue(newScale);
+          currentScale.current = nextScale;
+          scale.setValue(nextScale);
 
-            if (pinchStartCenter.current) {
-              const currentCenter = calcCenter(touches[0], touches[1]);
-              const dx = currentCenter.x - pinchStartCenter.current.x;
-              const dy = currentCenter.y - pinchStartCenter.current.y;
-              pan.setValue({
-                x: pinchStartPan.current.x + dx,
-                y: pinchStartPan.current.y + dy,
-              });
-            }
-
-            if (onScaleChange) onScaleChange(newScale);
-          }
+          // Clamped pan to prevent black borders during pinch
+          const maxPanX = Math.max(0, (baseWidth * (nextScale - 1)) / 2);
+          const maxPanY = Math.max(0, (baseHeight * (nextScale - 1)) / 2);
+          const clampedX = Math.min(Math.max(currentPan.current.x, -maxPanX), maxPanX);
+          const clampedY = Math.min(Math.max(currentPan.current.y, -maxPanY), maxPanY);
+          pan.setValue({ x: clampedX, y: clampedY });
+          return;
         }
-        // SINGLE-FINGER DRAG WHEN ZOOMED IN
-        else if (touches.length === 1) {
-          initialPinchDist.current = null;
-          pinchStartCenter.current = null;
 
-          if (currentScale.current > 1.05) {
-            pan.setValue({ x: gestureState.dx, y: gestureState.dy });
-          }
+        // 1-FINGER 2D PAN WHEN ZOOMED IN
+        if (touches.length === 1 && currentScale.current > 1.05) {
+          const maxPanX = Math.max(0, (baseWidth * (currentScale.current - 1)) / 2);
+          const maxPanY = Math.max(0, (baseHeight * (currentScale.current - 1)) / 2);
+
+          let targetX = pinchStartPan.current.x + gestureState.dx;
+          let targetY = pinchStartPan.current.y + gestureState.dy;
+
+          // Strict boundary clamping: diagram never pulls inside screen to expose black gutters
+          targetX = Math.min(Math.max(targetX, -maxPanX), maxPanX);
+          targetY = Math.min(Math.max(targetY, -maxPanY), maxPanY);
+
+          pan.setValue({ x: targetX, y: targetY });
         }
       },
 
       onPanResponderRelease: () => {
-        pan.flattenOffset();
-        // @ts-ignore
-        const finalX = pan.x._value ?? 0;
-        // @ts-ignore
-        const finalY = pan.y._value ?? 0;
-        currentPan.current = { x: finalX, y: finalY };
         initialPinchDist.current = null;
-        pinchStartCenter.current = null;
-
-        // Auto bounce back if scale went below minScale
-        if (currentScale.current < minScale) {
-          currentScale.current = minScale;
-          Animated.spring(scale, {
-            toValue: minScale,
-            useNativeDriver: true,
-            friction: 7,
-          }).start();
-          if (onScaleChange) onScaleChange(minScale);
-        }
-
-        // Limit pan bounds to prevent losing image off screen
-        const maxPanX = Math.max(0, (baseWidth * (currentScale.current - 1)) / 2 + 50);
-        const maxPanY = Math.max(0, (baseHeight * (currentScale.current - 1)) / 2 + 80);
-
-        let boundedX = currentPan.current.x;
-        let boundedY = currentPan.current.y;
 
         if (currentScale.current <= 1.05) {
-          boundedX = 0;
-          boundedY = 0;
+          currentScale.current = 1.0;
+          currentPan.current = { x: 0, y: 0 };
+          Animated.parallel([
+            Animated.timing(scale, {
+              toValue: 1.0,
+              duration: 200,
+              easing: Easing.out(Easing.cubic),
+              useNativeDriver: true,
+            }),
+            Animated.timing(pan, {
+              toValue: { x: 0, y: 0 },
+              duration: 200,
+              easing: Easing.out(Easing.cubic),
+              useNativeDriver: true,
+            }),
+          ]).start();
+          if (onScaleChange) onScaleChange(1.0);
         } else {
-          boundedX = Math.max(-maxPanX, Math.min(boundedX, maxPanX));
-          boundedY = Math.max(-maxPanY, Math.min(boundedY, maxPanY));
+          // @ts-ignore
+          const finalX = pan.x._value ?? currentPan.current.x;
+          // @ts-ignore
+          const finalY = pan.y._value ?? currentPan.current.y;
+          currentPan.current = { x: finalX, y: finalY };
+          if (onScaleChange) onScaleChange(currentScale.current);
         }
-
-        currentPan.current = { x: boundedX, y: boundedY };
-        Animated.spring(pan, {
-          toValue: { x: boundedX, y: boundedY },
-          useNativeDriver: true,
-          friction: 7,
-        }).start();
       },
-    }),
+    })
   ).current;
 
   return (
@@ -248,9 +251,9 @@ export default function InteractiveViewer({
           styles.imageWrapper,
           {
             transform: [
-              { scale: scale },
               { translateX: pan.x },
               { translateY: pan.y },
+              { scale: scale },
             ],
           },
         ]}
@@ -298,10 +301,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     overflow: 'hidden',
     backgroundColor: '#0B0F19',
+    width: '100%',
   },
   imageWrapper: {
     alignItems: 'center',
     justifyContent: 'center',
+    width: '100%',
   },
   loaderContainer: {
     ...StyleSheet.absoluteFillObject,
