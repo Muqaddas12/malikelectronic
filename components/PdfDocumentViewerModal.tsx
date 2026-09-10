@@ -1,8 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
     ActivityIndicator,
-    Animated,
-    Easing,
     Image,
     Modal,
     NativeScrollEvent,
@@ -31,13 +29,12 @@ type Props = {
 /**
  * Native Google Drive-Style PDF Document Viewer.
  *
- * Enhanced for:
- *  - Zero left/right dead space: Page fills 100% of viewport width in portrait.
- *  - Strict horizontal edge clamping: When zoomed, PDF content stays flush to screen edges with zero gutters.
- *  - 60/120 FPS buttery smooth animations: Gestures update native Animated values without re-rendering component state on touch moves.
- *  - Continuous vertical multi-page scroll.
- *  - Double-tap quick zoom toggle (1.0x <-> 2.2x).
- *  - Floating Google Drive HUD with page indicator and zoom controls.
+ * Engineered with a Dual-Axis Native Layout:
+ *  - NO clipping: Top (y=0) and Bottom (full content height) are 100% accessible at any zoom level.
+ *  - NO black space on left/right: Document width expands to fill the viewport and horizontal scroll view with white paper.
+ *  - 100% Native 120 FPS vertical & horizontal scrolling powered by React Native ScrollView physics.
+ *  - 2-finger fluid pinch-to-zoom & double-tap zoom toggle (1.0x <-> 2.0x).
+ *  - Live page tracking & Google Drive HUD with jump buttons.
  */
 export default function PdfDocumentViewerModal({
   visible,
@@ -47,143 +44,90 @@ export default function PdfDocumentViewerModal({
   const { isHindi } = useLanguage();
   const { width: windowWidth, height: windowHeight } = useWindowDimensions();
 
-  // Full edge-to-edge width in portrait to eliminate left/right white/black gutters
-  const isLandscape = windowWidth > windowHeight;
-  const pageWidth = isLandscape ? Math.min(windowWidth, 900) : windowWidth;
-  const pageHeight = Math.round(pageWidth * 1.414); // Standard A4 proportion
-  const pageItemHeight = pageHeight + 12; // Page height + vertical separator
-
   const totalPages = doc?.pages?.length ?? 0;
   const [currentPage, setCurrentPage] = useState(1);
-  const [zoomLevel, setZoomLevel] = useState(1.0);
+  const [zoomScale, setZoomScale] = useState(1.0);
 
-  // Animated values for hardware-accelerated zoom and pan
-  const scaleAnim = useRef(new Animated.Value(1.0)).current;
-  const panAnim = useRef(new Animated.ValueXY({ x: 0, y: 0 })).current;
+  // Base page dimensions: standard A4 proportion (1 : 1.414)
+  const isLandscape = windowWidth > windowHeight;
+  const baseWidth = isLandscape ? Math.min(windowWidth, 900) : windowWidth;
+  const baseHeight = Math.round(baseWidth * 1.414);
 
-  // Imperative refs for gestures
-  const currentScale = useRef(1.0);
-  const currentPan = useRef({ x: 0, y: 0 });
-  const initialDistance = useRef<number | null>(null);
-  const pinchStartScale = useRef(1.0);
-  const pinchStartPan = useRef({ x: 0, y: 0 });
-  const lastTapTime = useRef(0);
+  // Scaled dimensions that dynamically resize content without clipping
+  const displayWidth = Math.round(baseWidth * zoomScale);
+  const displayHeight = Math.round(baseHeight * zoomScale);
+  const displayItemHeight = displayHeight + 16; // Page height + margin
 
   const scrollViewRef = useRef<ScrollView>(null);
+  const horizontalScrollRef = useRef<ScrollView>(null);
+  const currentScrollY = useRef(0);
+  const lastTapTime = useRef(0);
 
-  // Reset state when doc opens
+  // Pinch gesture tracking
+  const initialDistance = useRef<number | null>(null);
+  const pinchStartScale = useRef(1.0);
+
+  // Reset when new document opens
   useEffect(() => {
     if (visible) {
       setCurrentPage(1);
-      resetZoom(false);
+      setZoomScale(1.0);
+      currentScrollY.current = 0;
     }
   }, [visible, doc?.chipName]);
 
-  const resetZoom = (animated = true) => {
-    currentScale.current = 1.0;
-    currentPan.current = { x: 0, y: 0 };
-    setZoomLevel(1.0);
+  const updateZoom = (nextScale: number) => {
+    const clamped = Math.min(Math.max(nextScale, 1.0), 3.2);
+    const oldScale = zoomScale;
+    setZoomScale(clamped);
 
-    if (animated) {
-      Animated.parallel([
-        Animated.timing(scaleAnim, {
-          toValue: 1.0,
-          duration: 220,
-          easing: Easing.out(Easing.cubic),
-          useNativeDriver: true,
-        }),
-        Animated.timing(panAnim, {
-          toValue: { x: 0, y: 0 },
-          duration: 220,
-          easing: Easing.out(Easing.cubic),
-          useNativeDriver: true,
-        }),
-      ]).start();
-    } else {
-      scaleAnim.setValue(1.0);
-      panAnim.setValue({ x: 0, y: 0 });
+    // Smoothly preserve relative scroll position
+    if (scrollViewRef.current && oldScale > 0) {
+      const ratio = clamped / oldScale;
+      const targetY = currentScrollY.current * ratio;
+      currentScrollY.current = targetY;
+      scrollViewRef.current.scrollTo({ y: targetY, animated: false });
+    }
+
+    if (clamped <= 1.05 && horizontalScrollRef.current) {
+      horizontalScrollRef.current.scrollTo({ x: 0, animated: true });
     }
   };
 
-  const applyZoom = (targetScale: number) => {
-    const clamped = Math.min(Math.max(targetScale, 1.0), 4.0);
-    currentScale.current = clamped;
-    setZoomLevel(clamped);
-
-    if (clamped <= 1.05) {
-      currentPan.current = { x: 0, y: 0 };
-      Animated.parallel([
-        Animated.timing(scaleAnim, {
-          toValue: 1.0,
-          duration: 220,
-          easing: Easing.out(Easing.cubic),
-          useNativeDriver: true,
-        }),
-        Animated.timing(panAnim, {
-          toValue: { x: 0, y: 0 },
-          duration: 220,
-          easing: Easing.out(Easing.cubic),
-          useNativeDriver: true,
-        }),
-      ]).start();
-    } else {
-      const maxPanX = Math.max(0, ((clamped - 1) * pageWidth) / 2);
-      const maxPanY = Math.max(0, ((clamped - 1) * pageHeight) / 2);
-      const targetX = Math.min(Math.max(currentPan.current.x, -maxPanX), maxPanX);
-      const targetY = Math.min(Math.max(currentPan.current.y, -maxPanY), maxPanY);
-      currentPan.current = { x: targetX, y: targetY };
-
-      Animated.parallel([
-        Animated.timing(scaleAnim, {
-          toValue: clamped,
-          duration: 220,
-          easing: Easing.out(Easing.cubic),
-          useNativeDriver: true,
-        }),
-        Animated.timing(panAnim, {
-          toValue: { x: targetX, y: targetY },
-          duration: 220,
-          easing: Easing.out(Easing.cubic),
-          useNativeDriver: true,
-        }),
-      ]).start();
-    }
-  };
-
-  // Scroll to specific page
+  // Scroll to a specific page
   const scrollToPage = (pageNumber: number) => {
-    const targetY = (pageNumber - 1) * pageItemHeight;
+    const targetY = (pageNumber - 1) * displayItemHeight;
     scrollViewRef.current?.scrollTo({ y: targetY, animated: true });
     setCurrentPage(pageNumber);
   };
 
-  // Handle vertical scroll to update current page indicator dynamically
+  // Track vertical scroll to update current page indicator in real time
   const handleScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
     const offsetY = e.nativeEvent.contentOffset.y;
+    currentScrollY.current = offsetY;
     const computed = Math.min(
       totalPages,
-      Math.max(1, Math.floor((offsetY + pageItemHeight * 0.35) / pageItemHeight) + 1)
+      Math.max(1, Math.floor((offsetY + displayItemHeight * 0.35) / displayItemHeight) + 1)
     );
     if (computed !== currentPage) {
       setCurrentPage(computed);
     }
   };
 
-  // Distance helper for pinch
   const getTouchDistance = (t1: any, t2: any) => {
     const dx = t1.pageX - t2.pageX;
     const dy = t1.pageY - t2.pageY;
     return Math.hypot(dx, dy);
   };
 
-  // Double-tap handler for zoom toggle
-  const handlePageTap = () => {
+  // Double-tap handler on pages
+  const handlePageDoubleTap = () => {
     const now = Date.now();
     if (now - lastTapTime.current < 280) {
-      if (currentScale.current > 1.2) {
-        resetZoom(true);
+      if (zoomScale > 1.2) {
+        updateZoom(1.0);
       } else {
-        applyZoom(2.2);
+        updateZoom(2.0);
       }
       lastTapTime.current = 0;
     } else {
@@ -191,84 +135,38 @@ export default function PdfDocumentViewerModal({
     }
   };
 
-  // PanResponder for Google Drive Pinch & Pan gestures
+  // 2-Finger Pinch-to-Zoom PanResponder (only intercepts multi-touch; leaves 1-finger scroll untouched)
   const panResponder = useRef(
     PanResponder.create({
-      onStartShouldSetPanResponder: (evt) => {
-        return evt.nativeEvent.touches.length >= 2 || currentScale.current > 1.05;
-      },
-      onMoveShouldSetPanResponder: (evt) => {
-        return evt.nativeEvent.touches.length >= 2 || currentScale.current > 1.05;
-      },
+      onStartShouldSetPanResponder: (evt) => evt.nativeEvent.touches.length >= 2,
+      onMoveShouldSetPanResponder: (evt) => evt.nativeEvent.touches.length >= 2,
       onStartShouldSetPanResponderCapture: () => false,
-      onMoveShouldSetPanResponderCapture: (evt) => {
-        return evt.nativeEvent.touches.length >= 2 || currentScale.current > 1.05;
-      },
+      onMoveShouldSetPanResponderCapture: (evt) => evt.nativeEvent.touches.length >= 2,
 
       onPanResponderGrant: (evt) => {
-        const touches = evt.nativeEvent.touches;
-
-        if (touches.length >= 2) {
-          initialDistance.current = getTouchDistance(touches[0], touches[1]);
-          pinchStartScale.current = currentScale.current;
-          pinchStartPan.current = { ...currentPan.current };
-        } else if (currentScale.current > 1.05) {
-          pinchStartPan.current = { ...currentPan.current };
-          panAnim.setValue({ x: currentPan.current.x, y: currentPan.current.y });
+        if (evt.nativeEvent.touches.length >= 2) {
+          initialDistance.current = getTouchDistance(
+            evt.nativeEvent.touches[0],
+            evt.nativeEvent.touches[1]
+          );
+          pinchStartScale.current = zoomScale;
         }
       },
 
-      onPanResponderMove: (evt, gestureState) => {
-        const touches = evt.nativeEvent.touches;
-
-        // 2-FINGER FLUID PINCH-TO-ZOOM (No setState during motion for 60/120 FPS smoothness)
-        if (touches.length >= 2 && initialDistance.current) {
-          const currentDist = getTouchDistance(touches[0], touches[1]);
-          const ratio = currentDist / initialDistance.current;
-          const nextScale = Math.min(Math.max(pinchStartScale.current * ratio, 1.0), 4.0);
-
-          currentScale.current = nextScale;
-          scaleAnim.setValue(nextScale);
-
-          // Keep pan within new scale bounds so no black space can appear during pinch
-          const maxPanX = Math.max(0, ((nextScale - 1) * pageWidth) / 2);
-          const maxPanY = Math.max(0, ((nextScale - 1) * pageHeight) / 2);
-          const clampedX = Math.min(Math.max(currentPan.current.x, -maxPanX), maxPanX);
-          const clampedY = Math.min(Math.max(currentPan.current.y, -maxPanY), maxPanY);
-          panAnim.setValue({ x: clampedX, y: clampedY });
-          return;
-        }
-
-        // 1-FINGER DRAG WHEN ZOOMED IN
-        if (touches.length === 1 && currentScale.current > 1.05) {
-          // Strict edge bounding: No empty dead gutters on left/right
-          const maxPanX = ((currentScale.current - 1) * pageWidth) / 2;
-          const maxPanY = ((currentScale.current - 1) * pageHeight) / 2;
-
-          let targetX = pinchStartPan.current.x + gestureState.dx;
-          let targetY = pinchStartPan.current.y + gestureState.dy;
-
-          // Clamp strictly so the page never pulls away from viewport edges
-          targetX = Math.min(Math.max(targetX, -maxPanX), maxPanX);
-          targetY = Math.min(Math.max(targetY, -maxPanY), maxPanY);
-
-          panAnim.setValue({ x: targetX, y: targetY });
+      onPanResponderMove: (evt) => {
+        if (evt.nativeEvent.touches.length >= 2 && initialDistance.current) {
+          const dist = getTouchDistance(
+            evt.nativeEvent.touches[0],
+            evt.nativeEvent.touches[1]
+          );
+          const ratio = dist / initialDistance.current;
+          const target = Math.min(Math.max(pinchStartScale.current * ratio, 1.0), 3.2);
+          updateZoom(Number(target.toFixed(2)));
         }
       },
 
       onPanResponderRelease: () => {
         initialDistance.current = null;
-
-        if (currentScale.current <= 1.05) {
-          resetZoom(true);
-        } else {
-          // @ts-ignore
-          const finalX = panAnim.x._value ?? currentPan.current.x;
-          // @ts-ignore
-          const finalY = panAnim.y._value ?? currentPan.current.y;
-          currentPan.current = { x: finalX, y: finalY };
-          setZoomLevel(currentScale.current);
-        }
       },
     })
   ).current;
@@ -286,7 +184,7 @@ export default function PdfDocumentViewerModal({
       <StatusBar barStyle="light-content" backgroundColor="#18181B" />
       <SafeAreaView edges={['top', 'left', 'right', 'bottom']} style={styles.safeArea}>
         {/* =========================================================
-            GOOGLE DRIVE HEADER BAR
+            GOOGLE DRIVE TOP HEADER BAR
             ========================================================= */}
         <View style={styles.headerBar}>
           <View style={styles.headerLeft}>
@@ -301,12 +199,12 @@ export default function PdfDocumentViewerModal({
               <Text style={styles.backIcon}>←</Text>
             </Pressable>
 
-            {/* Red PDF Chip Badge */}
+            {/* Red PDF Badge */}
             <View style={styles.pdfBadge}>
               <Text style={styles.pdfBadgeText}>PDF</Text>
             </View>
 
-            {/* Title & Subtitle */}
+            {/* Document Title & Subtitle */}
             <View style={styles.titleWrapper}>
               <Text style={styles.docTitle} numberOfLines={1}>
                 {doc.chipName} Pinout.pdf
@@ -317,19 +215,19 @@ export default function PdfDocumentViewerModal({
             </View>
           </View>
 
-          {/* Right Header Actions */}
+          {/* Header Controls */}
           <View style={styles.headerRight}>
-            {/* Page Pill Counter */}
+            {/* Page Counter Pill */}
             <View style={styles.pagePill}>
               <Text style={styles.pagePillText}>
                 {currentPage} / {totalPages}
               </Text>
             </View>
 
-            {/* Reset / Fit Width */}
-            {zoomLevel > 1.05 && (
+            {/* Reset / Fit-to-Width Button */}
+            {zoomScale > 1.05 && (
               <Pressable
-                onPress={() => resetZoom(true)}
+                onPress={() => updateZoom(1.0)}
                 hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                 style={({ pressed }) => [styles.toolBtn, pressed && styles.btnPressed]}
                 accessibilityLabel="Fit to width"
@@ -352,50 +250,51 @@ export default function PdfDocumentViewerModal({
         </View>
 
         {/* =========================================================
-            CONTINUOUS VERTICAL MULTI-PAGE CANVAS (EDGE-TO-EDGE)
+            DUAL-AXIS NATIVE SCROLL CANVAS (ZERO CLIPPING & ZERO BLACK SPACE)
             ========================================================= */}
-        <View style={styles.canvasContainer}>
+        <View style={styles.canvasContainer} {...panResponder.panHandlers}>
           <ScrollView
-            ref={scrollViewRef}
-            style={styles.scrollView}
-            scrollEnabled={zoomLevel <= 1.05}
-            showsVerticalScrollIndicator={true}
-            indicatorStyle="white"
-            contentContainerStyle={styles.scrollContent}
-            onScroll={handleScroll}
-            scrollEventThrottle={16}
-            nestedScrollEnabled={true}
+            ref={horizontalScrollRef}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            bounces={false}
+            style={styles.horizontalScrollView}
+            contentContainerStyle={[
+              styles.horizontalContent,
+              { width: Math.max(displayWidth, windowWidth) },
+            ]}
           >
-            <Animated.View
-              {...panResponder.panHandlers}
-              style={[
-                styles.animatedWrapper,
-                {
-                  transform: [
-                    { translateX: panAnim.x },
-                    { translateY: panAnim.y },
-                    { scale: scaleAnim },
-                  ],
-                },
+            <ScrollView
+              ref={scrollViewRef}
+              style={{ width: displayWidth, flex: 1 }}
+              contentContainerStyle={[
+                styles.verticalContent,
+                { width: displayWidth },
               ]}
+              showsVerticalScrollIndicator={true}
+              indicatorStyle="white"
+              onScroll={handleScroll}
+              scrollEventThrottle={16}
+              nestedScrollEnabled={true}
+              bounces={true}
             >
               {doc.pages.map((pageSource, index) => (
                 <Pressable
                   key={`page-${index}`}
-                  onPress={handlePageTap}
+                  onPress={handlePageDoubleTap}
                   style={[
                     styles.pageCard,
                     {
-                      width: pageWidth,
-                      height: pageHeight,
-                      marginBottom: index === totalPages - 1 ? 120 : 12,
+                      width: displayWidth,
+                      height: displayHeight,
+                      marginBottom: index === totalPages - 1 ? 120 : 16,
                     },
                   ]}
                 >
                   <PdfPageImage
                     source={pageSource}
-                    width={pageWidth}
-                    height={pageHeight}
+                    width={displayWidth}
+                    height={displayHeight}
                   />
 
                   {/* Page Footer Watermark */}
@@ -406,7 +305,7 @@ export default function PdfDocumentViewerModal({
                   </View>
                 </Pressable>
               ))}
-            </Animated.View>
+            </ScrollView>
           </ScrollView>
         </View>
 
@@ -414,7 +313,7 @@ export default function PdfDocumentViewerModal({
             FLOATING GOOGLE DRIVE BOTTOM ACTION HUD
             ========================================================= */}
         <View style={styles.floatingHud}>
-          {/* Quick Page Prev */}
+          {/* Previous Page */}
           {totalPages > 1 && (
             <Pressable
               disabled={currentPage <= 1}
@@ -429,14 +328,14 @@ export default function PdfDocumentViewerModal({
             </Pressable>
           )}
 
-          {/* Current Page Indicator */}
+          {/* Current Page Pill */}
           <View style={styles.hudPageBadge}>
             <Text style={styles.hudPageText}>
               {isHindi ? `पेज ${currentPage} / ${totalPages}` : `${currentPage} of ${totalPages}`}
             </Text>
           </View>
 
-          {/* Quick Page Next */}
+          {/* Next Page */}
           {totalPages > 1 && (
             <Pressable
               disabled={currentPage >= totalPages}
@@ -456,7 +355,7 @@ export default function PdfDocumentViewerModal({
 
           {/* Zoom Out */}
           <Pressable
-            onPress={() => applyZoom(zoomLevel - 0.4)}
+            onPress={() => updateZoom(zoomScale - 0.3)}
             style={({ pressed }) => [styles.hudBtn, pressed && styles.btnPressed]}
           >
             <Text style={styles.hudBtnText}>−</Text>
@@ -464,17 +363,17 @@ export default function PdfDocumentViewerModal({
 
           {/* Zoom Percent / Reset */}
           <Pressable
-            onPress={() => (zoomLevel > 1.05 ? resetZoom(true) : applyZoom(2.2))}
+            onPress={() => (zoomScale > 1.05 ? updateZoom(1.0) : updateZoom(2.0))}
             style={({ pressed }) => [styles.hudPercentBtn, pressed && styles.btnPressed]}
           >
             <Text style={styles.hudPercentText}>
-              {Math.round(zoomLevel * 100)}%
+              {Math.round(zoomScale * 100)}%
             </Text>
           </Pressable>
 
           {/* Zoom In */}
           <Pressable
-            onPress={() => applyZoom(zoomLevel + 0.4)}
+            onPress={() => updateZoom(zoomScale + 0.3)}
             style={({ pressed }) => [styles.hudBtn, pressed && styles.btnPressed]}
           >
             <Text style={styles.hudBtnText}>+</Text>
@@ -486,7 +385,7 @@ export default function PdfDocumentViewerModal({
 }
 
 /**
- * Individual Page Image Renderer with loader and error boundary
+ * Individual Page Image Renderer with loader & error handling
  */
 function PdfPageImage({
   source,
@@ -668,32 +567,30 @@ const styles = StyleSheet.create({
     backgroundColor: '#3F3F46',
   },
 
-  /* CANVAS & SCROLL CONTENT (EDGE-TO-EDGE) */
+  /* CANVAS & SCROLL CONTENT */
   canvasContainer: {
     flex: 1,
     backgroundColor: '#1E1E20',
     width: '100%',
   },
 
-  scrollView: {
+  horizontalScrollView: {
     flex: 1,
     width: '100%',
   },
 
-  scrollContent: {
-    alignItems: 'center',
-    paddingTop: 0,
-    paddingBottom: 20,
-    width: '100%',
+  horizontalContent: {
+    alignItems: 'flex-start',
+    justifyContent: 'flex-start',
   },
 
-  animatedWrapper: {
-    alignItems: 'center',
-    width: '100%',
+  verticalContent: {
+    paddingTop: 0,
+    paddingBottom: 20,
   },
 
   pageCard: {
-    backgroundColor: '#FFFFFF', // Full width white paper sheet
+    backgroundColor: '#FFFFFF', // Clean White A4 Paper Sheet
     overflow: 'hidden',
     borderBottomWidth: 1,
     borderBottomColor: '#27272A',
