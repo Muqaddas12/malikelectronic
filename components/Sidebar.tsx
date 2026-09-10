@@ -1,25 +1,25 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
-  Animated,
-  Dimensions,
-  Modal,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableWithoutFeedback,
-  View,
+    Animated,
+    Dimensions,
+    Modal,
+    Pressable,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableWithoutFeedback,
+    View,
 } from 'react-native';
 
 import {
-  layout,
-  lineFor,
-  mono,
-  radius,
-  size,
-  space,
-  ThemePreference,
-  weight,
+    layout,
+    lineFor,
+    mono,
+    radius,
+    size,
+    space,
+    ThemePreference,
+    weight,
 } from '@/constants/theme';
 import { Language, useLanguage } from '@/context/LanguageContext';
 import { useTheme } from '@/context/ThemeContext';
@@ -175,6 +175,7 @@ export default function Sidebar({ visible, onClose }: Props) {
   const { colors, preference, setPreference, reduceMotion } = useTheme();
   const { safePush } = useSafeNavigate();
   const [supportVisible, setSupportVisible] = useState(false);
+  const [privacyVisible, setPrivacyVisible] = useState(false);
 
   const translateX = useRef(
     new Animated.Value(-DRAWER_WIDTH),
@@ -210,6 +211,10 @@ export default function Sidebar({ visible, onClose }: Props) {
       <SupportDialog
         visible={supportVisible}
         onClose={() => setSupportVisible(false)}
+      />
+      <PrivacyDialog
+        visible={privacyVisible}
+        onClose={() => setPrivacyVisible(false)}
       />
 
       <TouchableWithoutFeedback onPress={onClose}>
@@ -291,6 +296,12 @@ export default function Sidebar({ visible, onClose }: Props) {
             title={tr(language, 'support')}
             detail={tr(language, 'customerAndTechHelp')}
             onPress={() => setSupportVisible(true)}
+          />
+
+          <NavRow
+            title={tr(language, 'privacyPolicy')}
+            detail={tr(language, 'privacyPolicySubtitle')}
+            onPress={() => setPrivacyVisible(true)}
           />
 
           <View style={styles.settings}>
@@ -429,6 +440,165 @@ function SupportDialog({
               </View>
             ))}
           </View>
+
+          <Pressable
+            onPress={onClose}
+            accessibilityRole="button"
+            style={({ pressed }) => [
+              styles.dialogButton,
+              {
+                backgroundColor: colors.signal,
+                opacity: pressed ? 0.85 : 1,
+              },
+            ]}
+          >
+            <Text
+              style={[
+                styles.dialogButtonText,
+                { color: colors.signalInk },
+              ]}
+            >
+              {tr(language, 'close')}
+            </Text>
+          </Pressable>
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
+function PrivacyDialog({
+  visible,
+  onClose,
+}: {
+  visible: boolean;
+  onClose: () => void;
+}) {
+  const { language, isHindi } = useLanguage();
+  const { colors } = useTheme();
+
+  const points = isHindi
+    ? [
+        {
+          title: '🔒 शून्य व्यक्तिगत डेटा संग्रह',
+          desc: 'यह ऐप आपका कोई भी निजी डेटा (नाम, ईमेल, फोन नंबर, लोकेशन, फोटो, फाइल्स, कैमरा आदि) एकत्र या शेयर नहीं करता है।',
+        },
+        {
+          title: '📱 डिवाइस पर लोकल सेटिंग्स',
+          desc: 'केवल भाषा (English/हिंदी) और थीम (Light/Dark) प्राथमिकताएं आपके फोन में सुरक्षित रखी जाती हैं, जो कभी किसी सर्वर पर नहीं भेजी जातीं।',
+        },
+        {
+          title: '🌐 इंटरनेट और सर्किट डायग्राम',
+          desc: 'इंटरनेट की अनुमति केवल उच्च-गुणवत्ता वाले सर्किट डायग्राम सुरक्षित HTTPS से लोड करने के लिए ली जाती है। डायग्राम लिंक इन-ऐप एन्क्रिप्टेड हैं।',
+        },
+        {
+          title: '🚫 कोई विज्ञापन या ट्रैकिंग नहीं',
+          desc: 'ऐप में शून्य विज्ञापन हैं और कोई एनालिटिक्स या ट्रैकिंग SDK शामिल नहीं है।',
+        },
+        {
+          title: '👶 बच्चों की गोपनीयता (COPPA)',
+          desc: 'ऐप किसी भी आयु वर्ग के उपयोगकर्ता का कोई व्यक्तिगत डेटा नहीं लेता है।',
+        },
+        {
+          title: '✉️ संपर्क',
+          desc: 'MaliK Electronic Repair & Spares | Email: support@mtbyown.com',
+        },
+      ]
+    : [
+        {
+          title: '🔒 Zero Personal Data Collection',
+          desc: 'The App does not collect, track, or share any personal identifiable information (no name, email, phone, location, camera, or storage files).',
+        },
+        {
+          title: '📱 Local On-Device Preferences',
+          desc: 'Only your language (English/Hindi) and theme (Light/Dark) preferences are stored locally in your device sandbox. Never sent to any server.',
+        },
+        {
+          title: '🌐 Internet & Schematic Diagrams',
+          desc: 'Internet permission is used solely to stream high-resolution schematic diagrams over encrypted HTTPS. Diagram references are cryptographically protected.',
+        },
+        {
+          title: '🚫 No Advertisements or Trackers',
+          desc: 'The App contains zero ads and integrates no third-party tracking or analytics SDKs.',
+        },
+        {
+          title: '👶 Children\'s Privacy (COPPA)',
+          desc: 'Complies with COPPA and Google Play Families policy. Zero personal data collected from any user.',
+        },
+        {
+          title: '✉️ Contact & Support',
+          desc: 'MaliK Electronic Repair & Spares | Email: support@mtbyown.com',
+        },
+      ];
+
+  return (
+    <Modal
+      visible={visible}
+      transparent
+      animationType="fade"
+      onRequestClose={onClose}
+    >
+      <View style={[styles.dialogScrim, { backgroundColor: colors.overlay }]}>
+        <View
+          style={[
+            styles.dialog,
+            {
+              backgroundColor: colors.panel,
+              borderColor: colors.rule,
+              maxHeight: '82%',
+            },
+          ]}
+        >
+          <Text style={[styles.dialogTitle, { color: colors.text }]}>
+            {tr(language, 'privacyPolicy')}
+          </Text>
+
+          <Text
+            style={[
+              styles.dialogBody,
+              {
+                color: colors.textDim,
+                lineHeight: lineFor('small', isHindi),
+                marginBottom: space.sm,
+              },
+            ]}
+          >
+            {isHindi
+              ? 'मालिक इलेक्ट्रॉनिक (com.muqaddas123.malikelectronic) आपकी गोपनीयता का पूरा सम्मान करता है।'
+              : 'MaliK Electronic (com.muqaddas123.malikelectronic) respects your privacy.'}
+          </Text>
+
+          <ScrollView showsVerticalScrollIndicator={false} style={{ marginVertical: space.sm }}>
+            <View
+              style={[
+                styles.dialogTable,
+                {
+                  borderColor: colors.rule,
+                  backgroundColor: colors.panelSunken,
+                },
+              ]}
+            >
+              {points.map((pt, index) => (
+                <View
+                  key={index}
+                  style={[
+                    styles.dialogRow,
+                    index > 0 && {
+                      borderTopWidth: StyleSheet.hairlineWidth,
+                      borderTopColor: colors.rule,
+                    },
+                  ]}
+                >
+                  <Text style={[styles.dialogRowLabel, { color: colors.signal, fontWeight: '700' }]}>
+                    {pt.title}
+                  </Text>
+                  <Text style={[styles.dialogBody, { color: colors.textDim, marginTop: 3 }]}>
+                    {pt.desc}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          </ScrollView>
 
           <Pressable
             onPress={onClose}

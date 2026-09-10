@@ -16,6 +16,8 @@ export const t: Translations = {
     tools: 'Electronics Tools',
     toolsSubtitle: 'Resistor Calculators & IC Pinout Guide',
     support: 'Support & Help',
+    privacyPolicy: 'Privacy Policy',
+    privacyPolicySubtitle: 'Zero personal data collection policy',
     supportModalTitle: 'Technical Support & Help',
     supportModalDesc:
       'For inverter repair assistance, spare parts, and PCB troubleshooting queries, contact MaliK Electronic.',
@@ -179,6 +181,8 @@ export const t: Translations = {
     tools: 'इलेक्ट्रॉनिक्स टूल्स (Tools)',
     toolsSubtitle: 'रेजिस्टेंस कैलकुलेटर और IC गाइड',
     support: 'सहायता और संपर्क (Support)',
+    privacyPolicy: 'गोपनीयता नीति (Privacy Policy)',
+    privacyPolicySubtitle: 'शून्य डेटा संग्रह व गोपनीयता नियम',
     supportModalTitle: 'तकनीकी सहायता और संपर्क',
     supportModalDesc:
       'इन्वर्टर रिपेयर, पार्ट्स और तकनीकी जानकारी के लिए मालिक इलेक्ट्रॉनिक से संपर्क करें।',

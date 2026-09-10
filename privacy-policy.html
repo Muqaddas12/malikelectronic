@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Privacy Policy — MaliK Electronic App</title>
+  <style>
+    :root {
+      --primary: #0284c7;
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --border: #334155;
+      --accent: #38bdf8;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+      padding: 40px 20px;
+    }
+    .container {
+      max-width: 860px;
+      margin: 0 auto;
+      background-color: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 40px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+    header {
+      border-bottom: 2px solid var(--border);
+      padding-bottom: 24px;
+      margin-bottom: 32px;
+    }
+    h1 {
+      font-size: 2rem;
+      color: #fff;
+      margin-bottom: 8px;
+    }
+    .meta {
+      color: var(--accent);
+      font-size: 0.95rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      font-weight: 500;
+    }
+    h2 {
+      font-size: 1.28rem;
+      color: var(--accent);
+      margin-top: 32px;
+      margin-bottom: 12px;
+      border-left: 4px solid var(--primary);
+      padding-left: 12px;
+    }
+    p, li {
+      color: var(--text-muted);
+      font-size: 0.98rem;
+      margin-bottom: 12px;
+    }
+    ul {
+      margin-left: 24px;
+      margin-bottom: 16px;
+    }
+    li {
+      margin-bottom: 6px;
+    }
+    .badge-no {
+      color: #f87171;
+      font-weight: 600;
+    }
+    .badge-yes {
+      color: #4ade80;
+      font-weight: 600;
+    }
+    .card-highlight {
+      background: rgba(2, 132, 199, 0.08);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      border-radius: 10px;
+      padding: 16px 20px;
+      margin: 18px 0;
+    }
+    footer {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      text-align: center;
+    }
+    a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Privacy Policy — MaliK Electronic</h1>
+      <div class="meta">
+        <span><strong>Package:</strong> com.muqaddas123.malikelectronic</span>
+        <span><strong>Version:</strong> 1.0.0</span>
+        <span><strong>Effective Date:</strong> September 10, 2026</span>
+      </div>
+    </header>
+
+    <h2>1. Overview</h2>
+    <p>
+      <strong>MaliK Electronic</strong> is an educational and reference guide application developed to assist electronics technicians, engineers, and repair specialists in troubleshooting and repairing inverters, power supplies, and printed circuit boards (PCBs).
+    </p>
+    <p>
+      We respect your privacy. This policy explains what information is used by the App and how it is protected. By installing or using this App, you accept the terms of this Privacy Policy.
+    </p>
+
+    <h2>2. Zero Personal Data Collection</h2>
+    <div class="card-highlight">
+      <p style="margin-bottom: 0;">
+        <strong style="color: #fff;">Summary:</strong> MaliK Electronic does <strong>NOT</strong> collect, harvest, store, transmit, or share any personal identifiable information (PII). No accounts, sign-ups, or logins are required.
+      </p>
+    </div>
+    <ul>
+      <li><span class="badge-no">✗</span> No personal names, email addresses, or phone numbers collected.</li>
+      <li><span class="badge-no">✗</span> No GPS or fine/coarse location tracking.</li>
+      <li><span class="badge-no">✗</span> No camera, microphone, or audio access.</li>
+      <li><span class="badge-no">✗</span> No contacts, call history, or SMS access.</li>
+      <li><span class="badge-no">✗</span> No device storage, gallery, or photo files accessed.</li>
+      <li><span class="badge-no">✗</span> No device identifiers (IMEI, MAC, or Advertising IDs) collected.</li>
+      <li><span class="badge-no">✗</span> No financial, billing, or banking details processed.</li>
+      <li><span class="badge-no">✗</span> No behavioral analytics or tracking profiles created.</li>
+    </ul>
+
+    <h2>3. Information Stored Locally on Your Device</h2>
+    <p>
+      To provide a personalized user experience, the App saves minimal preferences locally inside your device's isolated application sandbox (via AsyncStorage):
+    </p>
+    <ul>
+      <li><span class="badge-yes">✓</span> <strong>Language Preference:</strong> English or Hindi.</li>
+      <li><span class="badge-yes">✓</span> <strong>Theme Preference:</strong> Light, Dark, or System mode.</li>
+    </ul>
+    <p>
+      This data remains strictly on your device and is never sent to any external server or third party. Uninstalling the app automatically and permanently removes all stored preferences.
+    </p>
+
+    <h2>4. Internet Usage & Diagram Delivery</h2>
+    <p>
+      The App requires the <code>android.permission.INTERNET</code> permission exclusively for the following purpose:
+    </p>
+    <ul>
+      <li>
+        <strong>High-Resolution Schematic Diagrams:</strong> To maintain a small app download size, circuit diagrams are securely retrieved over HTTPS from cloud content delivery infrastructure (Google Drive CDN).
+      </li>
+      <li>
+        <strong>Cryptographic Protection:</strong> Cloud diagram reference paths are encrypted within the app using a native cryptographic cipher and decrypted only in-memory during viewing.
+      </li>
+      <li>
+        <strong>Standard HTTPS Requests:</strong> Only standard GET requests for images are made. No user telemetry, account tokens, or advertising cookies are sent.
+      </li>
+    </ul>
+
+    <h2>5. Permissions Requested</h2>
+    <ul>
+      <li><code>android.permission.INTERNET</code> — Used strictly to stream schematic circuit diagrams over secure HTTPS.</li>
+      <li><code>android.permission.ACCESS_NETWORK_STATE</code> — Used by the OS network stack to verify connectivity before requesting images.</li>
+    </ul>
+    <p>No dangerous or intrusive permissions are requested or used.</p>
+
+    <h2>6. Advertising and Analytics</h2>
+    <ul>
+      <li><strong>No Advertisements:</strong> The App contains zero banner ads, interstitial ads, or video advertisements.</li>
+      <li><strong>No Third-Party Analytics:</strong> No tracking SDKs (e.g., Firebase Analytics, Google Analytics, or Facebook Pixel) are present in the app.</li>
+    </ul>
+
+    <h2>7. External Links (Phone & WhatsApp)</h2>
+    <p>
+      The App provides direct contact options for MaliK Electronic support. Tapping these contact buttons opens your phone's native phone dialer or the official WhatsApp application installed on your device. Those apps operate under their own privacy policies:
+    </p>
+    <ul>
+      <li><a href="https://www.whatsapp.com/legal/privacy-policy" target="_blank" rel="noopener">WhatsApp Privacy Policy</a></li>
+    </ul>
+
+    <h2>8. Children's Privacy (COPPA Compliance)</h2>
+    <p>
+      The App is a technical reference guide intended for electronics repair professionals and is not directed at children under the age of 13. Since the App collects zero personal information from any user, it is fully compliant with COPPA and Google Play Families requirements.
+    </p>
+
+    <h2>9. Data Security & Retention</h2>
+    <p>
+      All cloud asset streaming is conducted via industry-standard encrypted HTTPS (TLS). Since we do not maintain user databases or cloud servers that store user profiles, there is no risk of your personal data being leaked or breached.
+    </p>
+
+    <h2>10. Contact Us</h2>
+    <p>
+      If you have questions or inquiries regarding this Privacy Policy, please contact:
+    </p>
+    <div class="card-highlight">
+      <p><strong>MaliK Electronic Repair & Spares</strong></p>
+      <p>Main Market</p>
+      <p>Email: <a href="mailto:support@mtbyown.com">support@mtbyown.com</a></p>
+      <p>App Package: <code>com.muqaddas123.malikelectronic</code></p>
+    </div>
+
+    <footer>
+      &copy; 2026 MaliK Electronic Repair & Spares. All rights reserved.
+    </footer>
+  </div>
+</body>
+</html>
+

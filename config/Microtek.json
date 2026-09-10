@@ -1,33 +1,32 @@
 {
   "microtek-eb-semi-sine-wave": [
     {
-        "id": 3,
+      "id": 3,
       "name": "Battery Low | OverCharge | Not Charging | Low Back UP",
       "Used Pins": "3",
-      "link":"https://drive.google.com/file/d/1fBxSVGOYNrwpglUykcdREG2xiYi7E0w2/view?usp=drive_link"
+      "link": "enc_v1$ZFA1QSmPbFY-e9eNuOY015kXU4yldXpdYcB-28kG683R0Vpcngm24TP090qSXMap5dwpJmGBXJjlKslTc01FFh0Mq3Fbem2w7cTTB6tKpLBBsE-VGNOeuwy7_qGQ"
     },
-
-     {
-        "id":10,
-        "name":"Microcontroller",
-        "Used Pins":"",
-        "link":"https://drive.google.com/file/d/1Sh7Mwteujn1Dg2kLwf4n7GNqtH4L01Dp/view?usp=drive_link"
+    {
+      "id": 10,
+      "name": "Microcontroller",
+      "Used Pins": "",
+      "link": "enc_v1$UhWrzNp1blrmqXV8dSjtP27I0tw8C-LwqTH6a1Z7KkTnSRuPOTfgjroxQ_qfexg7H6LeNABs6T3c9AawVk65i0MYA11G8k9Q9ofNWjjWlL_4B6GZh6AIwVd0u1-3"
     }
   ],
-  "microtek-eb-square-wave":[
+  "microtek-eb-square-wave": [
     {
-        "id":10,
-        "name":"Microcontroller",
-        "Used Pins":"",
-        "link":"https://drive.google.com/file/d/1Fkbzw2UOOnBYwvhUtyTziNHrZgrlky9U/view?usp=drive_link"
+      "id": 10,
+      "name": "Microcontroller",
+      "Used Pins": "",
+      "link": "enc_v1$Itb-otgsBbZC1BFvx8QcMktFDSReSET9g5te9gAi3eLjVcvj-iSO-uOqZReOxgit-qvEgpwLREJ8K0C1f08lLDAoqM4Pm6nYvp1kyK2ogJYauYzSb-u3xsltc3ck"
     }
   ],
-    "microtek-24x7-Non-Smd":[
+  "microtek-24x7-Non-Smd": [
     {
-        "id":10,
-        "name":"Microcontroller",
-        "Used Pins":"",
-        "link":"https://drive.google.com/file/d/1yxQby_a18HbNJUI3NGm7Q-los1oLOgxL/view?usp=drive_link"
+      "id": 10,
+      "name": "Microcontroller",
+      "Used Pins": "",
+      "link": "enc_v1$JJclppcHWqGG9BPxofEIFS8yjULpAFjBpEMcIrx0mMHP4xr6cGwHNVcScgU6WuPf5lT03f3GZBMrbD4qk4ridlAoIgN_wIgjC2QiwWArhR5a75zWKVrru-14O4E-"
     }
   ]
 }

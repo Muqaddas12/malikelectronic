@@ -1,18 +1,16 @@
 {
-    "Luminous-Eco-Watt-Plus":[
-       {
+  "Luminous-Eco-Watt-Plus": [
+    {
       "id": 3,
       "name": "Battery Low | OverCharge | Not Charging | Low Back UP",
       "Used Pins": "4",
-      "link":"https://drive.google.com/file/d/1SmX1sXgF7UNbL45qHyDYkXPguXe9sS7w/view?usp=drive_link"
+      "link": "enc_v1$4W3Z4pl-Dp_AKU-ulawWFUpDs2AP544do7qe55qjLDGXvYloNY7WZoRG_-uSHA4b5RP5_9NnD2zEUPOkXQJmkEhoIgqshk3yGfR8xTYOyykPT4caUjDF3rP9NdiM"
     },
-    
-       {
+    {
       "id": 4,
       "name": "Main FeedBack | Buzzer Sound On Mains Mode ",
       "Used Pins": "3",
-      "link":"https://drive.google.com/file/d/191bXpI0-8qA69s-iLB3zZAf6UPbykrKV/view?usp=drive_link"
+      "link": "enc_v1$TNlxsK_JxuPYK9rmHnmWdnKqrBfmAGTHriMUq4n81M6AvUwZ-oWVuPb2mI5yzG2gPgsKSgOAOjuEAuCzEtSkpBi42wBljTBIm653NSNgpyKainXmd6HZqgvsRkJr"
     }
-    
-    ]
+  ]
 }

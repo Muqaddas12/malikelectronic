@@ -1,21 +1,23 @@
 import luminousConfig from '@/config/Luminous.json';
 import microtekConfig from '@/config/Microtek.json';
 import sukamConfig from '@/config/sukam.json';
+import { decryptUrl } from '@/utils/crypto';
 
 /**
  * Converts Google Drive shareable link into a direct displayable image URL.
- * Uses Google's direct CDN endpoint (lh3.googleusercontent.com/d/<ID>) which
- * serves the image directly.
+ * Automatically decrypts protected URLs in-memory and uses Google's direct CDN
+ * endpoint (lh3.googleusercontent.com/d/<ID>) to display images directly.
  */
 export function formatDriveImageUrl(link?: string): string {
   if (!link) return '';
+  const resolvedLink = decryptUrl(link);
   const match =
-    link.match(/\/file\/d\/([a-zA-Z0-9_-]+)/) ||
-    link.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+    resolvedLink.match(/\/file\/d\/([a-zA-Z0-9_-]+)/) ||
+    resolvedLink.match(/[?&]id=([a-zA-Z0-9_-]+)/);
   if (match && match[1]) {
     return `https://lh3.googleusercontent.com/d/${match[1]}`;
   }
-  return link;
+  return resolvedLink;
 }
 
 export function getDriveImageSource(link?: string) {
@@ -103,41 +105,43 @@ export function getDiagramLink(
 ): string | undefined {
   if (!inverterId || !faultId) return undefined;
 
+  let rawLink: string | undefined;
+
   if (inverterId === 'LuminousEcoWatt') {
     const list = luminousConfig['Luminous-Eco-Watt-Plus'];
-    if (faultId === 'low-battery') return list?.[0]?.link;
-    if (faultId === 'main-feedback') return list?.[1]?.link;
+    if (faultId === 'low-battery') rawLink = list?.[0]?.link;
+    if (faultId === 'main-feedback') rawLink = list?.[1]?.link;
   }
 
   if (inverterId === 'microtek-inverter') {
     const list = microtekConfig['microtek-eb-semi-sine-wave'];
-    if (faultId === 'low-battery') return list?.[0]?.link;
-    if (faultId === 'microcontroller-pin-details') return list?.[1]?.link;
+    if (faultId === 'low-battery') rawLink = list?.[0]?.link;
+    if (faultId === 'microcontroller-pin-details') rawLink = list?.[1]?.link;
   }
 
   if (inverterId === 'microtek-square-wave') {
-    return microtekConfig['microtek-eb-square-wave']?.[0]?.link;
+    rawLink = microtekConfig['microtek-eb-square-wave']?.[0]?.link;
   }
 
   if (inverterId === 'microtek-24x7') {
-    return microtekConfig['microtek-24x7-Non-Smd']?.[0]?.link;
+    rawLink = microtekConfig['microtek-24x7-Non-Smd']?.[0]?.link;
   }
 
   if (inverterId === 'sukam-shark-inverter' || inverterId === 'sukam-shark') {
     const shark = sukamConfig['sukam-shark'];
-    if (faultId === 'dead-vcc') return shark?.[0]?.link;
-    if (faultId === 'changeover') return shark?.[1]?.link;
-    if (faultId === 'low-battery') return shark?.[2]?.link;
-    if (faultId === 'switch-relay') return shark?.[3]?.link;
-    if (faultId === 'fan-overheating') return shark?.[4]?.link;
-    if (faultId === 'microcontroller-pin-details') return shark?.[5]?.link;
+    if (faultId === 'dead-vcc') rawLink = shark?.[0]?.link;
+    if (faultId === 'changeover') rawLink = shark?.[1]?.link;
+    if (faultId === 'low-battery') rawLink = shark?.[2]?.link;
+    if (faultId === 'switch-relay') rawLink = shark?.[3]?.link;
+    if (faultId === 'fan-overheating') rawLink = shark?.[4]?.link;
+    if (faultId === 'microcontroller-pin-details') rawLink = shark?.[5]?.link;
   }
 
   if (inverterId === 'sukam-shiny-inverter' || inverterId === 'sukam-shiny') {
     const shiny = sukamConfig['sukam-shiny'];
-    if (faultId === 'changeover') return shiny?.[0]?.link;
-    if (faultId === 'microcontroller-pin-details') return shiny?.[1]?.link;
+    if (faultId === 'changeover') rawLink = shiny?.[0]?.link;
+    if (faultId === 'microcontroller-pin-details') rawLink = shiny?.[1]?.link;
   }
 
-  return undefined;
+  return rawLink ? decryptUrl(rawLink) : undefined;
 }

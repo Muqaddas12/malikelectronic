@@ -3,160 +3,172 @@
 ================================================================================
 App Name      : MaliK Electronic
 Package ID    : com.muqaddas123.malikelectronic
+Developer     : MaliK Electronic Repair & Spares
 Version       : 1.0.0
-Effective Date: September 9, 2026
-Contact       : support@mtbyown.com
-              
+Effective Date: September 10, 2026
+Contact Email : support@mtbyown.com
 ================================================================================
-
 
 1. INTRODUCTION
 ---------------
-MaliK Electronic we operates the MaliK Electronic mobile
-application . This Privacy Policy explains what information the App
-collects, how we use it, and your rights in relation to it.
+MaliK Electronic ("we", "our", or "us") provides the MaliK Electronic mobile 
+application (the "App") designed as a technical guide and utility companion 
+for electronics technicians, engineers, and inverter repair professionals.
 
-By downloading or using the App you agree to the practices described in this
-Privacy Policy. If you do not agree, please uninstall the App and stop using it.
+This Privacy Policy informs you about how our App handles information, what 
+data is accessed, and your rights when using the App.
+
+By installing and using the MaliK Electronic App, you agree to the practices 
+described in this Privacy Policy. If you do not agree with this policy, please 
+uninstall the App and discontinue its use.
 
 
-2. WHAT THIS APP DOES
----------------------
-MaliK Electronic is an offline inverter repair & troubleshooting guide for
-electronics technicians. Its features include:
-
-  • Inverter fault diagnosis and step-by-step repair guides
-    (Luminous, Microtek, Su-Kam, Livguard and other brands)
-  • Circuit diagrams and PCB photo viewer with pinch-to-zoom
-  • Microcontroller pin-detail PDF viewer
-  • SMD & DIP resistor calculators
-  • IC Pinout & Working Guide (200+ ICs)
-  • Bilingual interface (English / Hindi)
-  • Contact information for MaliK Electronic shop
-
-The App is designed to work entirely OFFLINE. No account creation or login
-is required.
+2. WHAT THE APP DOES
+--------------------
+MaliK Electronic is a dedicated reference and diagnostic utility providing:
+  • Inverter fault diagnosis and troubleshooting guides (Luminous, Microtek, 
+    Su-Kam, Livguard, and related models)
+  • Schematic circuit diagrams and PCB layout inspection with pinch-to-zoom
+  • Microcontroller pinout details and voltage reference guides
+  • SMD resistor code decoder (3-Digit, 4-Digit, EIA-96, R/K/M notation)
+  • Through-hole DIP resistor color code calculator (4-Band & 5-Band)
+  • IC Pinout & Working Principles directory (200+ power & inverter ICs)
+  • Bilingual interface support (English & Hindi)
+  • Quick technical support contact shortcuts
 
 
 3. INFORMATION WE DO NOT COLLECT
 ---------------------------------
-We do NOT collect, transmit, store, or share any of the following:
+Your privacy is our priority. MaliK Electronic does NOT collect, harvest, 
+store, sell, or share any personal identifiable information (PII). Specifically:
 
-  ✗ Personal identifiable information (name, email, phone number, address)
-  ✗ Location data (GPS or network-based)
-  ✗ Camera or microphone access
-  ✗ Contacts, call logs, or SMS
-  ✗ Photos or files from your device storage
-  ✗ Device identifiers (IMEI, Advertising ID, etc.)
-  ✗ Usage analytics or crash reports sent to any remote server
-  ✗ Browsing history or clipboard contents
-  ✗ Financial or payment information
-
-The App does NOT connect to any external server or API during normal use.
-All content (fault guides, circuit diagrams, IC data, resistor tables) is
-bundled inside the App itself and loaded locally.
+  ✗ No Name, Email Address, or Phone Number required
+  ✗ No User Registration or Account Login
+  ✗ No Location Data (No GPS, Network, or IP location tracking)
+  ✗ No Camera or Microphone Access
+  ✗ No Contacts, SMS, Call Logs, or Phone State access
+  ✗ No Photos, Media, or External Storage browsing
+  ✗ No Device Hardware Identifiers (No IMEI, MAC address, or Advertising ID)
+  ✗ No Financial, Banking, or Payment Details
+  ✗ No In-App Tracking, Cookies, or Behavioral Profiling
 
 
 4. INFORMATION STORED LOCALLY ON YOUR DEVICE
 ---------------------------------------------
-The App saves the following data ONLY on your device (never sent anywhere):
+The App stores only minimal user interface preferences locally on your device:
+  • Selected Language: English or Hindi
+  • Selected Appearance: Light, Dark, or System default theme
 
-  • Your language preference (English or Hindi)
-  • Your appearance preference (Light / Dark / System theme)
+This preference data is stored exclusively inside the application's private, 
+sandboxed local storage (AsyncStorage) on your device. It is NEVER transmitted 
+to any external server, developer, or third party. Uninstalling the application 
+permanently deletes all locally stored preferences automatically.
 
-This data is stored using React Native's AsyncStorage, which is private to
-the App on your device. Uninstalling the App deletes this data automatically.
+
+5. INTERNET USAGE & DIAGRAM STREAMING
+--------------------------------------
+The App requests the `android.permission.INTERNET` permission solely for the 
+following functionality:
+
+  • Cloud Diagram Viewing:
+    To keep the app download size lightweight and efficient, high-resolution 
+    circuit diagrams are securely streamed on-demand over encrypted HTTPS 
+    from cloud content delivery servers (Google Drive CDN).
+  • Security & Obfuscation:
+    All cloud diagram references are protected using an in-app native 
+    cryptographic cipher and decrypted only in-memory during viewing.
+  • No Personal Data Sent:
+    When the App loads a circuit diagram, it performs a standard HTTPS GET 
+    request for the image asset only. No user identifiers, cookies, or 
+    tracking parameters are sent or logged.
 
 
-5. PERMISSIONS REQUESTED
+6. PERMISSIONS REQUESTED
 -------------------------
-The App requests only the permissions strictly necessary for its features.
-On Android, these are:
+The App requests only the permissions strictly required to operate:
 
-  INTERNET
-    Not used to collect data. Listed because the Expo development framework
-    includes this by default. The production App does not make any network
-    requests to external servers.
+  • INTERNET (`android.permission.INTERNET`):
+    Required to fetch high-resolution schematic diagrams on demand.
+  • ACCESS_NETWORK_STATE (`android.permission.ACCESS_NETWORK_STATE`):
+    Used by the operating system network stack to detect internet availability 
+    when fetching diagrams.
 
-No other permissions (camera, microphone, storage, location, contacts, etc.)
-are requested.
-
-
-6. THIRD-PARTY SERVICES
-------------------------
-The App does NOT integrate any third-party analytics, advertising, tracking,
-or social-media SDKs.
-
-The App is built with the following open-source frameworks which do NOT
-independently collect personal data:
-
-  • React Native (Meta / Facebook) — MIT License
-  • Expo SDK 54                    — MIT License
-  • Expo Router                    — MIT License
-
-These frameworks operate entirely on-device and do not phone home during
-normal app usage.
+No sensitive or dangerous Android permissions (such as CAMERA, READ_CONTACTS, 
+ACCESS_FINE_LOCATION, READ_EXTERNAL_STORAGE, or RECORD_AUDIO) are requested 
+or utilized.
 
 
-7. CHILDREN'S PRIVACY
-----------------------
-The App is intended for electronics technicians and repair professionals and
-is not directed at children under the age of 13. We do not knowingly collect
-any personal information from children. Because the App collects no personal
-information from any user, no special procedures for children are necessary.
+7. THIRD-PARTY SDKS & ADVERTISING
+----------------------------------
+  • No Advertising SDKs: The App contains zero advertisements and integrates 
+    no ad networks (such as Google AdMob, Unity, or AppLovin).
+  • No Analytics SDKs: The App contains no tracking or analytics SDKs 
+    (such as Firebase Analytics, Facebook SDK, or AppsFlyer).
+  • Built with Open-Source Frameworks:
+    The App is built using open-source technologies (React Native, Expo SDK 54). 
+    These frameworks operate locally on your device and do not independently 
+    collect user personal data.
 
 
-8. DATA SECURITY
-----------------
-Because the App collects no personal data and makes no network requests,
-there is no risk of your personal information being intercepted or leaked by
-this App. All local preferences are stored in your device's sandboxed
-application storage, inaccessible to other apps.
-
-
-9. LINKS TO EXTERNAL SERVICES
-------------------------------
-The App displays contact information for MaliK Electronic (phone number and
-WhatsApp). Tapping these links will open your device's Phone or WhatsApp
-application. Those applications are governed by their own privacy policies:
-
-  • WhatsApp Privacy Policy: https://www.whatsapp.com/legal/privacy-policy
-  • Your phone app is governed by your device manufacturer / OS vendor.
-
-We are not responsible for the privacy practices of those external apps.
-
-
-10. CHANGES TO THIS PRIVACY POLICY
+8. EXTERNAL LINKS & CONTACT ACTIONS
 ------------------------------------
-We may update this Privacy Policy from time to time. Any changes will be
-reflected in an updated version of this file distributed with a new App
-release. The "Effective Date" at the top of this document will be updated.
+The App provides quick contact information for MaliK Electronic shop support 
+(phone number and WhatsApp support).
 
-Continued use of the App after an update constitutes acceptance of the
-revised policy.
+Tapping these contact options uses standard device intent handlers to open your 
+device's default Phone Dialer or the WhatsApp application installed on your 
+device. These external applications are governed independently by their 
+respective terms and privacy policies:
+  • WhatsApp Privacy Policy: https://www.whatsapp.com/legal/privacy-policy
+  • Phone dialer is governed by your device manufacturer and mobile operator.
 
-
-11. YOUR RIGHTS
----------------
-Because the App collects no personal information, there is no personal data
-for us to access, correct, port, or delete on your behalf. If you have any
-concern, you may simply uninstall the App, which removes all locally stored
-preferences.
+We do not monitor, record, or track your calls or messages.
 
 
-12. CONTACT US
+9. CHILDREN'S PRIVACY
+----------------------
+MaliK Electronic is a professional diagnostic utility for repair technicians 
+and electronics enthusiasts. It is not directed to children under 13 years of age. 
+Because the App does not collect, request, or store any personal data from any 
+user, it complies fully with the Children's Online Privacy Protection Act (COPPA) 
+and Google Play Families policy requirements.
+
+
+10. DATA SECURITY
+-----------------
+All network interactions for schematic diagrams utilize encrypted HTTPS (TLS). 
+Local preferences remain sandboxed inside your device's operating system security 
+perimeter. Because we maintain no external databases of user profiles or personal 
+data, your information cannot be breached, leaked, or compromised on our servers.
+
+
+11. YOUR RIGHTS & DATA RETENTION
+--------------------------------
+Because we do not collect or store any of your personal data on any server, 
+there is no data to access, correct, export, or delete. 
+You retain total control: to remove all preferences stored by the App, simply 
+clear the App's storage via your device's Settings or uninstall the App.
+
+
+12. CHANGES TO THIS PRIVACY POLICY
+-----------------------------------
+We may update this Privacy Policy occasionally to reflect app enhancements or 
+regulatory changes. Any modifications will be posted with an updated 
+"Effective Date" at the top of this document. We encourage you to review this 
+policy periodically. Continued use of the App following any update signifies 
+your acceptance of the revised terms.
+
+
+13. CONTACT US
 --------------
-If you have any questions or concerns about this Privacy Policy, please
-contact us:
+If you have any questions, suggestions, or concerns regarding this Privacy 
+Policy or the practices of this App, please contact us:
 
   MaliK Electronic Repair & Spares
   Main Market
- email us:support@mtbyown.com
-
-  App Package ID   : com.muqaddas123.malikelectronic
-
+  Email: support@mtbyown.com
+  Package: com.muqaddas123.malikelectronic
 
 ================================================================================
-               This Privacy Policy is effective as of September 9, 2026.
+          This Privacy Policy is effective as of September 10, 2026.
 ================================================================================
-

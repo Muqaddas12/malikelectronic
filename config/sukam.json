@@ -4,51 +4,51 @@
       "id": 1,
       "name": "Dead inverter | Only beep sound | Vcc supply problem",
       "Used Pins": "1,20",
-      "link": "https://drive.google.com/file/d/1E25l442ugAOP9i7vQC3UawcO4xyfFVlf/view?usp=drive_link"
+      "link": "enc_v1$WhjoHPyhGBLVADMQubGj8lD_zdWuxP6c77Qfhdp-nd_bZdFyOaMLoHG5wA2LKGNGQrBhiRw5nHpFNkyjs-iJYUpyM86IhFn7ZK_hgMxoiqZ_hRcMIqg9ooGyZnOk"
     },
     {
       "id": 2,
       "name": "Change Over | Zero Cross Sense | Main Feedback",
       "Used Pins": "2,22,18",
-      "link": "https://drive.google.com/file/d/1dFxhRFY1ZgQMA6pC9-2lXjkq3QAX7l5f/view?usp=drive_link"
+      "link": "enc_v1$2D2GBp2H5LveXFsYgun6tg-q6cLu0wQZ2tv2EbgGWdpVC35KLT06LZaw3v7YphwPcghO5W_j-e3ad0Vr0mWROkgQ_mCi8rWs7R0KQ52KMvX2r-xKilI0ToynW9-i"
     },
     {
       "id": 3,
       "name": "Battery Low | OverCharge | Not Charging | Low Back UP",
       "Used Pins": "3",
-      "link":"https://drive.google.com/file/d/1BoshtdM1jf1pAInusF9wa9w0ltX4py0L/view?usp=drive_link"
+      "link": "enc_v1$XaJe4FlfH9SQXZIJvJ4sP8BA_eP_ITdkB7-uJCcDVVKdB3UT_Q0m8WL9jGluirzKMGwDKRBAXdLdmGwqxE_nx75GQfSG7ehWAC_uaWJHuylTSVEQoiBv_TjD5CB-"
     },
     {
-        "id":4,
-        "name":"Switch Not Working | Only Charging Light Blinking | Inverter on But Not Output | Relay Not Operating",
-        "Used Pins":"6,11,23",
-        "link":"https://drive.google.com/file/d/1KVZEvEz5Il2xKFSwFY9CeFZpQCDtG64J/view?usp=drive_link"
+      "id": 4,
+      "name": "Switch Not Working | Only Charging Light Blinking | Inverter on But Not Output | Relay Not Operating",
+      "Used Pins": "6,11,23",
+      "link": "enc_v1$MtGceaC4PrVsDhEy_hL_qPYDwAWa15jLh0NhglHBtFTikDMjkaOAwtoI0wldI6dMu2MAv_cHSCsukaIlyeL47v39-yepL4Z9XJOCAx9SiUsWZy_VKBEAhQC8H3JE"
     },
     {
-        "id":5,
-        "name":"Fan | Buzzer | Heat Sensor | Inverter OverHeating",
-        "Used Pins":"7,17,24",
-        "link":"https://drive.google.com/file/d/1QqZtXvVOImr17JeMInUYSbm3168xQUR7/view?usp=drive_link"
+      "id": 5,
+      "name": "Fan | Buzzer | Heat Sensor | Inverter OverHeating",
+      "Used Pins": "7,17,24",
+      "link": "enc_v1$MdGbinztFebRn9pfGka3Qh7DFYz2DZKdkcag62Db2yuwFvY7tvZvd3KH30xWOjOtpWMYUto1o2Pkk-FxKFQpfPWvKTVdfGz1cWdY_T3uRbDQAN1PSmkQLVhKMxr-"
     },
     {
-        "id":10,
-        "name":"Microcontroller",
-        "Used Pins":"",
-        "link":"https://drive.google.com/file/d/1hEhQTEWwLDIn62X39Ndh9bkfaC0XyX6G/view?usp=drive_link"
+      "id": 10,
+      "name": "Microcontroller",
+      "Used Pins": "",
+      "link": "enc_v1$Ssv8YHv6pJ_95mOniORnK6GHuJ5MpkvFSOd90O4lTQMhOd4vZGYaSaC1EmJUFmz_nDmunEtuNiNOdM-euxSbD4kRiA_-yp34QwD243-78tAaDT5LqhFWYrl7M18t"
     }
   ],
-  "sukam-shiny":[
+  "sukam-shiny": [
     {
-        "id":1,
-        "name":"Change Over",
-        "Used Pins":"2",
-        "link":"https://drive.google.com/file/d/1KrSQv6LqqXeoZOVPNbNDbF0QlFuliSHD/view?usp=drive_link"
+      "id": 1,
+      "name": "Change Over",
+      "Used Pins": "2",
+      "link": "enc_v1$uwDx3mYCsew2qD9SOV7O_jAgQaC2sdzwHMxyQWmdVAbZzg4vFf3H402Wbn6cz5nGiaakd0ZwHemHZSptrhExWLh5jgvvVx-VxnlXm8P9_qmBTeqjfhxW8fp_o0AB"
     },
     {
-        "id":2,
-        "name":"Microcontroller",
-        "Used Pins":"",
-        "link":"https://drive.google.com/file/d/1jmAu5TKOcYtlOI9INPygfRTHdoDDPOUD/view?usp=drive_link"
+      "id": 2,
+      "name": "Microcontroller",
+      "Used Pins": "",
+      "link": "enc_v1$9tDCRYfLYRN3uDXGK2rixe_swULJKwIyPds85DLKRex_Ln37cN1d8rlKoAvWLtrsgDq5F9wyRQdks28Altqt_7RLWyR4KnDbBVx0AT2E0V1kGcE6eAIcOLjRpCoh"
     }
   ]
 }
