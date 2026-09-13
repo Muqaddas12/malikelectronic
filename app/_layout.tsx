@@ -1,28 +1,29 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
-  Animated,
-  StyleSheet,
-  Text,
-  View,
+    Animated,
+    StyleSheet,
+    Text,
+    View,
 } from 'react-native';
 
 import {
-  DarkTheme,
-  DefaultTheme,
-  ThemeProvider as NavigationThemeProvider,
+    DarkTheme,
+    DefaultTheme,
+    ThemeProvider as NavigationThemeProvider,
 } from '@react-navigation/native';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 
 import {
-  mono,
-  size,
-  space,
-  weight,
+    mono,
+    size,
+    space,
+    weight,
 } from '@/constants/theme';
 import { LanguageProvider } from '@/context/LanguageContext';
 import { ThemeProvider, useTheme } from '@/context/ThemeContext';
+import { UpdateProvider } from '@/context/UpdateContext';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -179,7 +180,9 @@ export default function RootLayout() {
   return (
     <ThemeProvider>
       <LanguageProvider>
-        <RootShell />
+        <UpdateProvider>
+          <RootShell />
+        </UpdateProvider>
       </LanguageProvider>
     </ThemeProvider>
   );

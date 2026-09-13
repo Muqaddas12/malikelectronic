@@ -10,25 +10,31 @@
       "id": 2,
       "name": "Change Over | Zero Cross Sense | Main Feedback",
       "Used Pins": "2,22,18",
-      "link": "enc_v1$2D2GBp2H5LveXFsYgun6tg-q6cLu0wQZ2tv2EbgGWdpVC35KLT06LZaw3v7YphwPcghO5W_j-e3ad0Vr0mWROkgQ_mCi8rWs7R0KQ52KMvX2r-xKilI0ToynW9-i"
+      "link": "enc_v1$PX6klP_-KKDAqoq-nOjN9yVRBxoJK45E5N3Lxiv2bjWrD6VQwxFsUp9WVvllSNrmKmSbO6fLQUN6qbT5YPeixW-rJzquJH07mst_M-mfiEWevI3eyy_udurOWUxC"
     },
     {
       "id": 3,
       "name": "Battery Low | OverCharge | Not Charging | Low Back UP",
       "Used Pins": "3",
-      "link": "enc_v1$XaJe4FlfH9SQXZIJvJ4sP8BA_eP_ITdkB7-uJCcDVVKdB3UT_Q0m8WL9jGluirzKMGwDKRBAXdLdmGwqxE_nx75GQfSG7ehWAC_uaWJHuylTSVEQoiBv_TjD5CB-"
+      "link": "enc_v1$nxFsfYHhyTyy5_xU7PLR0PVGO0Iap2xnfAvNFxFe9vXbGE1me-bFZVetzUd_9bmj1cEz7b3vVid2zUZ8d4Klpmsdr9W8TtwmIFkkZk8ZYWb0rAXHD8ANdsvsOhuR"
     },
     {
       "id": 4,
       "name": "Switch Not Working | Only Charging Light Blinking | Inverter on But Not Output | Relay Not Operating",
       "Used Pins": "6,11,23",
-      "link": "enc_v1$MtGceaC4PrVsDhEy_hL_qPYDwAWa15jLh0NhglHBtFTikDMjkaOAwtoI0wldI6dMu2MAv_cHSCsukaIlyeL47v39-yepL4Z9XJOCAx9SiUsWZy_VKBEAhQC8H3JE"
+      "link": "enc_v1$sVvaKfazGbzuizH-H5IThBrgiDUDpYMrVE4PhnJYlFugwLgL1QPRo1ztfgGR86vpvxdHZYZrAgRr-p9vJGvj6p75tqeqYwecuiCtExloQeU430phlz3zqc2lZ6L5"
     },
     {
       "id": 5,
       "name": "Fan | Buzzer | Heat Sensor | Inverter OverHeating",
       "Used Pins": "7,17,24",
-      "link": "enc_v1$MdGbinztFebRn9pfGka3Qh7DFYz2DZKdkcag62Db2yuwFvY7tvZvd3KH30xWOjOtpWMYUto1o2Pkk-FxKFQpfPWvKTVdfGz1cWdY_T3uRbDQAN1PSmkQLVhKMxr-"
+      "link": "enc_v1$K2wbDI9gAFUSukVa0Ay7liTGwkCT5peajHp9m5Xenm116pXsMlNWUfhfzKdTvbHL4qESQdIJA6hdMIMCrklDEu9839tbL47sq5BfOlyIQ_jnV68Z7BjJXoPQ8tgZ"
+    },
+    {
+      "id": 6,
+      "name": "Mosfet blast | Drive Problem",
+      "Used Pins": "27,28",
+      "link": "enc_v1$YVOnn4HbS4kchNR8xRJkMHI7mHhw69z7TtuwApYOokIvDy74rzRI-24Y9nRvbAM7poBFj2xendgslfia-XMPsHDEstRUVVWFZbeW42ChnL-030_8CQYIyktDaxH7"
     },
     {
       "id": 10,

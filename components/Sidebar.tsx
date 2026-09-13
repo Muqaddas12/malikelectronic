@@ -23,6 +23,7 @@ import {
 } from '@/constants/theme';
 import { Language, useLanguage } from '@/context/LanguageContext';
 import { useTheme } from '@/context/ThemeContext';
+import { useAppUpdate } from '@/context/UpdateContext';
 import { tr } from '@/data/translations';
 import { useSafeNavigate } from '@/hooks/useSafeNavigate';
 
@@ -174,6 +175,7 @@ export default function Sidebar({ visible, onClose }: Props) {
   const { language, setLanguage, isHindi } = useLanguage();
   const { colors, preference, setPreference, reduceMotion } = useTheme();
   const { safePush } = useSafeNavigate();
+  const { checkForUpdates, isChecking } = useAppUpdate();
   const [supportVisible, setSupportVisible] = useState(false);
   const [privacyVisible, setPrivacyVisible] = useState(false);
 
@@ -330,11 +332,45 @@ export default function Sidebar({ visible, onClose }: Props) {
           <View
             style={[styles.footer, { borderTopColor: colors.rule }]}
           >
-            <Text
-              style={[styles.footerVersion, { color: colors.textDim }]}
-            >
-              {tr(language, 'version')}
-            </Text>
+            <View style={styles.footerVersionRow}>
+              <Text
+                style={[styles.footerVersion, { color: colors.textDim }]}
+              >
+                {tr(language, 'version')} (v1.0.0)
+              </Text>
+
+              <Pressable
+                onPress={() => {
+                  onClose();
+                  checkForUpdates(true);
+                }}
+                disabled={isChecking}
+                accessibilityRole="button"
+                accessibilityLabel="Check for updates on Play Store"
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                style={({ pressed }) => [
+                  styles.checkUpdatesBtn,
+                  {
+                    backgroundColor: pressed
+                      ? colors.panelRaised
+                      : colors.panelSunken,
+                    borderColor: colors.rule,
+                  },
+                ]}
+              >
+                <Text
+                  style={[styles.checkUpdatesText, { color: colors.readout }]}
+                >
+                  {isChecking
+                    ? isHindi
+                      ? 'जांच हो रही है...'
+                      : 'Checking...'
+                    : isHindi
+                      ? '🔄 प्ले स्टोर अपडेट'
+                      : '🔄 Check Updates'}
+                </Text>
+              </Pressable>
+            </View>
 
             <Text
               style={[styles.footerNote, { color: colors.textFaint }]}
@@ -753,15 +789,34 @@ const styles = StyleSheet.create({
     borderTopWidth: StyleSheet.hairlineWidth,
   },
 
+  footerVersionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: space.xs,
+  },
+
   footerVersion: {
     fontFamily: mono,
     fontSize: size.micro,
     fontWeight: weight.medium,
   },
 
+  checkUpdatesBtn: {
+    paddingHorizontal: space.xs + 4,
+    paddingVertical: 3,
+    borderRadius: radius.sm,
+    borderWidth: StyleSheet.hairlineWidth,
+  },
+
+  checkUpdatesText: {
+    fontSize: size.micro,
+    fontWeight: weight.bold,
+  },
+
   footerNote: {
     fontSize: size.micro,
-    marginTop: 2,
+    marginTop: 4,
   },
 
   /* SUPPORT DIALOG */

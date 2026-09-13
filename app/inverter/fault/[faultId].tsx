@@ -483,6 +483,46 @@ export default function FaultDetailScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.content}
       >
+        {fault.isNew ? (
+          <View
+            style={[
+              styles.updateNotificationBar,
+              {
+                backgroundColor: 'rgba(16, 185, 129, 0.15)',
+                borderColor: colors.severity.low,
+              },
+            ]}
+          >
+            <Text
+              style={[
+                styles.updateNotificationText,
+                { color: colors.severity.low },
+              ]}
+            >
+              ✨ {isHindi ? 'नया सर्किट डायग्राम — हाल ही में जोड़ा गया' : 'NEWLY ADDED CIRCUIT DIAGRAM & PIN DETAILS'}
+            </Text>
+          </View>
+        ) : fault.isUpdated ? (
+          <View
+            style={[
+              styles.updateNotificationBar,
+              {
+                backgroundColor: 'rgba(59, 130, 246, 0.15)',
+                borderColor: colors.signal,
+              },
+            ]}
+          >
+            <Text
+              style={[
+                styles.updateNotificationText,
+                { color: colors.signal },
+              ]}
+            >
+              🔄 {isHindi ? 'अपडेटेड सर्किट डायग्राम' : 'RECENTLY UPDATED CIRCUIT SCHEMATIC'}
+            </Text>
+          </View>
+        ) : null}
+
         {/* Severity is the first thing a technician needs, before any procedure. */}
         <View
           style={[
@@ -734,6 +774,22 @@ const styles = StyleSheet.create({
     paddingTop: space.md,
     paddingBottom: space.xxxl + space.xl,
     gap: space.md,
+  },
+
+  updateNotificationBar: {
+    paddingVertical: space.xs + 2,
+    paddingHorizontal: space.md,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  updateNotificationText: {
+    fontSize: size.micro + 1,
+    fontWeight: weight.bold,
+    letterSpacing: 0.5,
+    textAlign: 'center',
   },
 
   /* SEVERITY BAR */

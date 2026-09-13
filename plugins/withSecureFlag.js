@@ -58,3 +58,4 @@ const withSecureFlag = (config) => {
 };
 
 module.exports = withSecureFlag;
+

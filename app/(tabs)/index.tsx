@@ -1,18 +1,20 @@
 import React, { useMemo, useState } from 'react';
-import { FlatList, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import AppHeader from '@/components/AppHeader';
 import InverterCard from '@/components/InverterCard';
+import NewDiagramsModal from '@/components/NewDiagramsModal';
 import SearchBar from '@/components/SearchBar';
+import UpdateBanner from '@/components/UpdateBanner';
 import {
-  layout,
-  lineFor,
-  mono,
-  radius,
-  size,
-  space,
-  weight,
+    layout,
+    lineFor,
+    mono,
+    radius,
+    size,
+    space,
+    weight,
 } from '@/constants/theme';
 import { useLanguage } from '@/context/LanguageContext';
 import { useTheme } from '@/context/ThemeContext';
@@ -22,6 +24,8 @@ import { useSafeNavigate } from '@/hooks/useSafeNavigate';
 
 export default function TabOneScreen() {
   const [search, setSearch] = useState('');
+  const [isNewDiagramsModalOpen, setIsNewDiagramsModalOpen] = useState(false);
+  const [isUpdateBannerDismissed, setIsUpdateBannerDismissed] = useState(false);
   const { language, isHindi } = useLanguage();
   const { colors } = useTheme();
   const { safePush } = useSafeNavigate();
@@ -80,23 +84,55 @@ export default function TabOneScreen() {
         keyboardShouldPersistTaps="handled"
         ListHeaderComponent={
           <View style={styles.listHeader}>
+            {!searching && !isUpdateBannerDismissed ? (
+              <UpdateBanner
+                onPressViewAll={() => setIsNewDiagramsModalOpen(true)}
+                onDismiss={() => setIsUpdateBannerDismissed(true)}
+              />
+            ) : null}
+
             <SearchBar
               value={search}
               onChangeText={setSearch}
               placeholder={tr(language, 'searchModelOrBrand')}
             />
 
-            {/* A live count: the technician sees the filter working. */}
-            <Text
-              style={[styles.count, { color: colors.textFaint }]}
-              accessibilityLiveRegion="polite"
-            >
-              {filteredInverters.length}
-              <Text style={{ color: colors.textFaint }}>
-                {' / '}
-                {inverters.length}
+            <View style={styles.headerInfoRow}>
+              {/* A live count: the technician sees the filter working. */}
+              <Text
+                style={[styles.count, { color: colors.textFaint }]}
+                accessibilityLiveRegion="polite"
+              >
+                {filteredInverters.length}
+                <Text style={{ color: colors.textFaint }}>
+                  {' / '}
+                  {inverters.length}
+                </Text>
               </Text>
-            </Text>
+
+              {/* Quick action to open newly added diagrams modal */}
+              <Pressable
+                onPress={() => setIsNewDiagramsModalOpen(true)}
+                accessibilityRole="button"
+                accessibilityLabel="Newly added diagrams"
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                style={({ pressed }) => [
+                  styles.quickUpdatesBtn,
+                  {
+                    backgroundColor: pressed
+                      ? colors.panelRaised
+                      : colors.panelSunken,
+                    borderColor: colors.rule,
+                  },
+                ]}
+              >
+                <Text
+                  style={[styles.quickUpdatesText, { color: colors.readout }]}
+                >
+                  ⚡ {isHindi ? 'नए डायग्राम' : 'New Diagrams'}
+                </Text>
+              </Pressable>
+            </View>
           </View>
         }
         ListEmptyComponent={
@@ -144,6 +180,11 @@ export default function TabOneScreen() {
           </View>
         }
       />
+
+      <NewDiagramsModal
+        visible={isNewDiagramsModalOpen}
+        onClose={() => setIsNewDiagramsModalOpen(false)}
+      />
     </SafeAreaView>
   );
 }
@@ -163,12 +204,30 @@ const styles = StyleSheet.create({
     paddingBottom: space.md,
   },
 
+  headerInfoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: space.sm,
+    paddingHorizontal: 2,
+  },
+
   count: {
     fontFamily: mono,
     fontSize: size.micro,
     fontWeight: weight.medium,
-    marginTop: space.sm,
-    marginLeft: 2,
+  },
+
+  quickUpdatesBtn: {
+    paddingHorizontal: space.sm,
+    paddingVertical: 3,
+    borderRadius: radius.pill,
+    borderWidth: StyleSheet.hairlineWidth,
+  },
+
+  quickUpdatesText: {
+    fontSize: size.micro,
+    fontWeight: weight.bold,
   },
 
   empty: {

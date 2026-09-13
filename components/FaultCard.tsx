@@ -2,11 +2,11 @@ import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import {
-  lineFor,
-  radius,
-  size,
-  space,
-  weight,
+    lineFor,
+    radius,
+    size,
+    space,
+    weight,
 } from '@/constants/theme';
 import { useLanguage } from '@/context/LanguageContext';
 import { useTheme } from '@/context/ThemeContext';
@@ -96,6 +96,40 @@ export default function FaultCard({ fault, onPress }: Props) {
             <Text style={[styles.severity, { color: severityColor }]}>
               {severityLabel}
             </Text>
+
+            {fault.isNew ? (
+              <View
+                style={[
+                  styles.updateTag,
+                  {
+                    backgroundColor: 'rgba(16, 185, 129, 0.15)',
+                    borderColor: colors.severity.low,
+                  },
+                ]}
+              >
+                <Text
+                  style={[styles.updateTagText, { color: colors.severity.low }]}
+                >
+                  ✨ {isHindi ? 'नया' : 'NEW'}
+                </Text>
+              </View>
+            ) : fault.isUpdated ? (
+              <View
+                style={[
+                  styles.updateTag,
+                  {
+                    backgroundColor: 'rgba(59, 130, 246, 0.15)',
+                    borderColor: colors.signal,
+                  },
+                ]}
+              >
+                <Text
+                  style={[styles.updateTagText, { color: colors.signal }]}
+                >
+                  🔄 {isHindi ? 'अपडेट' : 'UPDATED'}
+                </Text>
+              </View>
+            ) : null}
 
             {fault.diagramImage ? (
               <View
@@ -189,6 +223,19 @@ const styles = StyleSheet.create({
   tagText: {
     fontSize: size.micro,
     fontWeight: weight.semi,
+  },
+
+  updateTag: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: radius.sm,
+    borderWidth: StyleSheet.hairlineWidth,
+  },
+
+  updateTagText: {
+    fontSize: size.micro,
+    fontWeight: weight.bold,
+    letterSpacing: 0.3,
   },
 
   chevron: {

@@ -1,0 +1,13 @@
+{
+  "version": "1.0.0",
+  "versionCode": 1,
+  "minVersion": "1.0.0",
+  "releaseDate": "2026-09-13",
+  "title": "New Update Available on Play Store",
+  "titleHi": "Google Play Store पर नया अपडेट उपलब्ध है",
+  "releaseNotes": "Added newly updated Su-Kam Shark and Luminous Eco Watt circuit schematics, pinout guides, and performance fixes.",
+  "releaseNotesHi": "सु-काम शार्क और ल्युमिनस इको वाट के नए सर्किट डायग्राम, पिन विवरण और स्टेबिलिटी अपडेट जोड़े गए।",
+  "forceUpdate": false,
+  "playStoreUrl": "https://play.google.com/store/apps/details?id=com.muqaddas123.malikelectronic"
+}
+

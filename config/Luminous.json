@@ -12,5 +12,13 @@
       "Used Pins": "3",
       "link": "enc_v1$TNlxsK_JxuPYK9rmHnmWdnKqrBfmAGTHriMUq4n81M6AvUwZ-oWVuPb2mI5yzG2gPgsKSgOAOjuEAuCzEtSkpBi42wBljTBIm653NSNgpyKainXmd6HZqgvsRkJr"
     }
+  ],
+  "Luminous-Eco-Watt": [
+    {
+      "id": 10,
+      "name": "microcontroller",
+      "used Pins": "",
+      "link": "enc_v1$_Dras7EJxN9NkIZ_YhHIYSMpzgK-agjPbi9hO68pkR1oxTQLu5vA-uVK-EIlcQUfiVJ67yiU7lCJh50D38w-cuZ_UCiOguyRBoIE_EybYkZ0SX31a34dWhuEbTDi"
+    }
   ]
 }

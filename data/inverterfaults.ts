@@ -1400,6 +1400,80 @@ export const inverterFaultsMap: Record<
       importantNote: 'No-output diagnosis mein systematic approach zaruri hai. Ek component ek baar check karein.',
       diagnosis: 'Relay ok + MOSFETs ok + transformer primary voltage ok lekin no output = transformer secondary fault.',
     },
+
+    'microcontroller-pin-details': {
+      id: 'microcontroller-pin-details',
+      title: 'Luminous Eco Watt PIC16F722 Microcontroller 28-Pin Details',
+      subtitle:
+        'Luminous Eco Watt+ (700/1050) PIC16F722 28-pin microcontroller operating voltages, sensing inputs, and switching outputs in Mains and Inverter modes.',
+      icon: '🎛️',
+      severity: 'high',
+      usedPins: '1–28',
+      isNew: true,
+
+      symptoms: [
+        'Inverter completely dead hai — switch dabane par koi buzzer ya display response nahi',
+        'Mains mode detect nahi ho raha ya continuous Inverter mode par chal raha hai (Pin 2/3 sensing failure)',
+        'Battery low ya overcharge false trip ho raha hai (Pin 4 voltage divider fault)',
+        'Charging current control nahi ho raha ya gate switching pulse missing hai',
+        'Cooling fan nahi chal raha ya non-stop max speed par chal raha hai (Pin 6/17 driver fault)',
+        'Front panel LEDs glow nahi kar rahe ya incorrect status dikha rahe hain',
+      ],
+
+      basicChecks: [
+        'Pin 20 (+5.0V VDD Supply) multimeter se measure karein (constant 5.0V DC)',
+        'Pin 8 aur Pin 19 par Ground continuity verify karein (0.0V DC)',
+        'Pin 1 (MCLR / Master Reset) par 5.0V pull-up logic high check karein',
+        'Pin 9 aur Pin 10 par Crystal Oscillator clock voltages (~2.0V–2.5V DC) check karein',
+        'Pin 4 par Battery sensing voltage (nominal 12V par ~2.5V–3.3V DC) check karein',
+        'Pin 3 par Mains Feedback signal voltage verify karein',
+        'Pin 6 par Fan PWM pulse aur Pin 17 monitoring signal check karein',
+        'Pin 12 & 13 par MOSFET gate driver switching pulses verify karein',
+      ],
+
+      technicalExplanation: {
+        title: 'Luminous Eco Watt PIC16F722 28-Pin Circuit Architecture & Operating Voltages',
+        explanation:
+          'Luminous Eco Watt mein Microchip PIC16F722 28-pin flash microcontroller inverter ka brain hai. Yeh AC Mains detection, Battery voltage sensing, Charging current regulation, Fan speed PWM, aur MOSFET gate switching ko manage karta hai. Har pin ki voltage aur functioning niche explain ki gayi hai.',
+        components: [
+          { component: 'Pin 1 (MCLR / Reset)', function: 'Microcontroller Master Reset line. Normal par +5.0V pull-up zaroori hai.', value: '5.0V DC' },
+          { component: 'Pin 2 (Mains Sense)', function: 'AC Mains detection input via resistor divider network.', value: '1.2V–2.5V (Mains) / 0V (Inv)' },
+          { component: 'Pin 3 (Mains Feedback)', function: 'Inverter output & mains phase feedback monitoring signal.', value: '1.5V–2.5V (Mains)' },
+          { component: 'Pin 4 (Battery Sense)', function: 'Battery voltage sensing input for Low Battery cutoff & Overcharge protection.', value: '2.5V–3.3V DC' },
+          { component: 'Pin 5 (Overload Sense)', function: 'Current sense amplifier / CT signal input for overload protection.', value: '0V (Normal) / High (Trip)' },
+          { component: 'Pin 6 (Fan PWM Drive)', function: 'Fan ON/OFF and speed control pulse output to ULN2003A driver.', value: 'PWM Output' },
+          { component: 'Pin 7 (Heat Sense)', function: 'Heatsink thermal sensor / NTC thermistor input signal.', value: '0.5V–1.8V DC' },
+          { component: 'Pin 8 & Pin 19 (VSS)', function: 'Digital & analog ground reference connections.', value: '0.0V DC (GND)' },
+          { component: 'Pin 9 & 10 (OSC1/2)', function: 'Crystal oscillator clock pins (16MHz / 20MHz timebase).', value: '~2.2V DC' },
+          { component: 'Pin 11 (Switch Input)', function: 'Front panel power ON/OFF switch sensing line.', value: '5.0V / 0V (Toggle)' },
+          { component: 'Pin 12 & 13 (Gate Drive)', function: 'PWM gate drive switching outputs for push-pull MOSFET inverter bridge.', value: '1.8V–2.4V (Inverter)' },
+          { component: 'Pin 14 (Relay Driver)', function: 'Changeover relay driver signal line to transistor / ULN2003A.', value: 'High / Low switching' },
+          { component: 'Pin 15–18 (Indicators)', function: 'Status display LEDs & buzzer trigger driver lines.', value: 'Logic High / Low' },
+          { component: 'Pin 20 (VDD +5V)', function: 'Main regulated +5.0V DC power supply input from 5050 regulator.', value: '+5.0V DC' },
+          { component: 'Pins 21–28 (Control)', function: 'SCR charging pulse, current feedback, and configuration lines.', value: 'Operating Lines' },
+        ],
+      },
+
+      possibleCauses: [
+        { cause: '5050 / 7805 Voltage Regulator Fail', explanation: 'Regulator kharab hone se Pin 20 par 5V missing ho jata hai aur inverter dead rehta hai.' },
+        { cause: 'Pin 1 MCLR Pull-up Resistor Open', explanation: 'Reset line low rehne par microcontroller execute nahi karta.' },
+        { cause: 'Crystal Oscillator (Pins 9/10) Damaged', explanation: 'Clock missing hone par MCU boot nahi ho pata aur dead symptom dikhata hai.' },
+        { cause: 'Pin 4 Battery Sensing Resistor Divider Shift', explanation: 'R24/R31 sensing resistor shift hone se false battery low ya overcharge hota hai.' },
+        { cause: 'PIC16F722 Internal Gate Port Damage', explanation: 'MOSFET blast hone ke dauran high voltage back-spike aane par output ports burn ho jate hain.' },
+      ],
+
+      repairProcedure: [
+        { step: 1, title: 'Check +5V Power Supply', explanation: '5050 regulator ke output aur Microcontroller Pin 20 par +5.0V DC multimeter se confirm karein.' },
+        { step: 2, title: 'Verify MCLR & Ground Pins', explanation: 'Pin 1 par 5.0V aur Pins 8, 19 par ground continuity verify karein.' },
+        { step: 3, title: 'Check Crystal Oscillator', explanation: 'Pins 9 & 10 par ~2.0V–2.5V DC clock voltage ya oscilloscope par 16MHz clock waveform check karein.' },
+        { step: 4, title: 'Test Sensing Inputs', explanation: 'Pin 4 (Battery voltage) aur Pin 2/3 (Mains signals) check karein.' },
+        { step: 5, title: 'Verify Drive Outputs', explanation: 'Inverter mode mein Pin 12 & 13 par switching signals verify karein.' },
+      ],
+
+      circuitFlow: '12V Battery ➔ 5050 Regulator (+5V) ➔ PIC16F722 Pin 20 (VDD) & Pin 1 (MCLR 5V) ➔ Crystal Pins 9/10 ➔ Sensing Inputs (Pins 2,3,4) ➔ PWM Switching Outputs',
+      importantNote: 'Microcontroller change karte waqt pre-programmed Luminous Eco Watt firmware wali IC hi use karein; blank PIC16F722 kaam nahi karegi.',
+      diagnosis: 'Agar Pin 20 par 5V aur Pin 1 par 5V hai, crystal par clock hai lekin koi bhi output generate nahi ho raha to microcontroller IC kharab hai.',
+    },
   },
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -4613,6 +4687,70 @@ export const inverterFaultsMap: Record<
       diagnosis: 'Pin 24 par 4.9V aane par agar fan nahi chal raha to fan driver transistor ya fan motor kharab hai.',
     },
 
+    'mosfet-drive': {
+      id: 'mosfet-drive',
+      title: 'Mosfet Blast | Gate Drive Problem (Pins 27 & 28)',
+      subtitle:
+        'Su-Kam Shark inverter mein MOSFET blast hone, bar-bar MOSFET udne ya gate drive signal miss hone par Microcontroller Pin 27 & 28 drive circuit aur driver transistors ki jaanch karein.',
+      icon: '💥',
+      severity: 'critical',
+      usedPins: '27, 28',
+      isNew: true,
+
+      symptoms: [
+        'Inverter on karte hi turant MOSFET blast ho jata hai ya short circuit trip hota hai',
+        'Inverter mode mein output voltage missing hai ya ek side ka heatsink excessive heat ho raha hai',
+        'Microcontroller Pin 27 ya Pin 28 par switching drive voltage missing / unequal hai',
+        'MOSFET badalne ke baad naye MOSFETs bhi turant burn ho jate hain',
+        'Gate resistors (10Ω / 22Ω) kaale pad gaye hain ya jal gaye hain',
+        'No-load par bhi heavy battery current draw (5A–10A+) ho raha hai',
+      ],
+
+      basicChecks: [
+        'Bina MOSFETs lagaye inverter ko 12V supply dekar switch ON karein',
+        'Microcontroller Pin 27 aur Pin 28 par multimeter se DC voltage check karein (~1.8V to 2.2V DC dono par barabar honi chahiye)',
+        'Dono gate driver transistor pairs (NPN & PNP complementary pairs) check karein',
+        'Gate series resistors (10Ω / 22Ω) aur gate-to-source pull-down resistors (10kΩ) check karein',
+        'Gate discharge diodes (1N4148) par leakage ya short circuit multimeter ke diode mode mein test karein',
+        'Transformer primary center-tap winding aur heatsink isolation test karein',
+      ],
+
+      technicalExplanation: {
+        title: 'Su-Kam Shark Push-Pull MOSFET Gate Drive Architecture (Pins 27 & 28)',
+        explanation:
+          'Su-Kam Shark inverter mein Microcontroller ke Pin 27 aur Pin 28 complementary 50Hz PWM gate pulses generate karte hain. Pin 27 Channel-A heatsink ke MOSFETs ko drive karta hai aur Pin 28 Channel-B heatsink ke MOSFETs ko. Har channel par driver transistors ka totem-pole pair laga hota hai jo MOSFET gate capacitance ko tezi se charge aur discharge karta hai. Agar kisi ek channel ka driver transistor short ho jaye to MOSFET gate continuously ON rehta hai, jisse dono channels ek sath conduct kar jate hain (cross-conduction) aur MOSFETs blast ho jate hain.',
+        components: [
+          { component: 'Pin 27 (Drive A)', function: 'Microcontroller Channel-A 50Hz gate PWM switching output.', value: '1.8V–2.2V DC (Inv Mode)' },
+          { component: 'Pin 28 (Drive B)', function: 'Microcontroller Channel-B 50Hz gate PWM switching output.', value: '1.8V–2.2V DC (Inv Mode)' },
+          { component: 'Driver Transistors', function: 'Totem-pole NPN/PNP driver pairs for rapid MOSFET gate charging & discharging.', value: 'NPN / PNP Pairs' },
+          { component: 'Gate Resistors', function: 'Damping resistors in series with MOSFET gates to prevent ringing & parasitic oscillation.', value: '10Ω – 22Ω (Marking: 100 / 220)' },
+          { component: 'Discharge Diodes', function: 'Fast recovery diodes in parallel with gate resistors for rapid turn-off.', value: '1N4148' },
+          { component: 'Pull-Down Resistors', function: 'Gate-to-Source bleeders ensuring MOSFET stays OFF when drive signal is idle.', value: '10kΩ (Marking: 1002)' },
+          { component: 'Power MOSFETs', function: 'Push-pull switching power switches on aluminum heatsinks.', value: 'IRF3205 / P55NF06' },
+        ],
+      },
+
+      possibleCauses: [
+        { cause: 'Driver Transistor Short / Leakage', explanation: 'Driver transistor kharab hone se MOSFET gate par direct DC voltage chali jati hai aur MOSFET blast ho jata hai.' },
+        { cause: 'Gate Resistor Open / Burnt', explanation: 'Resistor burn hone par gate floating ho jata hai, jisse MOSFET linear region mein aakar overheat hokar ud jata hai.' },
+        { cause: 'Microcontroller Pin 27 ya 28 Port Damage', explanation: 'Purane MOSFET blast se high surge controller pin tak pahuche to MCU output port dead ho jata hai.' },
+        { cause: 'Discharge Diode (1N4148) Open', explanation: 'Diode open hone se turn-off delay badh jata hai aur cross-conduction ho jati hai.' },
+        { cause: 'Dead-time Missing / Imbalanced Pulses', explanation: 'Pin 27 aur Pin 28 par unequal drive hone se transformer core saturate hokar heavy current khinchta hai.' },
+      ],
+
+      repairProcedure: [
+        { step: 1, title: 'All Burnt MOSFETs Remove Karein', explanation: 'PCB se sabhi shorted MOSFETs nikal lein aur unke pads ko IPA alcohol se achhi tarah clean karein.' },
+        { step: 2, title: 'Power On Without MOSFETs', explanation: 'Bina MOSFET lagaye inverter ko 12V supply dekar ON karein.' },
+        { step: 3, title: 'Pin 27 & Pin 28 Output Measure', explanation: 'Microcontroller Pin 27 aur 28 par multimeter DC range par check karein. Dono par ~1.8V–2.2V DC bilkul barabar honi chahiye.' },
+        { step: 4, title: 'Gate Pads Voltage Test', explanation: 'MOSFET gate pads par AC/DC drive voltage measure karein (~4V–5V AC). Gate resistors (10Ω) aur 1N4148 diodes test karein.' },
+        { step: 5, title: 'Install Matched MOSFETs', explanation: 'Dono channels par drive pulse bilkul confirm hone ke baad hi ek hi batch/lot ke naye matched MOSFETs lagayein.' },
+      ],
+
+      circuitFlow: 'MCU Pin 27/28 (50Hz PWM) ➔ Driver Transistors (Totem-Pole) ➔ 10Ω Gate Resistors & 1N4148 ➔ MOSFET Gates ➔ Center-Tapped Transformer',
+      importantNote: 'Drive signal multimeter aur gate pads par check kiye bina naye MOSFETs kabhie na lagayein, warna naye MOSFETs bhi turant blast ho jayenge!',
+      diagnosis: 'Agar Pin 27 aur 28 par voltage barabar nahi hai ya ek pin par 0V / 5V constant hai to Microcontroller IC kharab hai. Agar MCU pins ok hain lekin gate pad par voltage nahi aa rahi to driver transistor ya 10Ω resistor badlein.',
+    },
+
     'microcontroller-pin-details': {
       id: 'microcontroller-pin-details',
       title: 'Microcontroller 28-Pin Details & Voltage Guide',
@@ -5301,6 +5439,7 @@ export const inverterFaultsMap: Record<
 // Helper functions
 // ─────────────────────────────────────────────────────────────────────────────
 
+import { isDiagramNew, isDiagramUpdated } from '@/data/diagramUpdates';
 import { getTranslatedFault } from '@/data/faultTranslationsHi';
 
 /**
@@ -5327,6 +5466,8 @@ export function getFaultsForInverter(
 
     const faultWithDiagram: InverterFaultDetail = {
       ...fault,
+      isNew: fault.isNew ?? isDiagramNew(inverterId, fault.id),
+      isUpdated: fault.isUpdated ?? isDiagramUpdated(inverterId, fault.id),
       diagramImage: diagramImg,
       diagramLink,
     };
@@ -5360,6 +5501,8 @@ export function getInverterFault(
   const diagramLink = getDiagramLink(inverterId, faultId) ?? fault.diagramLink;
   const faultWithDiagram = {
     ...fault,
+    isNew: fault.isNew ?? isDiagramNew(inverterId, faultId),
+    isUpdated: fault.isUpdated ?? isDiagramUpdated(inverterId, faultId),
     diagramImage: diagram ?? fault.diagramImage,
     diagramLink,
   };

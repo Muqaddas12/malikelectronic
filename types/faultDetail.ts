@@ -55,6 +55,11 @@ export type InverterFaultDetail = {
   /** Microcontroller pins used in this circuit/fault */
   usedPins?: string;
 
+  /** Flag if this diagram was recently added */
+  isNew?: boolean;
+  /** Flag if this diagram was recently updated */
+  isUpdated?: boolean;
+
   symptoms: string[];
   basicChecks: string[];
 

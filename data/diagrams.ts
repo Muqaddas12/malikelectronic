@@ -37,6 +37,8 @@ export const diagramMap: Record<string, Record<string, any>> = {
     'low-battery': getDriveImageSource(luminousConfig['Luminous-Eco-Watt-Plus']?.[0]?.link),
     /** Main FeedBack | Buzzer Sound On Mains Mode (Pin 3) */
     'main-feedback': getDriveImageSource(luminousConfig['Luminous-Eco-Watt-Plus']?.[1]?.link),
+    /** Microcontroller 28-Pin Details */
+    'microcontroller-pin-details': getDriveImageSource(luminousConfig['Luminous-Eco-Watt']?.[0]?.link),
   },
 
   // ─── Microtek EB 900 / Semi Sine Wave (from Microtek.json) ────────────────
@@ -71,8 +73,10 @@ export const diagramMap: Record<string, Record<string, any>> = {
     'switch-relay': getDriveImageSource(sukamConfig['sukam-shark']?.[3]?.link),
     /** Fan | Buzzer | Heat Sensor | Inverter OverHeating (Pins 7, 17, 24) */
     'fan-overheating': getDriveImageSource(sukamConfig['sukam-shark']?.[4]?.link),
+    /** Mosfet blast | Drive Problem (Pins 27, 28) */
+    'mosfet-drive': getDriveImageSource(sukamConfig['sukam-shark']?.[5]?.link),
     /** Microcontroller */
-    'microcontroller-pin-details': getDriveImageSource(sukamConfig['sukam-shark']?.[5]?.link),
+    'microcontroller-pin-details': getDriveImageSource(sukamConfig['sukam-shark']?.[6]?.link),
   },
 
   // ─── Su-Kam Shiny Sine Wave (from sukam.json) ─────────────────────────────
@@ -111,6 +115,7 @@ export function getDiagramLink(
     const list = luminousConfig['Luminous-Eco-Watt-Plus'];
     if (faultId === 'low-battery') rawLink = list?.[0]?.link;
     if (faultId === 'main-feedback') rawLink = list?.[1]?.link;
+    if (faultId === 'microcontroller-pin-details') rawLink = luminousConfig['Luminous-Eco-Watt']?.[0]?.link;
   }
 
   if (inverterId === 'microtek-inverter') {
@@ -134,7 +139,8 @@ export function getDiagramLink(
     if (faultId === 'low-battery') rawLink = shark?.[2]?.link;
     if (faultId === 'switch-relay') rawLink = shark?.[3]?.link;
     if (faultId === 'fan-overheating') rawLink = shark?.[4]?.link;
-    if (faultId === 'microcontroller-pin-details') rawLink = shark?.[5]?.link;
+    if (faultId === 'mosfet-drive') rawLink = shark?.[5]?.link;
+    if (faultId === 'microcontroller-pin-details') rawLink = shark?.[6]?.link;
   }
 
   if (inverterId === 'sukam-shiny-inverter' || inverterId === 'sukam-shiny') {

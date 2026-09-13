@@ -1,11 +1,11 @@
 import React, { useMemo, useState } from 'react';
 import {
-  FlatList,
-  Image,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
+    FlatList,
+    Image,
+    Pressable,
+    StyleSheet,
+    Text,
+    View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -18,13 +18,13 @@ import PdfDocumentViewerModal from '@/components/PdfDocumentViewerModal';
 import SearchBar from '@/components/SearchBar';
 import SpecStrip, { Spec } from '@/components/SpecStrip';
 import {
-  layout,
-  lineFor,
-  mono,
-  radius,
-  size,
-  space,
-  weight,
+    layout,
+    lineFor,
+    mono,
+    radius,
+    size,
+    space,
+    weight,
 } from '@/constants/theme';
 import { useLanguage } from '@/context/LanguageContext';
 import { useTheme } from '@/context/ThemeContext';
@@ -103,6 +103,15 @@ export default function InverterFaultsScreen() {
       tone: colors.signal,
     },
   ];
+
+  const newDiagramsCount = allFaults.filter((f) => f.isNew).length;
+  if (newDiagramsCount > 0) {
+    specs.push({
+      label: isHindi ? 'नया डायग्राम' : 'New Added',
+      value: `✨ +${newDiagramsCount}`,
+      tone: colors.severity.low,
+    });
+  }
 
   return (
     <SafeAreaView

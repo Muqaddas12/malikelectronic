@@ -15,6 +15,7 @@ export const inverters: Inverter[] = [
     faults: [
       'low-battery',
       'main-feedback',
+      'microcontroller-pin-details',
     ],
   },
 
@@ -84,6 +85,7 @@ export const inverters: Inverter[] = [
       'low-battery',
       'switch-relay',
       'fan-overheating',
+      'mosfet-drive',
       'microcontroller-pin-details',
     ],
   },
