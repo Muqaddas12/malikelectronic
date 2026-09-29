@@ -1,8 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
     BackHandler,
-    Dimensions,
     FlatList,
+    Linking,
+    Alert,
     Pressable,
     ScrollView,
     StatusBar,
@@ -19,10 +20,8 @@ import { IC_DATABASE, IcDetail, IcPin } from '@/data/ics';
 import { tr } from '@/data/translations';
 import { useSafeNavigate } from '@/hooks/useSafeNavigate';
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
-
 // Pre-compute lowercase search index for instant zero-allocation search
-const INDEXED_ICS = IC_DATABASE.map((ic) => ({
+const INDEXED_ICS = [...IC_DATABASE].sort((a, b) => Number(b.verification === 'verified') - Number(a.verification === 'verified')).map((ic) => ({
   ...ic,
   _searchIndex: [
     ic.name,
@@ -45,6 +44,7 @@ const ALL_CATEGORIES = ['All', ...Array.from(new Set(IC_DATABASE.map((item) => i
 const CATEGORY_NAMES_HI: Record<string, string> = {
   'All': 'सभी (All)',
   'Op-Amp': 'ऑप-एम्प (Op-Amp)',
+  'Comparator': 'कंपैरेटर',
   'PWM Driver': 'PWM ड्राइवर',
   'MOSFET Driver': 'MOSFET ड्राइवर',
   'Darlington Driver': 'डार्लिंगटन ड्राइवर',
@@ -63,6 +63,7 @@ const PIN_TYPE_NAMES_HI: Record<IcPin['type'], string> = {
   Input: 'इनपुट',
   Control: 'कंट्रोल',
   Passive: 'पैसिव',
+  'Input/Output': 'इनपुट / आउटपुट',
 };
 
 const PIN_TYPE_COLORS: Record<IcPin['type'], string> = {
@@ -72,6 +73,7 @@ const PIN_TYPE_COLORS: Record<IcPin['type'], string> = {
   Input: '#2563EB',
   Control: '#D97706',
   Passive: '#6B7280',
+  'Input/Output': '#7C3AED',
 };
 
 const CATEGORY_THEMES: Record<string, { bg: string; border: string; text: string; icon: string }> = {
@@ -95,166 +97,27 @@ function getCategoryTheme(category: string) {
 
 const CombinedIcGraphic = React.memo(function CombinedIcGraphic({ ic }: { ic: IcDetail }) {
   const { language } = useLanguage();
-  const [selectedView, setSelectedView] = useState<'both' | 'dip' | 'smd'>('both');
-  const halfPins = Math.ceil(ic.totalPins / 2);
-
-  const leftPins = useMemo(() => Array.from({ length: halfPins }, (_, i) => i + 1), [halfPins]);
-  const rightPins = useMemo(() => Array.from({ length: halfPins }, (_, i) => ic.totalPins - i), [halfPins, ic.totalPins]);
-
-  const pinMap = useMemo(() => {
-    const map = new Map<number, IcPin>();
-    ic.pins.forEach((p) => map.set(p.pin, p));
-    return map;
-  }, [ic.pins]);
-
+  if (ic.verification !== 'verified' || ic.diagramLayout !== 'dual-row') return null;
+  const left = ic.pins.slice(0, ic.totalPins / 2);
   return (
     <View style={styles.graphicCard}>
-      {/* View Switcher */}
-      <View style={styles.graphicSwitchRow}>
-        <Pressable
-          onPress={() => setSelectedView('both')}
-          style={[styles.switchBtn, selectedView === 'both' && styles.switchBtnActive]}
-        >
-          <Text
-            style={[
-              styles.switchBtnText,
-              selectedView === 'both' && styles.switchBtnTextActive,
-            ]}
-          >
-            {tr(language, 'bothDipSmd')}
-          </Text>
-        </Pressable>
-
-        <Pressable
-          onPress={() => setSelectedView('dip')}
-          style={[styles.switchBtn, selectedView === 'dip' && styles.switchBtnActive]}
-        >
-          <Text
-            style={[
-              styles.switchBtnText,
-              selectedView === 'dip' && styles.switchBtnTextActive,
-            ]}
-          >
-            {tr(language, 'dipOnly')}
-          </Text>
-        </Pressable>
-
-        <Pressable
-          onPress={() => setSelectedView('smd')}
-          style={[styles.switchBtn, selectedView === 'smd' && styles.switchBtnActive]}
-        >
-          <Text
-            style={[
-              styles.switchBtnText,
-              selectedView === 'smd' && styles.switchBtnTextActive,
-            ]}
-          >
-            {tr(language, 'smdOnly')}
-          </Text>
-        </Pressable>
-      </View>
-
-      <View style={styles.graphicsRow}>
-        {/* DIP PACKAGE SIMULATION */}
-        {(selectedView === 'both' || selectedView === 'dip') && (
-          <View style={styles.packageColumn}>
-            <View style={styles.packageBadgeDIP}>
-              <Text style={styles.packageBadgeTextDIP}>
-                {ic.dipPackageName}
-              </Text>
-            </View>
-
-            <View style={styles.dipBodyWrapper}>
-              <View style={styles.dipTopNotch} />
-              <View style={styles.pin1Dot} />
-
-              <View style={styles.dipBody}>
-                <Text style={styles.icChipName}>{ic.name.split(' ')[0]}</Text>
-                <Text style={styles.icChipType}>DIP-{ic.totalPins}</Text>
+      <Text style={{ color: '#E2E8F0', textAlign: 'center', marginBottom: 12 }}>
+        {[ic.dipPackageName, ic.smdPackageName].filter(Boolean).join(' / ')}
+        {'\n'}{language === 'hi' ? 'ऊपर से दृश्य • पिन 1 ऊपर बाएँ' : 'Top view • pin 1 at upper left'}
+      </Text>
+      <View style={styles.dipBodyWrapper}>
+        <View style={styles.dipTopNotch} />
+        <View style={styles.dipPinsContainer}>
+          {left.map((p, i) => {
+            const right = ic.pins[ic.totalPins - i - 1];
+            return (
+              <View key={p.pin} style={styles.pinPairRow}>
+                <Text style={{ color: '#38BDF8', flex: 1, fontSize: 11 }}>{p.pin}  {p.name}</Text>
+                <Text style={{ color: '#34D399', flex: 1, fontSize: 11, textAlign: 'right' }}>{right.name}  {right.pin}</Text>
               </View>
-
-              <View style={styles.dipPinsContainer}>
-                {leftPins.map((pNum, idx) => {
-                  const rNum = rightPins[idx];
-                  const leftPinObj = pinMap.get(pNum);
-                  const rightPinObj = pinMap.get(rNum);
-
-                  return (
-                    <View key={pNum} style={styles.pinPairRow}>
-                      <View style={styles.pinRowHalfLeft}>
-                        <Text style={styles.pinLabelText} numberOfLines={1}>
-                          {leftPinObj?.name || `P${pNum}`}
-                        </Text>
-                        <View style={styles.dipMetalLead} />
-                        <View style={styles.pinNumberCircle}>
-                          <Text style={styles.pinNumberText}>{pNum}</Text>
-                        </View>
-                      </View>
-
-                      <View style={styles.pinRowHalfRight}>
-                        <View style={styles.pinNumberCircle}>
-                          <Text style={styles.pinNumberText}>{rNum}</Text>
-                        </View>
-                        <View style={styles.dipMetalLead} />
-                        <Text style={styles.pinLabelText} numberOfLines={1}>
-                          {rightPinObj?.name || `P${rNum}`}
-                        </Text>
-                      </View>
-                    </View>
-                  );
-                })}
-              </View>
-            </View>
-          </View>
-        )}
-
-        {/* SMD PACKAGE SIMULATION */}
-        {(selectedView === 'both' || selectedView === 'smd') && (
-          <View style={styles.packageColumn}>
-            <View style={styles.packageBadgeSMD}>
-              <Text style={styles.packageBadgeTextSMD}>
-                {ic.smdPackageName}
-              </Text>
-            </View>
-
-            <View style={styles.smdBodyWrapper}>
-              <View style={styles.pin1DotSmd} />
-
-              <View style={styles.smdBody}>
-                <Text style={styles.smdChipName}>{ic.name.split(' ')[0]}</Text>
-                <Text style={styles.smdChipSub}>SOIC-{ic.totalPins}</Text>
-              </View>
-
-              <View style={styles.smdPinsContainer}>
-                {leftPins.map((pNum, idx) => {
-                  const rNum = rightPins[idx];
-                  const leftPinObj = pinMap.get(pNum);
-                  const rightPinObj = pinMap.get(rNum);
-
-                  return (
-                    <View key={pNum} style={styles.smdPinPairRow}>
-                      <View style={styles.smdPinLeft}>
-                        <Text style={styles.smdPinLabel} numberOfLines={1}>
-                          {leftPinObj?.name || `P${pNum}`}
-                        </Text>
-                        <View style={styles.smdGullLead} />
-                        <Text style={styles.smdNum}>{pNum}</Text>
-                      </View>
-
-                      <View style={styles.smdPinRight}>
-                        <Text style={styles.smdNum}>{rNum}</Text>
-                        <View style={styles.smdGullLead} />
-                        <Text style={styles.smdPinLabel} numberOfLines={1}>
-                          {rightPinObj?.name || `P${rNum}`}
-                        </Text>
-                      </View>
-                    </View>
-                  );
-                })}
-              </View>
-            </View>
-          </View>
-        )}
+            );
+          })}
+        </View>
       </View>
     </View>
   );
@@ -295,7 +158,7 @@ const IcCardItem = React.memo(function IcCardItem({ ic, language, onSelect }: Ic
 
         <View style={styles.icPinsBadge}>
           <Text style={styles.icPinsBadgeText}>
-            {ic.totalPins} {language === 'hi' ? 'पिन' : 'Pins'} ({ic.dipPackageName} / {ic.smdPackageName.split(' ')[0]})
+            {ic.verification === 'verified' ? `${ic.totalPins} ${language === 'hi' ? 'पिन' : 'pins'}` : (language === 'hi' ? 'पुष्टि बाकी' : 'Awaiting verification')}
           </Text>
         </View>
       </View>
@@ -304,7 +167,7 @@ const IcCardItem = React.memo(function IcCardItem({ ic, language, onSelect }: Ic
       <Text style={styles.icTitleText}>{ic.name}</Text>
       {ic.aliases && ic.aliases.length > 0 && (
         <Text style={styles.icAliasesText} numberOfLines={1}>
-          {language === 'hi' ? 'समतुल्य:' : 'Equivalents:'} {ic.aliases.join(', ')}
+          {language === 'hi' ? 'अन्य नाम:' : 'Search names:'} {ic.aliases.join(', ')}
         </Text>
       )}
 
@@ -349,7 +212,7 @@ const IcDetailView = React.memo(function IcDetailView({ ic, language, onBack }: 
         backLabel={tr(language, 'backToIcsList')}
         onBackPress={onBack}
         title={ic.name}
-        subtitle={`${ic.category} • ${ic.totalPins} Pins (${ic.dipPackageName} & ${ic.smdPackageName})`}
+        subtitle={ic.verification === 'verified' ? `${ic.category} • ${[ic.dipPackageName, ic.smdPackageName].filter(Boolean).join(' / ')}` : (language === 'hi' ? 'पुष्टि बाकी' : 'Awaiting verification')}
         showMenu={true}
       />
 
@@ -366,7 +229,7 @@ const IcDetailView = React.memo(function IcDetailView({ ic, language, onBack }: 
             <View style={{ flex: 1 }}>
               <Text style={styles.activeIcName}>{ic.name}</Text>
               <Text style={styles.activeIcAliases}>
-                Aliases / Direct equivalents: {ic.aliases.join(', ')}
+                {language === 'hi' ? 'पार्ट और पैकेज मिलाएँ; समान नाम विकल्प नहीं हैं।' : 'Match the exact part and package; similar names do not guarantee compatibility.'}
               </Text>
             </View>
           </View>
@@ -376,6 +239,14 @@ const IcDetailView = React.memo(function IcDetailView({ ic, language, onBack }: 
           </Text>
         </View>
 
+        {/* Source and package scope */}
+        <View style={styles.card}>
+          <Text style={styles.cardSectionHeading}>{language === 'hi' ? 'पिनआउट की स्थिति' : 'Pinout status'}</Text>
+          <Text style={styles.cardSectionBody}>{language === 'hi' ? ic.pinoutNoteHi : ic.pinoutNoteEn}</Text>
+          {ic.datasheetUrl && <Pressable accessibilityRole="link" onPress={() => {
+            void Linking.openURL(ic.datasheetUrl!).catch(() => Alert.alert(language === 'hi' ? 'डेटाशीट नहीं खुल सकी' : 'Could not open datasheet', ic.datasheetUrl));
+          }}><Text style={{ color: '#2563EB', fontWeight: '700', paddingVertical: 12 }}>{language === 'hi' ? 'निर्माता की डेटाशीट खोलें' : 'Open manufacturer datasheet'}</Text></Pressable>}
+        </View>
         {/* Combined DIP & SMD Visual Package Graphic */}
         <CombinedIcGraphic ic={ic} />
 
@@ -412,10 +283,11 @@ const IcDetailView = React.memo(function IcDetailView({ ic, language, onBack }: 
         {/* 4. Complete Pin-by-Pin Details Table */}
         <View style={styles.card}>
           <Text style={styles.cardSectionHeading}>
-            📌 {tr(language, 'pinDetails')} ({ic.totalPins} Pins)
+            📌 {tr(language, 'pinDetails')} {ic.verification === 'verified' ? `(${ic.totalPins})` : ''}
           </Text>
 
-          <View style={styles.pinTable}>
+          {ic.verification === 'pending' && <Text style={styles.cardSectionBody}>{language === 'hi' ? ic.pinoutNoteHi : ic.pinoutNoteEn}</Text>}
+          {ic.verification === 'verified' && <View style={styles.pinTable}>
             {/* Table Header */}
             <View style={[styles.pinTableRow, styles.pinTableHeader]}>
               <Text style={[styles.pinTableCellHeader, { width: 45 }]}>
@@ -479,7 +351,7 @@ const IcDetailView = React.memo(function IcDetailView({ ic, language, onBack }: 
                 </View>
               );
             })}
-          </View>
+          </View>}
         </View>
 
         {/* Bottom Return Button */}

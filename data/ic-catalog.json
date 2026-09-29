@@ -1,0 +1,1012 @@
+[
+  {
+    "id": "lm324",
+    "name": "LM324 / LM324N",
+    "category": "Op-Amp"
+  },
+  {
+    "id": "lm358",
+    "name": "LM358 / LM358P",
+    "category": "Op-Amp"
+  },
+  {
+    "id": "lm339",
+    "name": "LM339 / LM339N",
+    "category": "Op-Amp"
+  },
+  {
+    "id": "lm393",
+    "name": "LM393 / LM393N",
+    "category": "Op-Amp"
+  },
+  {
+    "id": "tl084",
+    "name": "TL084 / TL084CN",
+    "category": "Op-Amp"
+  },
+  {
+    "id": "tl082",
+    "name": "TL082 / TL082CP",
+    "category": "Op-Amp"
+  },
+  {
+    "id": "tl074",
+    "name": "TL074 / TL074CN",
+    "category": "Op-Amp"
+  },
+  {
+    "id": "tl072",
+    "name": "TL072 / TL072CP",
+    "category": "Op-Amp"
+  },
+  {
+    "id": "tl064",
+    "name": "TL064 / TL064CN",
+    "category": "Op-Amp"
+  },
+  {
+    "id": "tl062",
+    "name": "TL062 / TL062CP",
+    "category": "Op-Amp"
+  },
+  {
+    "id": "lm311",
+    "name": "LM311 / LM311N",
+    "category": "Op-Amp"
+  },
+  {
+    "id": "ne5532",
+    "name": "NE5532 / NE5532P",
+    "category": "Op-Amp"
+  },
+  {
+    "id": "op07",
+    "name": "OP07 / OP07CP",
+    "category": "Op-Amp"
+  },
+  {
+    "id": "lm741",
+    "name": "LM741 / UA741",
+    "category": "Op-Amp"
+  },
+  {
+    "id": "lm833",
+    "name": "LM833 / LM833N",
+    "category": "Op-Amp"
+  },
+  {
+    "id": "lm2902",
+    "name": "LM2902 / LM2902N",
+    "category": "Op-Amp"
+  },
+  {
+    "id": "lm2904",
+    "name": "LM2904 / LM2904N",
+    "category": "Op-Amp"
+  },
+  {
+    "id": "ca3140",
+    "name": "CA3140 / CA3140E",
+    "category": "Op-Amp"
+  },
+  {
+    "id": "mcp6002",
+    "name": "MCP6002",
+    "category": "Op-Amp"
+  },
+  {
+    "id": "mcp6004",
+    "name": "MCP6004",
+    "category": "Op-Amp"
+  },
+  {
+    "id": "njm4558",
+    "name": "NJM4558 / RC4558",
+    "category": "Op-Amp"
+  },
+  {
+    "id": "lm348",
+    "name": "LM348 / LM348N",
+    "category": "Op-Amp"
+  },
+  {
+    "id": "lm301",
+    "name": "LM301 / LM301A",
+    "category": "Op-Amp"
+  },
+  {
+    "id": "tlv2372",
+    "name": "TLV2372",
+    "category": "Op-Amp"
+  },
+  {
+    "id": "tlc272",
+    "name": "TLC272",
+    "category": "Op-Amp"
+  },
+  {
+    "id": "tlc274",
+    "name": "TLC274",
+    "category": "Op-Amp"
+  },
+  {
+    "id": "lmv324",
+    "name": "LMV324",
+    "category": "Op-Amp"
+  },
+  {
+    "id": "lmv358",
+    "name": "LMV358",
+    "category": "Op-Amp"
+  },
+  {
+    "id": "lm6172",
+    "name": "LM6172",
+    "category": "Op-Amp"
+  },
+  {
+    "id": "max913",
+    "name": "MAX913",
+    "category": "Op-Amp"
+  },
+  {
+    "id": "lm321",
+    "name": "LM321",
+    "category": "Op-Amp"
+  },
+  {
+    "id": "ina128",
+    "name": "INA128",
+    "category": "Op-Amp"
+  },
+  {
+    "id": "sg3525",
+    "name": "SG3525 / KA3525",
+    "category": "PWM Driver"
+  },
+  {
+    "id": "sg3524",
+    "name": "SG3524",
+    "category": "PWM Driver"
+  },
+  {
+    "id": "tl494",
+    "name": "TL494 / KA7500",
+    "category": "PWM Driver"
+  },
+  {
+    "id": "ka7500",
+    "name": "KA7500",
+    "category": "PWM Driver"
+  },
+  {
+    "id": "uc3842",
+    "name": "UC3842 / UC3842B",
+    "category": "PWM Driver"
+  },
+  {
+    "id": "uc3843",
+    "name": "UC3843 / UC3843B",
+    "category": "PWM Driver"
+  },
+  {
+    "id": "uc3844",
+    "name": "UC3844 / UC3844B",
+    "category": "PWM Driver"
+  },
+  {
+    "id": "uc3845",
+    "name": "UC3845 / UC3845B",
+    "category": "PWM Driver"
+  },
+  {
+    "id": "uc3846",
+    "name": "UC3846",
+    "category": "PWM Driver"
+  },
+  {
+    "id": "uc3825",
+    "name": "UC3825",
+    "category": "PWM Driver"
+  },
+  {
+    "id": "sg3526",
+    "name": "SG3526",
+    "category": "PWM Driver"
+  },
+  {
+    "id": "viper12a",
+    "name": "VIPer12A",
+    "category": "PWM Driver"
+  },
+  {
+    "id": "viper22a",
+    "name": "VIPer22A",
+    "category": "PWM Driver"
+  },
+  {
+    "id": "tny266",
+    "name": "TNY266",
+    "category": "PWM Driver"
+  },
+  {
+    "id": "tny268",
+    "name": "TNY268",
+    "category": "PWM Driver"
+  },
+  {
+    "id": "tny274",
+    "name": "TNY274",
+    "category": "PWM Driver"
+  },
+  {
+    "id": "tny278",
+    "name": "TNY278",
+    "category": "PWM Driver"
+  },
+  {
+    "id": "top224",
+    "name": "TOP224",
+    "category": "PWM Driver"
+  },
+  {
+    "id": "top247",
+    "name": "TOP247",
+    "category": "PWM Driver"
+  },
+  {
+    "id": "top258",
+    "name": "TOP258",
+    "category": "PWM Driver"
+  },
+  {
+    "id": "lnk304",
+    "name": "LNK304",
+    "category": "PWM Driver"
+  },
+  {
+    "id": "lnk306",
+    "name": "LNK306",
+    "category": "PWM Driver"
+  },
+  {
+    "id": "ob2263",
+    "name": "OB2263",
+    "category": "PWM Driver"
+  },
+  {
+    "id": "ob2269",
+    "name": "OB2269",
+    "category": "PWM Driver"
+  },
+  {
+    "id": "cr6842",
+    "name": "CR6842",
+    "category": "PWM Driver"
+  },
+  {
+    "id": "cr6850",
+    "name": "CR6850",
+    "category": "PWM Driver"
+  },
+  {
+    "id": "ld7575",
+    "name": "LD7575",
+    "category": "PWM Driver"
+  },
+  {
+    "id": "ncp1200",
+    "name": "NCP1200",
+    "category": "PWM Driver"
+  },
+  {
+    "id": "ncp1203",
+    "name": "NCP1203",
+    "category": "PWM Driver"
+  },
+  {
+    "id": "mc34063",
+    "name": "MC34063",
+    "category": "PWM Driver"
+  },
+  {
+    "id": "ir2110",
+    "name": "IR2110",
+    "category": "MOSFET Driver"
+  },
+  {
+    "id": "ir2113",
+    "name": "IR2113",
+    "category": "MOSFET Driver"
+  },
+  {
+    "id": "ir2101",
+    "name": "IR2101",
+    "category": "MOSFET Driver"
+  },
+  {
+    "id": "ir2104",
+    "name": "IR2104",
+    "category": "MOSFET Driver"
+  },
+  {
+    "id": "ir2106",
+    "name": "IR2106",
+    "category": "MOSFET Driver"
+  },
+  {
+    "id": "ir2108",
+    "name": "IR2108",
+    "category": "MOSFET Driver"
+  },
+  {
+    "id": "ir2184",
+    "name": "IR2184",
+    "category": "MOSFET Driver"
+  },
+  {
+    "id": "ir2130",
+    "name": "IR2130",
+    "category": "MOSFET Driver"
+  },
+  {
+    "id": "ir2136",
+    "name": "IR2136",
+    "category": "MOSFET Driver"
+  },
+  {
+    "id": "tc4420",
+    "name": "TC4420",
+    "category": "MOSFET Driver"
+  },
+  {
+    "id": "tc4429",
+    "name": "TC4429",
+    "category": "MOSFET Driver"
+  },
+  {
+    "id": "tc4427",
+    "name": "TC4427",
+    "category": "MOSFET Driver"
+  },
+  {
+    "id": "tc4428",
+    "name": "TC4428",
+    "category": "MOSFET Driver"
+  },
+  {
+    "id": "fan7392",
+    "name": "FAN7392",
+    "category": "MOSFET Driver"
+  },
+  {
+    "id": "fan7380",
+    "name": "FAN7380",
+    "category": "MOSFET Driver"
+  },
+  {
+    "id": "fan7842",
+    "name": "FAN7842",
+    "category": "MOSFET Driver"
+  },
+  {
+    "id": "ucc27524",
+    "name": "UCC27524",
+    "category": "MOSFET Driver"
+  },
+  {
+    "id": "ucc27511",
+    "name": "UCC27511",
+    "category": "MOSFET Driver"
+  },
+  {
+    "id": "ixdd609",
+    "name": "IXDD609",
+    "category": "MOSFET Driver"
+  },
+  {
+    "id": "irs2186",
+    "name": "IRS2186",
+    "category": "MOSFET Driver"
+  },
+  {
+    "id": "irs21844",
+    "name": "IRS21844",
+    "category": "MOSFET Driver"
+  },
+  {
+    "id": "stgap2s",
+    "name": "STGAP2S",
+    "category": "MOSFET Driver"
+  },
+  {
+    "id": "mic4420",
+    "name": "MIC4420",
+    "category": "MOSFET Driver"
+  },
+  {
+    "id": "mic4429",
+    "name": "MIC4429",
+    "category": "MOSFET Driver"
+  },
+  {
+    "id": "max5048",
+    "name": "MAX5048",
+    "category": "MOSFET Driver"
+  },
+  {
+    "id": "uln2003",
+    "name": "ULN2003A",
+    "category": "Darlington Driver"
+  },
+  {
+    "id": "uln2004",
+    "name": "ULN2004A",
+    "category": "Darlington Driver"
+  },
+  {
+    "id": "uln2803",
+    "name": "ULN2803A",
+    "category": "Darlington Driver"
+  },
+  {
+    "id": "uln2804",
+    "name": "ULN2804A",
+    "category": "Darlington Driver"
+  },
+  {
+    "id": "mc1413",
+    "name": "MC1413",
+    "category": "Darlington Driver"
+  },
+  {
+    "id": "td62003",
+    "name": "TD62003A",
+    "category": "Darlington Driver"
+  },
+  {
+    "id": "td62083",
+    "name": "TD62083A",
+    "category": "Darlington Driver"
+  },
+  {
+    "id": "udn2981",
+    "name": "UDN2981A",
+    "category": "Darlington Driver"
+  },
+  {
+    "id": "tpic6c595",
+    "name": "TPIC6C595",
+    "category": "Darlington Driver"
+  },
+  {
+    "id": "l293d",
+    "name": "L293D",
+    "category": "Darlington Driver"
+  },
+  {
+    "id": "l298n",
+    "name": "L298N",
+    "category": "Darlington Driver"
+  },
+  {
+    "id": "sn754410",
+    "name": "SN754410",
+    "category": "Darlington Driver"
+  },
+  {
+    "id": "uln2064",
+    "name": "ULN2064B",
+    "category": "Darlington Driver"
+  },
+  {
+    "id": "m54564",
+    "name": "M54564P",
+    "category": "Darlington Driver"
+  },
+  {
+    "id": "uln2002",
+    "name": "ULN2002A",
+    "category": "Darlington Driver"
+  },
+  {
+    "id": "moc3021",
+    "name": "MOC3021",
+    "category": "Optocoupler"
+  },
+  {
+    "id": "moc3041",
+    "name": "MOC3041",
+    "category": "Optocoupler"
+  },
+  {
+    "id": "moc3061",
+    "name": "MOC3061",
+    "category": "Optocoupler"
+  },
+  {
+    "id": "moc3063",
+    "name": "MOC3063",
+    "category": "Optocoupler"
+  },
+  {
+    "id": "pc817",
+    "name": "PC817",
+    "category": "Optocoupler"
+  },
+  {
+    "id": "ps2501",
+    "name": "PS2501",
+    "category": "Optocoupler"
+  },
+  {
+    "id": "4n25",
+    "name": "4N25",
+    "category": "Optocoupler"
+  },
+  {
+    "id": "4n35",
+    "name": "4N35",
+    "category": "Optocoupler"
+  },
+  {
+    "id": "6n137",
+    "name": "6N137",
+    "category": "Optocoupler"
+  },
+  {
+    "id": "6n136",
+    "name": "6N136",
+    "category": "Optocoupler"
+  },
+  {
+    "id": "6n139",
+    "name": "6N139",
+    "category": "Optocoupler"
+  },
+  {
+    "id": "tlp250",
+    "name": "TLP250",
+    "category": "Optocoupler"
+  },
+  {
+    "id": "tlp350",
+    "name": "TLP350",
+    "category": "Optocoupler"
+  },
+  {
+    "id": "hcpl3120",
+    "name": "HCPL-3120",
+    "category": "Optocoupler"
+  },
+  {
+    "id": "hcpl316j",
+    "name": "HCPL-316J",
+    "category": "Optocoupler"
+  },
+  {
+    "id": "tlp181",
+    "name": "TLP181",
+    "category": "Optocoupler"
+  },
+  {
+    "id": "tlp521",
+    "name": "TLP521",
+    "category": "Optocoupler"
+  },
+  {
+    "id": "acplc79a",
+    "name": "ACPL-C79A",
+    "category": "Optocoupler"
+  },
+  {
+    "id": "cny17",
+    "name": "CNY17",
+    "category": "Optocoupler"
+  },
+  {
+    "id": "il300",
+    "name": "IL300",
+    "category": "Optocoupler"
+  },
+  {
+    "id": "7805",
+    "name": "7805",
+    "category": "Regulator"
+  },
+  {
+    "id": "7812",
+    "name": "7812",
+    "category": "Regulator"
+  },
+  {
+    "id": "7815",
+    "name": "7815",
+    "category": "Regulator"
+  },
+  {
+    "id": "7808",
+    "name": "7808",
+    "category": "Regulator"
+  },
+  {
+    "id": "7809",
+    "name": "7809",
+    "category": "Regulator"
+  },
+  {
+    "id": "7824",
+    "name": "7824",
+    "category": "Regulator"
+  },
+  {
+    "id": "7905",
+    "name": "7905",
+    "category": "Regulator"
+  },
+  {
+    "id": "7912",
+    "name": "7912",
+    "category": "Regulator"
+  },
+  {
+    "id": "tl431",
+    "name": "TL431",
+    "category": "Regulator"
+  },
+  {
+    "id": "tl432",
+    "name": "TL432",
+    "category": "Regulator"
+  },
+  {
+    "id": "lm317",
+    "name": "LM317",
+    "category": "Regulator"
+  },
+  {
+    "id": "lm337",
+    "name": "LM337",
+    "category": "Regulator"
+  },
+  {
+    "id": "ams1117",
+    "name": "AMS1117",
+    "category": "Regulator"
+  },
+  {
+    "id": "lm1117",
+    "name": "LM1117",
+    "category": "Regulator"
+  },
+  {
+    "id": "lm2576",
+    "name": "LM2576",
+    "category": "Regulator"
+  },
+  {
+    "id": "lm2596",
+    "name": "LM2596",
+    "category": "Regulator"
+  },
+  {
+    "id": "xl4015",
+    "name": "XL4015",
+    "category": "Regulator"
+  },
+  {
+    "id": "xl6009",
+    "name": "XL6009",
+    "category": "Regulator"
+  },
+  {
+    "id": "78l05",
+    "name": "78L05",
+    "category": "Regulator"
+  },
+  {
+    "id": "78l12",
+    "name": "78L12",
+    "category": "Regulator"
+  },
+  {
+    "id": "pic16f72",
+    "name": "PIC16F72",
+    "category": "Microcontroller"
+  },
+  {
+    "id": "pic16f722",
+    "name": "PIC16F722",
+    "category": "Microcontroller"
+  },
+  {
+    "id": "pic16f73",
+    "name": "PIC16F73",
+    "category": "Microcontroller"
+  },
+  {
+    "id": "pic16f74",
+    "name": "PIC16F74",
+    "category": "Microcontroller"
+  },
+  {
+    "id": "pic16f876a",
+    "name": "PIC16F876A",
+    "category": "Microcontroller"
+  },
+  {
+    "id": "pic16f877a",
+    "name": "PIC16F877A",
+    "category": "Microcontroller"
+  },
+  {
+    "id": "pic18f2520",
+    "name": "PIC18F2520",
+    "category": "Microcontroller"
+  },
+  {
+    "id": "pic18f2550",
+    "name": "PIC18F2550",
+    "category": "Microcontroller"
+  },
+  {
+    "id": "pic18f4520",
+    "name": "PIC18F4520",
+    "category": "Microcontroller"
+  },
+  {
+    "id": "dspic30f2010",
+    "name": "dsPIC30F2010",
+    "category": "Microcontroller"
+  },
+  {
+    "id": "dspic30f4011",
+    "name": "dsPIC30F4011",
+    "category": "Microcontroller"
+  },
+  {
+    "id": "dspic33ep",
+    "name": "dsPIC33EP32MC202",
+    "category": "Microcontroller"
+  },
+  {
+    "id": "eg8010",
+    "name": "EG8010",
+    "category": "Microcontroller"
+  },
+  {
+    "id": "stm32f103",
+    "name": "STM32F103C8T6",
+    "category": "Microcontroller"
+  },
+  {
+    "id": "stm32f030",
+    "name": "STM32F030F4P6",
+    "category": "Microcontroller"
+  },
+  {
+    "id": "atmega328p",
+    "name": "ATmega328P",
+    "category": "Microcontroller"
+  },
+  {
+    "id": "atmega8",
+    "name": "ATmega8",
+    "category": "Microcontroller"
+  },
+  {
+    "id": "atmega16",
+    "name": "ATmega16",
+    "category": "Microcontroller"
+  },
+  {
+    "id": "attiny85",
+    "name": "ATtiny85",
+    "category": "Microcontroller"
+  },
+  {
+    "id": "dsp56f801",
+    "name": "DSP56F801",
+    "category": "Microcontroller"
+  },
+  {
+    "id": "ne555",
+    "name": "NE555",
+    "category": "Timer"
+  },
+  {
+    "id": "ne556",
+    "name": "NE556",
+    "category": "Timer"
+  },
+  {
+    "id": "cd4047",
+    "name": "CD4047",
+    "category": "Timer"
+  },
+  {
+    "id": "cd4013",
+    "name": "CD4013",
+    "category": "Timer"
+  },
+  {
+    "id": "cd4017",
+    "name": "CD4017",
+    "category": "Timer"
+  },
+  {
+    "id": "cd4011",
+    "name": "CD4011",
+    "category": "Logic & Switch"
+  },
+  {
+    "id": "cd4001",
+    "name": "CD4001",
+    "category": "Logic & Switch"
+  },
+  {
+    "id": "cd4069",
+    "name": "CD4069",
+    "category": "Logic & Switch"
+  },
+  {
+    "id": "cd4081",
+    "name": "CD4081",
+    "category": "Logic & Switch"
+  },
+  {
+    "id": "cd4071",
+    "name": "CD4071",
+    "category": "Logic & Switch"
+  },
+  {
+    "id": "cd40106",
+    "name": "CD40106",
+    "category": "Logic & Switch"
+  },
+  {
+    "id": "cd4066",
+    "name": "CD4066",
+    "category": "Logic & Switch"
+  },
+  {
+    "id": "cd4093",
+    "name": "CD4093",
+    "category": "Logic & Switch"
+  },
+  {
+    "id": "cd4027",
+    "name": "CD4027",
+    "category": "Logic & Switch"
+  },
+  {
+    "id": "cd4541",
+    "name": "CD4541",
+    "category": "Timer"
+  },
+  {
+    "id": "74hc00",
+    "name": "74HC00",
+    "category": "Logic & Switch"
+  },
+  {
+    "id": "74hc04",
+    "name": "74HC04",
+    "category": "Logic & Switch"
+  },
+  {
+    "id": "74hc08",
+    "name": "74HC08",
+    "category": "Logic & Switch"
+  },
+  {
+    "id": "74hc14",
+    "name": "74HC14",
+    "category": "Logic & Switch"
+  },
+  {
+    "id": "74hc32",
+    "name": "74HC32",
+    "category": "Logic & Switch"
+  },
+  {
+    "id": "74hc74",
+    "name": "74HC74",
+    "category": "Logic & Switch"
+  },
+  {
+    "id": "74hc138",
+    "name": "74HC138",
+    "category": "Logic & Switch"
+  },
+  {
+    "id": "74hc595",
+    "name": "74HC595",
+    "category": "Logic & Switch"
+  },
+  {
+    "id": "74hc245",
+    "name": "74HC245",
+    "category": "Logic & Switch"
+  },
+  {
+    "id": "74hc125",
+    "name": "74HC125",
+    "category": "Logic & Switch"
+  },
+  {
+    "id": "24c02",
+    "name": "24C02",
+    "category": "Memory & Interface"
+  },
+  {
+    "id": "24c04",
+    "name": "24C04",
+    "category": "Memory & Interface"
+  },
+  {
+    "id": "24c08",
+    "name": "24C08",
+    "category": "Memory & Interface"
+  },
+  {
+    "id": "24c16",
+    "name": "24C16",
+    "category": "Memory & Interface"
+  },
+  {
+    "id": "24c32",
+    "name": "24C32",
+    "category": "Memory & Interface"
+  },
+  {
+    "id": "24c64",
+    "name": "24C64",
+    "category": "Memory & Interface"
+  },
+  {
+    "id": "93c46",
+    "name": "93C46",
+    "category": "Memory & Interface"
+  },
+  {
+    "id": "93c66",
+    "name": "93C66",
+    "category": "Memory & Interface"
+  },
+  {
+    "id": "max232",
+    "name": "MAX232",
+    "category": "Memory & Interface"
+  },
+  {
+    "id": "max485",
+    "name": "MAX485",
+    "category": "Memory & Interface"
+  },
+  {
+    "id": "sp3485",
+    "name": "SP3485",
+    "category": "Memory & Interface"
+  },
+  {
+    "id": "ht1621",
+    "name": "HT1621",
+    "category": "Memory & Interface"
+  },
+  {
+    "id": "tm1637",
+    "name": "TM1637",
+    "category": "Memory & Interface"
+  },
+  {
+    "id": "tm1638",
+    "name": "TM1638",
+    "category": "Memory & Interface"
+  },
+  {
+    "id": "ds1307",
+    "name": "DS1307",
+    "category": "Memory & Interface"
+  }
+]

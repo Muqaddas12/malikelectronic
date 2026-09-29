@@ -32,7 +32,8 @@
     },
     "plugins": [
       "expo-router",
-      "./plugins/withSecureFlag"
+      "./plugins/withSecureFlag",
+      "./plugins/withPlayStoreUpdate"
     ],
     "experiments": {
       "typedRoutes": true

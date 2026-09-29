@@ -168,12 +168,40 @@ possible causes deliberately are not.
 
 ### Adding an IC
 
-Append an `IcDetail` to `IC_DATABASE` in `data/ics.ts`: aliases (they are searchable, and
-show as "Equivalents" in the UI), one of the ten categories, pin count, DIP and SMD package
-names, a summary / working principle / inverter application / testing tip in both `En` and
-`Hi`, and one `IcPin` per pin with `type`, `descEn` and `descHi`.
+Add the searchable part ID to `data/ic-catalog.json`, then add a manufacturer-sourced
+definition to `data/ic-reviewed.ts`. Specify the exact packages, complete ordered pin
+map, source URL, and English/Hindi descriptions. Unreviewed catalog entries remain
+searchable but expose no guessed pinout or supply voltage. Similar part numbers are
+not automatically equivalents. Use `layout: 'none'` for packages that are not dual-row;
+their pin table must be interpreted using the manufacturer's package drawing.
 
-### Adding UI strings
+Run `node scripts/test-electronics.cjs` after changing IC or resistor data. Resistor
+colours default to IEC 60062:2016+AMD1:2019 Table 1; the explicitly selectable legacy
+chart preserves the older grey ±0.05% convention (Vishay document 20143). Pink is a
+×0.001 multiplier, no tolerance stripe means ±20%, and the sixth band is TCR.
+
+### Diagram URL protection and Play Store reminders
+
+After adding diagram `link` or `diagramLink` values in `config/` or `data/`, run
+`node scripts/encrypt-and-verify.js`, then `node scripts/verify-runtime-decryption.js`.
+The scripts preserve existing payloads and formatting, use the app's runtime cipher,
+and check every link. This bundled-key scheme obscures URLs; it is not server-side
+access control. Fault helpers decrypt links in memory before resolving image URLs.
+
+Android checks Google Play on each cold launch and each return to the foreground.
+Dismissal applies only to the current visit. Google Play's installed and available
+build codes determine eligibility, including staged rollouts; `version.json` and
+Play Store HTML are not used to decide availability. Errors do not claim the app is
+up to date. The Update button opens the official store listing.
+
+`plugins/withPlayStoreUpdate.js` preserves the native bridge, package registration,
+and Play Core dependency across Expo prebuilds. This change needs a new Android
+binary published through Play; it cannot be delivered solely as a JavaScript update.
+Test the real availability check using a Play-installed build and a higher version
+code on its eligible testing/production track. Expo Go and web cannot perform it.
+Run `node scripts/test-app-updates.cjs` for service and reminder lifecycle tests.
+
+### Translation strings
 
 Add the key to both `en` and `hi` in `data/translations.ts` and read it with
 `tr(language, 'key')`. Missing keys fall back to English, then to the key itself.

@@ -35,6 +35,7 @@ yarn-error.*
 
 # typescript
 *.tsbuildinfo
+/.electronics-web-check/
 
 # generated native folders
 /ios

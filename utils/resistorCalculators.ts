@@ -186,29 +186,68 @@ export type ResistorColor = {
   digit?: number;
   multiplier?: number;
   tolerance?: number;
+  temperatureCoefficient?: number;
   textColor?: string;
 };
+
+export type ResistorStandard = 'iec' | 'legacy';
 
 export const RESISTOR_COLORS: ResistorColor[] = [
   { name: 'Black', nameHi: 'काला', hex: '#1C1917', digit: 0, multiplier: 1, textColor: '#FFFFFF' },
   { name: 'Brown', nameHi: 'भूरा', hex: '#78350F', digit: 1, multiplier: 10, tolerance: 1, textColor: '#FFFFFF' },
   { name: 'Red', nameHi: 'लाल', hex: '#DC2626', digit: 2, multiplier: 100, tolerance: 2, textColor: '#FFFFFF' },
-  { name: 'Orange', nameHi: 'नारंगी', hex: '#EA580C', digit: 3, multiplier: 1000, textColor: '#FFFFFF' },
-  { name: 'Yellow', nameHi: 'पीला', hex: '#EAB308', digit: 4, multiplier: 10000, textColor: '#000000' },
+  { name: 'Orange', nameHi: 'नारंगी', hex: '#EA580C', digit: 3, multiplier: 1000, tolerance: 0.05, textColor: '#FFFFFF' },
+  { name: 'Yellow', nameHi: 'पीला', hex: '#EAB308', digit: 4, multiplier: 10000, tolerance: 0.02, textColor: '#000000' },
   { name: 'Green', nameHi: 'हरा', hex: '#16A34A', digit: 5, multiplier: 100000, tolerance: 0.5, textColor: '#FFFFFF' },
   { name: 'Blue', nameHi: 'नीला', hex: '#2563EB', digit: 6, multiplier: 1000000, tolerance: 0.25, textColor: '#FFFFFF' },
   { name: 'Violet', nameHi: 'बैंगनी', hex: '#7C3AED', digit: 7, multiplier: 10000000, tolerance: 0.1, textColor: '#FFFFFF' },
-  { name: 'Gray', nameHi: 'धूसर / ग्रे', hex: '#6B7280', digit: 8, multiplier: 100000000, tolerance: 0.05, textColor: '#FFFFFF' },
+  { name: 'Gray', nameHi: 'धूसर / ग्रे', hex: '#6B7280', digit: 8, multiplier: 100000000, tolerance: 0.01, textColor: '#FFFFFF' },
   { name: 'White', nameHi: 'सफेद', hex: '#F3F4F6', digit: 9, multiplier: 1000000000, textColor: '#000000' },
   { name: 'Gold', nameHi: 'सुनहरा / गोल्ड', hex: '#D97706', multiplier: 0.1, tolerance: 5, textColor: '#FFFFFF' },
   { name: 'Silver', nameHi: 'चांदी / सिल्वर', hex: '#94A3B8', multiplier: 0.01, tolerance: 10, textColor: '#000000' },
+  { name: 'Pink', nameHi: 'गुलाबी', hex: '#F9A8D4', multiplier: 0.001, textColor: '#000000' },
+  { name: 'None', nameHi: 'कोई बैंड नहीं', hex: '#E7D7C1', tolerance: 20, textColor: '#000000' },
 ];
+
+// IEC 60062:2016+AMD1:2019, table 1. No band means ±20%, not a painted stripe.
+const TCR_VALUES = [250, 100, 50, 15, 25, 20, 10, 5, 1];
+TCR_VALUES.forEach((value, index) => {
+  RESISTOR_COLORS[index].temperatureCoefficient = value;
+});
+
+// Older manufacturer charts (e.g. Vishay document 20143) use grey ±0.05%
+// and do not assign orange/yellow tolerances. Keep that convention explicit.
+export function getResistorColors(standard: ResistorStandard): ResistorColor[] {
+  if (standard === 'iec') return RESISTOR_COLORS;
+  return RESISTOR_COLORS.map(color => ({ ...color, tolerance:
+    color.name === 'Gray' ? 0.05 : ['Orange', 'Yellow'].includes(color.name) ? undefined : color.tolerance,
+  }));
+}
+
+function toleranceValue(index: number, standard: ResistorStandard): number {
+  const value = getResistorColors(standard)[index]?.tolerance;
+  if (value === undefined) throw new RangeError('Invalid tolerance colour for this table');
+  return value;
+}
 
 export type DipCalculation = {
   valueNum: number;
   formatted: string;
   toleranceStr: string;
+  temperatureCoefficient?: number;
 };
+
+function bandValue(index: number, role: 'digit' | 'multiplier' | 'tolerance' | 'temperatureCoefficient'): number {
+  const value = RESISTOR_COLORS[index]?.[role];
+  if (value === undefined) throw new RangeError(`Invalid ${role} colour`);
+  return value;
+}
+
+function firstDigit(index: number): number {
+  const value = bandValue(index, 'digit');
+  if (value === 0) throw new RangeError('The first significant band cannot be black');
+  return value;
+}
 
 /**
  * Calculate 4-Band Resistor Value.
@@ -218,11 +257,12 @@ export function calculate4Band(
   band2Index: number,
   multIndex: number,
   tolIndex: number,
+  standard: ResistorStandard = 'iec',
 ): DipCalculation {
-  const d1 = RESISTOR_COLORS[band1Index]?.digit ?? 0;
-  const d2 = RESISTOR_COLORS[band2Index]?.digit ?? 0;
-  const mult = RESISTOR_COLORS[multIndex]?.multiplier ?? 1;
-  const tol = RESISTOR_COLORS[tolIndex]?.tolerance ?? 5;
+  const d1 = firstDigit(band1Index);
+  const d2 = bandValue(band2Index, 'digit');
+  const mult = bandValue(multIndex, 'multiplier');
+  const tol = toleranceValue(tolIndex, standard);
 
   const ohms = (d1 * 10 + d2) * mult;
 
@@ -242,12 +282,14 @@ export function calculate5Band(
   band3Index: number,
   multIndex: number,
   tolIndex: number,
+  standard: ResistorStandard = 'iec',
 ): DipCalculation {
-  const d1 = RESISTOR_COLORS[band1Index]?.digit ?? 0;
-  const d2 = RESISTOR_COLORS[band2Index]?.digit ?? 0;
-  const d3 = RESISTOR_COLORS[band3Index]?.digit ?? 0;
-  const mult = RESISTOR_COLORS[multIndex]?.multiplier ?? 1;
-  const tol = RESISTOR_COLORS[tolIndex]?.tolerance ?? 1;
+  const d1 = firstDigit(band1Index);
+  const d2 = bandValue(band2Index, 'digit');
+  const d3 = bandValue(band3Index, 'digit');
+  const mult = bandValue(multIndex, 'multiplier');
+  const tol = toleranceValue(tolIndex, standard);
+  if (RESISTOR_COLORS[tolIndex].name === 'None') throw new RangeError('Five bands require a tolerance stripe');
 
   const ohms = (d1 * 100 + d2 * 10 + d3) * mult;
 
@@ -255,6 +297,17 @@ export function calculate5Band(
     valueNum: ohms,
     formatted: formatOhms(ohms),
     toleranceStr: `±${tol}%`,
+  };
+}
+
+export function calculate3Band(band1: number, band2: number, multiplier: number): DipCalculation {
+  return calculate4Band(band1, band2, multiplier, RESISTOR_COLORS.findIndex(c => c.name === 'None'));
+}
+
+export function calculate6Band(band1: number, band2: number, band3: number, multiplier: number, tolerance: number, tcr: number, standard: ResistorStandard = 'iec'): DipCalculation {
+  return {
+    ...calculate5Band(band1, band2, band3, multiplier, tolerance, standard),
+    temperatureCoefficient: bandValue(tcr, 'temperatureCoefficient'),
   };
 }
 

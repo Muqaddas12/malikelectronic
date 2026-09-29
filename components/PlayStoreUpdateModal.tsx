@@ -1,5 +1,6 @@
 import React from 'react';
 import {
+    Alert,
     Modal,
     Pressable,
     StyleSheet,
@@ -36,17 +37,20 @@ export default function PlayStoreUpdateModal({
   if (!updateInfo) return null;
 
   const handleUpdatePress = () => {
-    openPlayStore(updateInfo.playStoreUrl);
+    void openPlayStore(updateInfo.playStoreUrl).catch(() => Alert.alert(
+      isHindi ? 'प्ले स्टोर नहीं खुल सका' : 'Could not open Play Store',
+      isHindi ? 'कृपया Play Store में Malik Electronic खोजें।' : 'Please search for Malik Electronic in the Play Store.',
+    ));
   };
 
-  const currentVer = updateInfo.currentVersion || '1.0.0';
-  const latestVer = updateInfo.latestVersion || '1.0.1';
+  const currentVer = updateInfo.currentVersion ? `v${updateInfo.currentVersion}` : `${isHindi ? 'बिल्ड' : 'Build'} ${updateInfo.currentVersionCode}`;
+  const latestVer = updateInfo.latestVersion ? `v${updateInfo.latestVersion}` : `${isHindi ? 'बिल्ड' : 'Build'} ${updateInfo.versionCode}`;
 
   const notes = isHindi
     ? updateInfo.releaseNotesHi ||
-      'नए इन्वर्टर सर्किट डायग्राम, माइक्रोकंट्रोलर पिन विवरण और महत्वपूर्ण सुधार उपलब्ध हैं।'
+      'आपके ऐप का नया अपडेट उपलब्ध है। बदलाव देखने और अपडेट करने के लिए Play Store खोलें।'
     : updateInfo.releaseNotes ||
-      'New inverter circuit diagrams, microcontroller pin details, and performance improvements are available.';
+      'An update is available for your app. Open the Play Store to see what changed and install it.';
 
   return (
     <Modal
@@ -140,7 +144,7 @@ export default function PlayStoreUpdateModal({
                 {isHindi ? 'वर्तमान वर्शन' : 'Installed'}
               </Text>
               <Text style={[styles.verValue, { color: colors.textDim }]}>
-                v{currentVer}
+                {currentVer}
               </Text>
             </View>
 
@@ -157,7 +161,7 @@ export default function PlayStoreUpdateModal({
                   { color: colors.severity.low },
                 ]}
               >
-                v{latestVer}
+                {latestVer}
               </Text>
             </View>
           </View>

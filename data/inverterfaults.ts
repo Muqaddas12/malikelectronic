@@ -1,4 +1,5 @@
-import { getDiagramImage, getDiagramLink } from '@/data/diagrams';
+import { getDiagramImage, getDiagramLink, getDriveImageSource } from '@/data/diagrams';
+import { decryptUrl } from '@/utils/crypto';
 import { InverterFaultDetail } from '@/types/faultDetail';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -4420,7 +4421,7 @@ export const inverterFaultsMap: Record<
       icon: '⚡',
       severity: 'critical',
       usedPins: '1, 20',
-      diagramLink: 'https://drive.google.com/file/d/1E25l442ugAOP9i7vQC3UawcO4xyfFVlf/view?usp=drive_link',
+      diagramLink: "enc_v1$YnY7OZ6eOIqhtJ_95KmjdaLF3ZK3UV_eCUK4an9s06gYKV7jl9Oagi81qRjcb3jkA77F_96WzC3low2KXHqjkI8wN-RAGLDXoWuNKPvoC0kRkAEFswhWUc-lw3f-",
 
       symptoms: [
         'Inverter switch dabane par bilkul dead hai — koi display ya response nahi',
@@ -4477,7 +4478,7 @@ export const inverterFaultsMap: Record<
       icon: '🔄',
       severity: 'high',
       usedPins: '2, 22, 18',
-      diagramLink: 'https://drive.google.com/file/d/1dFxhRFY1ZgQMA6pC9-2lXjkq3QAX7l5f/view?usp=drive_link',
+      diagramLink: "enc_v1$Fo6zMxNdN5PBXWpTTouGKLFd8ffm-iHQZbOTF9CJVHXF8tFFlZRWu289_QiQ_UnEI3CgOqT-RMZ5fRxyy6jaLVv3iuOjNCFRhU-1XEZJkus6j6VTrbYqpVcQ48Fk",
 
       symptoms: [
         'Mains 230V AC aane par bhi inverter backup mode se switch nahi hota',
@@ -4531,7 +4532,7 @@ export const inverterFaultsMap: Record<
       icon: '🔋',
       severity: 'high',
       usedPins: '3',
-      diagramLink: 'https://drive.google.com/file/d/1BoshtdM1jf1pAInusF9wa9w0ltX4py0L/view?usp=drive_link',
+      diagramLink: "enc_v1$B6mp88HxAd0kNKyt8DkGqd-plDu0DW0DABXMJgtyuObSApGJBySb2s6ykdwaebkMRQsk7XpbwfV9GEbgpgW75KCGZQnH2JLa_5s6uhQVZ1YVEHwhFTtYub_jyBce",
 
       symptoms: [
         'Battery charged hone ke bawajood inverter "Low Battery" buzzer alarm dekar band ho jata hai',
@@ -4585,7 +4586,7 @@ export const inverterFaultsMap: Record<
       icon: '🔌',
       severity: 'high',
       usedPins: '6, 11, 23',
-      diagramLink: 'https://drive.google.com/file/d/1KVZEvEz5Il2xKFSwFY9CeFZpQCDtG64J/view?usp=drive_link',
+      diagramLink: "enc_v1$JZLUPLGQLZIZ3FTpCpWKTJwohIBrkS7EjBxhIsQuDxCd8Hlu1es4uvXSgOU3FH7jx9R5OoWS7KgQWkZT89jQAhfCCEXrnGtq8qxruS6jL_NvtYvEPjqIekcD47HH",
 
       symptoms: [
         'Front panel push switch dabane par inverter ON ya OFF toggle nahi hota',
@@ -4640,7 +4641,7 @@ export const inverterFaultsMap: Record<
       icon: '🌀',
       severity: 'medium',
       usedPins: '7, 17, 24',
-      diagramLink: 'https://drive.google.com/file/d/1QqZtXvVOImr17JeMInUYSbm3168xQUR7/view?usp=drive_link',
+      diagramLink: "enc_v1$3TSbMxJ0xBVMDtCoZbdduV_aTA5UcSB_NJry_pz6j2AlmrsVJOLRUYqpXnxBJuglXwNrgne4glw8PMewKDlXpfV4CoXFp-AhFmjbwJYrGiSuEqotrmkX57kIlWkP",
 
       symptoms: [
         'Inverter load par aane ke thodi der baad overheat alert hokar band ho jata hai',
@@ -4759,7 +4760,7 @@ export const inverterFaultsMap: Record<
       icon: '📟',
       severity: 'high',
       usedPins: '1–28',
-      diagramLink: 'https://drive.google.com/file/d/1hEhQTEWwLDIn62X39Ndh9bkfaC0XyX6G/view?usp=drive_link',
+      diagramLink: "enc_v1$Kj5WWRHzuxgqadzJH5rEe77auCk6LBier4VQA15S1qJNQ8AOygLAQ-ddAUPsQmYRniN_2B8fwE38anK7MedD-eN0NEAgKjxShHB16DT6DAz91_AdffjNwW9_o5AK",
 
       symptoms: [
         'Inverter output switching signals nahi de raha (Pin 27/28 par 0V hai)',
@@ -5217,7 +5218,7 @@ export const inverterFaultsMap: Record<
       icon: '🔄',
       severity: 'high',
       usedPins: '2',
-      diagramLink: 'https://drive.google.com/file/d/1KrSQv6LqqXeoZOVPNbNDbF0QlFuliSHD/view?usp=drive_link',
+      diagramLink: "enc_v1$VZuKGZFBfOpq9AyOafYQD9TqebvJVcfjkG9NnsVvhOnjGPaqMrpsoG1FPNppmiMsvFJTaQ7BITH_KMiCjaDc8nzyAn3W8dKlvxyX15hmiYCs9yTguxMDSBE7GKah",
 
       symptoms: [
         'Mains 230V AC aane par bhi inverter backup mode se switch nahi karta (Changeover fail)',
@@ -5332,7 +5333,7 @@ export const inverterFaultsMap: Record<
       icon: '🎛️',
       severity: 'high',
       usedPins: '1–28',
-      diagramLink: 'https://drive.google.com/file/d/1jmAu5TKOcYtlOI9INPygfRTHdoDDPOUD/view?usp=drive_link',
+      diagramLink: "enc_v1$7VZe3qE7-FcYOV3muhjjF3ajCCiUvoO7VhUFy20mjoOueM4NpWUO1M3IisMhaNs1Upq4h96EytYMh_ejO0V6NAJXzI5NcVrvc5UEjoA7mxYkLBfPlOmQNyvWAYE1",
 
       symptoms: [
         'Inverter completely dead hai ya switch press karne par response nahi deta',
@@ -5458,8 +5459,8 @@ export function getFaultsForInverter(
   for (const fault of Object.values(map)) {
     if (!fault || !fault.id) continue;
     const diagram = getDiagramImage(inverterId, fault.id);
-    const diagramLink = getDiagramLink(inverterId, fault.id) ?? fault.diagramLink;
-    const diagramImg = diagram ?? fault.diagramImage;
+    const diagramLink = decryptUrl(getDiagramLink(inverterId, fault.id) ?? fault.diagramLink) || undefined;
+    const diagramImg = diagram ?? fault.diagramImage ?? getDriveImageSource(diagramLink);
 
     // Include faults that have real circuit diagram assets or links
     if (!diagramImg && !diagramLink) continue;
@@ -5498,13 +5499,13 @@ export function getInverterFault(
   const fault = inverterFaultsMap[inverterId]?.[faultId];
   if (!fault) return undefined;
   const diagram = getDiagramImage(inverterId, faultId);
-  const diagramLink = getDiagramLink(inverterId, faultId) ?? fault.diagramLink;
+  const diagramLink = decryptUrl(getDiagramLink(inverterId, faultId) ?? fault.diagramLink) || undefined;
   const faultWithDiagram = {
     ...fault,
     isNew: fault.isNew ?? isDiagramNew(inverterId, faultId),
     isUpdated: fault.isUpdated ?? isDiagramUpdated(inverterId, faultId),
-    diagramImage: diagram ?? fault.diagramImage,
+    diagramImage: diagram ?? fault.diagramImage ?? getDriveImageSource(diagramLink),
     diagramLink,
   };
   return getTranslatedFault(inverterId, faultWithDiagram, language);
-} 
+}

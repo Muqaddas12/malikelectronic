@@ -3,9 +3,10 @@ import React, {
     useCallback,
     useContext,
     useEffect,
+    useRef,
     useState,
 } from 'react';
-import { Alert } from 'react-native';
+import { Alert, AppState, Platform } from 'react-native';
 
 import PlayStoreUpdateModal from '@/components/PlayStoreUpdateModal';
 import { useLanguage } from '@/context/LanguageContext';
@@ -26,27 +27,50 @@ export function UpdateProvider({ children }: { children: React.ReactNode }) {
   const [modalVisible, setModalVisible] = useState(false);
   const [isChecking, setIsChecking] = useState(false);
   const { isHindi } = useLanguage();
+  const checking = useRef(false);
+  const mounted = useRef(false);
+  const appState = useRef(AppState.currentState);
+
+  useEffect(() => {
+    mounted.current = true;
+    return () => { mounted.current = false; };
+  }, []);
 
   const checkForUpdates = useCallback(
     async (manual = false) => {
+      if (checking.current) return;
+      checking.current = true;
       try {
         setIsChecking(true);
         const result = await checkPlayStoreUpdate();
+        if (!mounted.current) return;
+
+        if (result.status === 'unsupported') {
+          if (manual) Alert.alert(
+            isHindi ? 'प्ले स्टोर जाँच उपलब्ध नहीं' : 'Play Store check unavailable',
+            isHindi ? 'यह सुविधा Google Play से इंस्टॉल किए गए Android ऐप में उपलब्ध है।' : 'This check requires the Android app installed from Google Play.',
+          );
+          return;
+        }
 
         if (result.updateAvailable) {
           setUpdateInfo(result);
-          setModalVisible(true);
-        } else if (manual) {
-          Alert.alert(
-            isHindi ? 'ऐप अप-टू-डेट है' : 'App is Up to Date',
-            isHindi
-              ? `आप पहले से ही नवीनतम वर्शन (v${result.currentVersion}) का उपयोग कर रहे हैं। प्ले स्टोर पर कोई नया अपडेट नहीं है।`
-              : `You are already using the latest version (v${result.currentVersion}). No new updates on Play Store.`,
-            [{ text: isHindi ? 'ठीक है' : 'OK' }],
-          );
+          setModalVisible(appState.current === 'active' || appState.current === null);
+        } else {
+          setUpdateInfo(null);
+          setModalVisible(false);
+          if (manual) {
+            Alert.alert(
+              isHindi ? 'ऐप अप-टू-डेट है' : 'App is Up to Date',
+              isHindi
+                ? `आपके इंस्टॉल किए गए ऐप (v${result.currentVersion}) के लिए Google Play पर अभी कोई अपडेट उपलब्ध नहीं है।`
+                : `Google Play currently has no update available for your installed app (v${result.currentVersion}).`,
+              [{ text: isHindi ? 'ठीक है' : 'OK' }],
+            );
+          }
         }
       } catch {
-        if (manual) {
+        if (manual && mounted.current) {
           Alert.alert(
             isHindi ? 'त्रुटि' : 'Check Failed',
             isHindi
@@ -56,20 +80,34 @@ export function UpdateProvider({ children }: { children: React.ReactNode }) {
           );
         }
       } finally {
-        setIsChecking(false);
+        checking.current = false;
+        if (mounted.current) setIsChecking(false);
       }
     },
     [isHindi],
   );
 
-  // Automatically check on app startup after a brief delay
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      checkForUpdates(false);
-    }, 1500);
+  const latestCheck = useRef(checkForUpdates);
+  latestCheck.current = checkForUpdates;
 
-    return () => clearTimeout(timer);
-  }, [checkForUpdates]);
+  // No persisted dismissal: remind on every launch and return to the app.
+  // Repeated active events and simultaneous manual checks do not stack requests.
+  useEffect(() => {
+    if (Platform.OS !== 'android') return;
+    const timer = setTimeout(() => {
+      if (appState.current === 'active' || appState.current === null) void latestCheck.current(false);
+    }, 1500);
+    const subscription = AppState.addEventListener('change', next => {
+      const previous = appState.current;
+      appState.current = next;
+      if (next === 'active' && previous !== 'active') {
+        clearTimeout(timer);
+        void latestCheck.current(false);
+      }
+    });
+
+    return () => { clearTimeout(timer); subscription.remove(); };
+  }, []);
 
   const showUpdateModal = useCallback(() => {
     if (updateInfo?.updateAvailable) {

@@ -1,15 +1,27 @@
 {
   "Luminous-Eco-Watt-Plus": [
     {
+      "id":1,
+      "name":"Dead | Switch Not Working",
+      "Used Pins":"1,20,26",
+      "link":"enc_v1$2VsmZHZ84RgFtbRM3nDK3F8KGVjpW32ZwzW4t6ccRTpVdJyG8FzZBfQTzuNMkSndccgKAUBZ8qpV6O4AsRjG-eRW84ogXGPHe79L5OiysgFj40CfxcDUuMmXDzIw"
+    },
+    {
       "id": 3,
       "name": "Battery Low | OverCharge | Not Charging | Low Back UP",
       "Used Pins": "4",
       "link": "enc_v1$4W3Z4pl-Dp_AKU-ulawWFUpDs2AP544do7qe55qjLDGXvYloNY7WZoRG_-uSHA4b5RP5_9NnD2zEUPOkXQJmkEhoIgqshk3yGfR8xTYOyykPT4caUjDF3rP9NdiM"
     },
     {
+      "id":4,
+      "name":"Charging&OuptRelay Relay|Fan|Buzzer",
+      "Used Pins":"23,6,22,Display ic Pin-1",
+      "link":"enc_v1$RY7BBVH_1ygZMkUsmHrCIUKJMKTZeHcHgBjRS7wgILDdPpTiCReWKl-X_8rCq0pi6hVr-ZPMYWm5AtF5g13aGKjHWU1LFqarVzSWxUjZ4pqK_6gFjm0CoU5kHq-Z"
+    },
+    {
       "id": 4,
       "name": "Main FeedBack | Buzzer Sound On Mains Mode ",
-      "Used Pins": "3",
+      "Used Pins": "5",
       "link": "enc_v1$TNlxsK_JxuPYK9rmHnmWdnKqrBfmAGTHriMUq4n81M6AvUwZ-oWVuPb2mI5yzG2gPgsKSgOAOjuEAuCzEtSkpBi42wBljTBIm653NSNgpyKainXmd6HZqgvsRkJr"
     }
   ],
@@ -20,5 +32,22 @@
       "used Pins": "",
       "link": "enc_v1$_Dras7EJxN9NkIZ_YhHIYSMpzgK-agjPbi9hO68pkR1oxTQLu5vA-uVK-EIlcQUfiVJ67yiU7lCJh50D38w-cuZ_UCiOguyRBoIE_EybYkZ0SX31a34dWhuEbTDi"
     }
+  ],
+  "Luminous-LB":[
+    {
+      "id":1,
+      "name":"Dead| Not Working ",
+      "Used Pins":"1,20,19",
+      "link":"enc_v1$BQQIPlsdTu4iJPpq--scfZ_XSrROOwFg0xR6WFjLggZAEEJLkE9poSDv7xowVYLoQJ_UQeHd0ZDtCKV7r_uO-I4qZwqKadQ7Fx7EOjuznbQ3Lf4P8qwGwquX_7ON"
+    }
+  ],
+  "Luminous-Shakti-Charge":[
+    {
+      "id":10,
+      "name":"microcontroller",
+      "usedPins":"",
+      "link":"enc_v1$jQGianHZVTDA86Yei2ynoLZmYqcNld3wasnUH2bhHRbOW6wnj4jpceGmvtjA9h3YKcIUsF__OvWY2VggXKLtfaKdtL6EBDQQmndwkJ2Iwyh51354hQu-VFLJ6X1p"
+    }
   ]
+
 }
