@@ -4,43 +4,50 @@
       "id": 1,
       "name": "Dead inverter | Only beep sound | Vcc supply problem",
       "Used Pins": "1,20",
-      "link": "enc_v1$WhjoHPyhGBLVADMQubGj8lD_zdWuxP6c77Qfhdp-nd_bZdFyOaMLoHG5wA2LKGNGQrBhiRw5nHpFNkyjs-iJYUpyM86IhFn7ZK_hgMxoiqZ_hRcMIqg9ooGyZnOk"
+      "link": "enc_v1$WhjoHPyhGBLVADMQubGj8lD_zdWuxP6c77Qfhdp-nd_bZdFyOaMLoHG5wA2LKGNGQrBhiRw5nHpFNkyjs-iJYUpyM86IhFn7ZK_hgMxoiqZ_hRcMIqg9ooGyZnOk",
+      "faultId": "dead-vcc"
     },
     {
       "id": 2,
       "name": "Change Over | Zero Cross Sense | Main Feedback",
       "Used Pins": "2,22,18",
-      "link": "enc_v1$PX6klP_-KKDAqoq-nOjN9yVRBxoJK45E5N3Lxiv2bjWrD6VQwxFsUp9WVvllSNrmKmSbO6fLQUN6qbT5YPeixW-rJzquJH07mst_M-mfiEWevI3eyy_udurOWUxC"
+      "link": "enc_v1$PX6klP_-KKDAqoq-nOjN9yVRBxoJK45E5N3Lxiv2bjWrD6VQwxFsUp9WVvllSNrmKmSbO6fLQUN6qbT5YPeixW-rJzquJH07mst_M-mfiEWevI3eyy_udurOWUxC",
+      "faultId": "changeover"
     },
     {
       "id": 3,
       "name": "Battery Low | OverCharge | Not Charging | Low Back UP",
       "Used Pins": "3",
-      "link": "enc_v1$nxFsfYHhyTyy5_xU7PLR0PVGO0Iap2xnfAvNFxFe9vXbGE1me-bFZVetzUd_9bmj1cEz7b3vVid2zUZ8d4Klpmsdr9W8TtwmIFkkZk8ZYWb0rAXHD8ANdsvsOhuR"
+      "link": "enc_v1$nxFsfYHhyTyy5_xU7PLR0PVGO0Iap2xnfAvNFxFe9vXbGE1me-bFZVetzUd_9bmj1cEz7b3vVid2zUZ8d4Klpmsdr9W8TtwmIFkkZk8ZYWb0rAXHD8ANdsvsOhuR",
+      "faultId": "low-battery"
     },
     {
       "id": 4,
       "name": "Switch Not Working | Only Charging Light Blinking | Inverter on But Not Output | Relay Not Operating",
       "Used Pins": "6,11,23",
-      "link": "enc_v1$sVvaKfazGbzuizH-H5IThBrgiDUDpYMrVE4PhnJYlFugwLgL1QPRo1ztfgGR86vpvxdHZYZrAgRr-p9vJGvj6p75tqeqYwecuiCtExloQeU430phlz3zqc2lZ6L5"
+      "link": "enc_v1$sVvaKfazGbzuizH-H5IThBrgiDUDpYMrVE4PhnJYlFugwLgL1QPRo1ztfgGR86vpvxdHZYZrAgRr-p9vJGvj6p75tqeqYwecuiCtExloQeU430phlz3zqc2lZ6L5",
+      "faultId": "switch-relay"
     },
     {
       "id": 5,
       "name": "Fan | Buzzer | Heat Sensor | Inverter OverHeating",
       "Used Pins": "7,17,24",
-      "link": "enc_v1$K2wbDI9gAFUSukVa0Ay7liTGwkCT5peajHp9m5Xenm116pXsMlNWUfhfzKdTvbHL4qESQdIJA6hdMIMCrklDEu9839tbL47sq5BfOlyIQ_jnV68Z7BjJXoPQ8tgZ"
+      "link": "enc_v1$K2wbDI9gAFUSukVa0Ay7liTGwkCT5peajHp9m5Xenm116pXsMlNWUfhfzKdTvbHL4qESQdIJA6hdMIMCrklDEu9839tbL47sq5BfOlyIQ_jnV68Z7BjJXoPQ8tgZ",
+      "faultId": "fan-overheating"
     },
     {
       "id": 6,
       "name": "Mosfet blast | Drive Problem",
       "Used Pins": "27,28",
-      "link": "enc_v1$YVOnn4HbS4kchNR8xRJkMHI7mHhw69z7TtuwApYOokIvDy74rzRI-24Y9nRvbAM7poBFj2xendgslfia-XMPsHDEstRUVVWFZbeW42ChnL-030_8CQYIyktDaxH7"
+      "link": "enc_v1$YVOnn4HbS4kchNR8xRJkMHI7mHhw69z7TtuwApYOokIvDy74rzRI-24Y9nRvbAM7poBFj2xendgslfia-XMPsHDEstRUVVWFZbeW42ChnL-030_8CQYIyktDaxH7",
+      "faultId": "mosfet-drive"
     },
     {
       "id": 10,
       "name": "Microcontroller",
       "Used Pins": "",
-      "link": "enc_v1$Ssv8YHv6pJ_95mOniORnK6GHuJ5MpkvFSOd90O4lTQMhOd4vZGYaSaC1EmJUFmz_nDmunEtuNiNOdM-euxSbD4kRiA_-yp34QwD243-78tAaDT5LqhFWYrl7M18t"
+      "link": "enc_v1$Ssv8YHv6pJ_95mOniORnK6GHuJ5MpkvFSOd90O4lTQMhOd4vZGYaSaC1EmJUFmz_nDmunEtuNiNOdM-euxSbD4kRiA_-yp34QwD243-78tAaDT5LqhFWYrl7M18t",
+      "faultId": "microcontroller-pin-details"
     }
   ],
   "sukam-shiny": [
@@ -48,13 +55,15 @@
       "id": 1,
       "name": "Change Over",
       "Used Pins": "2",
-      "link": "enc_v1$uwDx3mYCsew2qD9SOV7O_jAgQaC2sdzwHMxyQWmdVAbZzg4vFf3H402Wbn6cz5nGiaakd0ZwHemHZSptrhExWLh5jgvvVx-VxnlXm8P9_qmBTeqjfhxW8fp_o0AB"
+      "link": "enc_v1$uwDx3mYCsew2qD9SOV7O_jAgQaC2sdzwHMxyQWmdVAbZzg4vFf3H402Wbn6cz5nGiaakd0ZwHemHZSptrhExWLh5jgvvVx-VxnlXm8P9_qmBTeqjfhxW8fp_o0AB",
+      "faultId": "changeover"
     },
     {
       "id": 2,
       "name": "Microcontroller",
       "Used Pins": "",
-      "link": "enc_v1$9tDCRYfLYRN3uDXGK2rixe_swULJKwIyPds85DLKRex_Ln37cN1d8rlKoAvWLtrsgDq5F9wyRQdks28Altqt_7RLWyR4KnDbBVx0AT2E0V1kGcE6eAIcOLjRpCoh"
+      "link": "enc_v1$9tDCRYfLYRN3uDXGK2rixe_swULJKwIyPds85DLKRex_Ln37cN1d8rlKoAvWLtrsgDq5F9wyRQdks28Altqt_7RLWyR4KnDbBVx0AT2E0V1kGcE6eAIcOLjRpCoh",
+      "faultId": "microcontroller-pin-details"
     }
   ]
 }

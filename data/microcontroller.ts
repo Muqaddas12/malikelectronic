@@ -1,7 +1,4 @@
-import microtekConfig from '@/config/Microtek.json';
-import sukamConfig from '@/config/sukam.json';
-import { getDriveImageSource } from '@/data/diagrams';
-
+import { getDiagramImage } from '@/data/diagrams';
 export interface MicrocontrollerDoc {
   inverterId: string;
   chipName: string;
@@ -29,7 +26,7 @@ export const microcontrollerDocs: Record<string, MicrocontrollerDoc> = {
     title: 'Microtek EB 900 / V4–V7 Microcontroller Pin Details',
     subtitle: 'Complete 28-Pin voltage chart in Mains, UPS & Normal modes with pin functions',
     pages: [
-      getDriveImageSource(microtekConfig['microtek-eb-semi-sine-wave']?.[1]?.link),
+      getDiagramImage('microtek-inverter', 'microcontroller-pin-details'),
       require('@/assets/microcontroller/microtek/microtek_mc_pindetails_page_1.png'),
     ].filter(Boolean),
   },
@@ -40,7 +37,7 @@ export const microcontrollerDocs: Record<string, MicrocontrollerDoc> = {
     title: 'Microtek 24x7 Microcontroller Pin Details',
     subtitle: '20-Pin Non-SMD DIP IC Pin functions and live operating voltages in Backup & Mains modes',
     pages: [
-      getDriveImageSource(microtekConfig['microtek-24x7-Non-Smd']?.[0]?.link),
+      getDiagramImage('microtek-24x7', 'microcontroller-pin-details'),
     ].filter(Boolean),
   },
 
@@ -50,7 +47,7 @@ export const microcontrollerDocs: Record<string, MicrocontrollerDoc> = {
     title: 'Microtek Square Wave Micro IC Details (JM1250 / Classic)',
     subtitle: '28-Pin Micro IC voltage guide in Mains & Inverter switching modes with complete pinouts',
     pages: [
-      getDriveImageSource(microtekConfig['microtek-eb-square-wave']?.[0]?.link),
+      getDiagramImage('microtek-square-wave', 'microcontroller-pin-details'),
     ].filter(Boolean),
   },
 
@@ -60,7 +57,7 @@ export const microcontrollerDocs: Record<string, MicrocontrollerDoc> = {
     title: 'Su-Kam Shark SMD / DIP Microprocessor Pin Details',
     subtitle: 'Complete 28-Pin voltage chart across Mains & Inverter modes',
     pages: [
-      getDriveImageSource(sukamConfig['sukam-shark'][5]?.link),
+      getDiagramImage('sukam-shark-inverter', 'microcontroller-pin-details'),
     ].filter(Boolean),
   },
 
@@ -70,7 +67,7 @@ export const microcontrollerDocs: Record<string, MicrocontrollerDoc> = {
     title: 'Su-Kam Shiny Sine Wave Microcontroller Pin Details',
     subtitle: 'Complete 28-Pin live voltages, pinouts, and testing guide for PIC16F72',
     pages: [
-      getDriveImageSource(sukamConfig['sukam-shiny'][1]?.link),
+      getDiagramImage('sukam-shiny-inverter', 'microcontroller-pin-details'),
     ].filter(Boolean),
   },
 };
@@ -107,7 +104,13 @@ export function getMicrocontrollerDoc(
   language: string = 'hi',
 ): MicrocontrollerDoc | undefined {
   const doc = microcontrollerDocs[inverterId];
-  if (!doc) return undefined;
+  if (!doc) {
+    const page = getDiagramImage(inverterId, 'microcontroller-pin-details');
+    if (!page) return undefined;
+    return { inverterId, chipName: 'Microcontroller',
+      title: language === 'hi' ? 'माइक्रोकंट्रोलर पिन विवरण' : 'Microcontroller Pin Details',
+      subtitle: language === 'hi' ? 'सर्किट आरेख' : 'Circuit diagram', pages: [page] };
+  }
 
   if (language === 'hi' && microcontrollerDocsHi[inverterId]) {
     return {

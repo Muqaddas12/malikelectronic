@@ -22,7 +22,7 @@ Module._load = function (request, parent, isMain) {
   if (request === 'react-native') return rn;
   if (request === '@/context/LanguageContext') return { useLanguage: () => ({ isHindi: false }) };
   if (request === '@/components/PlayStoreUpdateModal') return { __esModule: true, default: 'UpdateModal' };
-  if (request === '@/utils/appUpdateService') return { checkPlayStoreUpdate: () => { checks++; return providerCheck(); } };
+  if (request === '@/utils/appUpdateService') return { ...service, checkPlayStoreUpdate: () => { checks++; return providerCheck(); } };
   if (request.startsWith('@/')) request = path.resolve(__dirname, '..', request.slice(2));
   return originalLoad.call(this, request, parent, isMain);
 };
@@ -75,6 +75,25 @@ const update = { status: 'checked', updateAvailable: true, currentVersion: '1.0.
   providerCheck = async () => { throw Error('offline'); };
   await act(() => context.checkForUpdates(true));
   assert.equal(alerts.at(-1)[0], 'Check Failed', 'offline must not claim up-to-date');
+  assert.doesNotMatch(alerts.at(-1)[1], /internet connection/i);
+  assert.equal(alerts.at(-1)[2][1].text, 'Open Play Store');
+  const directOpened = [];
+  rn.Linking.openURL = async url => directOpened.push(url);
+  await act(async () => alerts.at(-1)[2][1].onPress());
+  assert.deepEqual(directOpened, [service.PLAY_STORE_MARKET_URI]);
+  for (const code of ['PLAY_APP_NOT_OWNED', 'PLAY_STORE_NOT_FOUND', 'PLAY_API_UNAVAILABLE']) {
+    providerCheck = async () => { throw Object.assign(new Error(code), { code }); };
+    await act(() => context.checkForUpdates(true));
+    assert.equal(alerts.at(-1)[1], service.getUpdateCheckErrorMessage({ code }));
+    assert.doesNotMatch(alerts.at(-1)[1], /internet connection/i);
+    assert.notEqual(service.getUpdateCheckErrorMessage({ code }, true), alerts.at(-1)[1]);
+  }
+  const alertCount = alerts.length;
+  await act(() => context.checkForUpdates(false));
+  assert.equal(alerts.length, alertCount, 'background failures do not interrupt user');
+  providerCheck = async () => ({ ...update, status: 'unsupported' });
+  await act(() => context.checkForUpdates(true));
+  assert.equal(alerts.at(-1)[2][1].text, 'Open Play Store');
   await act(() => root.unmount());
   assert.equal(listener, null);
 

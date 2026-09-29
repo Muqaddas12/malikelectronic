@@ -260,6 +260,21 @@ Honest state of the repo, highest impact first:
 
 ## Contributing
 
+Diagram groups in `config/Luminous.json`, `config/Microtek.json` and `config/sukam.json`
+are registered by `data/diagramCatalog.ts`. Each group appears in the model library,
+and each row appears in its fault list. Give every row a unique, permanent `faultId`
+within its group; inserting or moving rows must not change existing IDs. New models
+use their image from `configuredModelImages` in `data/inverters.ts`; add the matching
+asset there when adding a model. Ratings stay unspecified until verified metadata is added.
+Run `node scripts/encrypt-and-verify.js` after adding links, then
+`node scripts/test-diagram-resolution.cjs` to check list/detail resolution.
+
+Manual update checks offer a direct Play Store link if the native check is unavailable
+or fails. Play account ownership and missing-store errors have specific messages;
+other failures do not assume the device is offline. Run
+`node scripts/test-app-updates.cjs` for service and reminder checks. Actual update
+availability still requires testing with an eligible Google Play installation.
+
 Fork, branch, and keep changes tokenised — no raw hex in screens, both languages populated
 for any new string, and `npx tsc --noEmit` clean before you open a PR. New fault content is
 the most valuable contribution; measured voltages beat guessed ones.

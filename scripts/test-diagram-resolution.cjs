@@ -16,6 +16,39 @@ try {
   const { inverterFaultsMap, getInverterFault, getFaultsForInverter } = require('../data/inverterfaults.ts');
   const { decryptUrl } = require('../utils/crypto.ts');
   const { formatDriveImageUrl, getDiagramLink } = require('../data/diagrams.ts');
+  const { diagramCatalog } = require('../data/diagramCatalog.ts');
+  const { inverters } = require('../data/inverters.ts');
+  const { getMicrocontrollerDoc } = require('../data/microcontroller.ts');
+  for (const model of diagramCatalog) {
+    const inverter = inverters.find(item => item.id === model.id);
+    assert.ok(inverter, `Missing model ${model.id}`);
+    assert.equal(new Set(model.diagrams.map(row => row.faultId)).size, model.diagrams.length);
+    for (const row of model.diagrams) {
+      assert.ok(inverter.faults.includes(row.faultId), `Missing sheet ${model.id}/${row.faultId}`);
+      for (const language of ['en', 'hi']) {
+        const listed = getFaultsForInverter(model.id, language).find(item => item.id === row.faultId);
+        const detail = getInverterFault(model.id, row.faultId, language);
+        assert.equal(listed.diagramLink, decryptUrl(row.link));
+        assert.equal(detail.diagramLink, listed.diagramLink);
+        if (row.usedPins) assert.equal(detail.usedPins, row.usedPins);
+      }
+      if (row.faultId === 'microcontroller-pin-details') {
+        assert.equal(getMicrocontrollerDoc(model.id).pages[0].uri, formatDriveImageUrl(row.link));
+      }
+    }
+  }
+  for (const id of ['luminous-lb', 'luminous-shakti-charge', 'luminous-eco-watt']) assert.ok(inverters.some(model => model.id === id));
+  const luminous = require('../config/Luminous.json');
+  assert.equal(getDiagramLink('LuminousEcoWatt', 'low-battery'), decryptUrl(luminous['Luminous-Eco-Watt-Plus'].find(row => row.faultId === 'low-battery').link));
+  assert.equal(getDiagramLink('microtek-square-wave', 'unknown-fault'), undefined);
+  // Reordering config rows must not remap existing bookmarks to another sheet.
+  const before = getDiagramLink('LuminousEcoWatt', 'main-feedback');
+  luminous['Luminous-Eco-Watt-Plus'].reverse();
+  delete require.cache[require.resolve('../data/diagramCatalog.ts')];
+  delete require.cache[require.resolve('../data/diagrams.ts')];
+  assert.equal(require('../data/diagrams.ts').getDiagramLink('LuminousEcoWatt', 'main-feedback'), before);
+  luminous['Luminous-Eco-Watt-Plus'].reverse();
+  console.log(`All ${diagramCatalog.length} configured model groups and their sheets resolve in both languages.`);
   let count = 0;
   for (const [inverterId, faults] of Object.entries(inverterFaultsMap)) {
     for (const fault of Object.values(faults)) {

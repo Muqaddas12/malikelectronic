@@ -22,6 +22,7 @@ export default function UpdateBanner({ onPressViewAll, onDismiss }: Props) {
   const { isHindi } = useLanguage();
 
   const newItemsCount = DIAGRAM_UPDATES.filter((u) => u.type === 'NEW').length;
+  const updatedItemsCount = DIAGRAM_UPDATES.filter((u) => u.type === 'UPDATED').length;
 
   return (
     <View
@@ -54,7 +55,7 @@ export default function UpdateBanner({ onPressViewAll, onDismiss }: Props) {
             ]}
           >
             <Text style={[styles.badgeText, { color: colors.severity.low }]}>
-              ⚡ {isHindi ? 'नया अपडेट उपलब्ध' : 'UPDATE AVAILABLE'}
+              ⚡ {isHindi ? 'नए डायग्राम' : 'NEW DIAGRAMS'}
             </Text>
           </View>
 
@@ -94,8 +95,8 @@ export default function UpdateBanner({ onPressViewAll, onDismiss }: Props) {
           numberOfLines={2}
         >
           {isHindi
-            ? `Su-Kam Shark (मॉस्फेट ब्लास्ट पिन 27,28), Luminous Eco Watt (28-पिन माइक्रोकंट्रोलर) व 4 अपडेटेड डायग्राम उपलब्ध हैं।`
-            : `Su-Kam Shark (Mosfet Blast Pins 27,28), Luminous Eco Watt (28-Pin MC) & 4 updated schematics available.`}
+            ? `${newItemsCount} नए और ${updatedItemsCount} अपडेटेड डायग्राम उपलब्ध हैं। Eco Watt New, LB 675/875/1075 और Shakti Charge 1150 भी देखें।`
+            : `${newItemsCount} new and ${updatedItemsCount} updated diagrams available, including Eco Watt New, LB 675/875/1075 and Shakti Charge 1150.`}
         </Text>
 
         {/* Action Button */}

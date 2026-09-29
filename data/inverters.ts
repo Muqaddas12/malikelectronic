@@ -1,6 +1,8 @@
+import { diagramCatalog } from '@/data/diagramCatalog';
+import { getFaultsForInverter } from '@/data/inverterfaults';
 import { Inverter } from '@/types/inverter';
 
-export const inverters: Inverter[] = [
+const existingInverters: Inverter[] = [
   {
     id: 'LuminousEcoWatt',
     brand: 'Luminous',
@@ -121,3 +123,18 @@ export const inverters: Inverter[] = [
     faults: [],
   },
 ];
+const configuredModelImages: Record<string, Inverter['image']> = {
+  'luminous-eco-watt': require('@/assets/inverters/LuminousEcoWattNeo.png'),
+  'luminous-lb': require('@/assets/inverters/luminous lb.jpg'),
+  'luminous-shakti-charge': require('@/assets/inverters/luminous shakti charge.webp'),
+};
+
+// New config groups appear automatically, without inventing electrical ratings.
+export const inverters: Inverter[] = [
+  ...existingInverters,
+  ...diagramCatalog.filter(model => !existingInverters.some(item => item.id === model.id)).map(model => ({
+    id: model.id, brand: model.brand, model: model.model,
+    capacity: '—', batteryVoltage: '—', type: 'Inverter', typeHi: 'इन्वर्टर',
+    image: configuredModelImages[model.id] ?? null, pcbImage: null, faults: [],
+  })),
+].map(model => ({ ...model, faults: getFaultsForInverter(model.id).map(fault => fault.id) }));

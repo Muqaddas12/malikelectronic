@@ -4,13 +4,15 @@
       "id": 3,
       "name": "Battery Low | OverCharge | Not Charging | Low Back UP",
       "Used Pins": "3",
-      "link": "enc_v1$ZFA1QSmPbFY-e9eNuOY015kXU4yldXpdYcB-28kG683R0Vpcngm24TP090qSXMap5dwpJmGBXJjlKslTc01FFh0Mq3Fbem2w7cTTB6tKpLBBsE-VGNOeuwy7_qGQ"
+      "link": "enc_v1$ZFA1QSmPbFY-e9eNuOY015kXU4yldXpdYcB-28kG683R0Vpcngm24TP090qSXMap5dwpJmGBXJjlKslTc01FFh0Mq3Fbem2w7cTTB6tKpLBBsE-VGNOeuwy7_qGQ",
+      "faultId": "low-battery"
     },
     {
       "id": 10,
       "name": "Microcontroller",
       "Used Pins": "",
-      "link": "enc_v1$UhWrzNp1blrmqXV8dSjtP27I0tw8C-LwqTH6a1Z7KkTnSRuPOTfgjroxQ_qfexg7H6LeNABs6T3c9AawVk65i0MYA11G8k9Q9ofNWjjWlL_4B6GZh6AIwVd0u1-3"
+      "link": "enc_v1$UhWrzNp1blrmqXV8dSjtP27I0tw8C-LwqTH6a1Z7KkTnSRuPOTfgjroxQ_qfexg7H6LeNABs6T3c9AawVk65i0MYA11G8k9Q9ofNWjjWlL_4B6GZh6AIwVd0u1-3",
+      "faultId": "microcontroller-pin-details"
     }
   ],
   "microtek-eb-square-wave": [
@@ -18,7 +20,8 @@
       "id": 10,
       "name": "Microcontroller",
       "Used Pins": "",
-      "link": "enc_v1$Itb-otgsBbZC1BFvx8QcMktFDSReSET9g5te9gAi3eLjVcvj-iSO-uOqZReOxgit-qvEgpwLREJ8K0C1f08lLDAoqM4Pm6nYvp1kyK2ogJYauYzSb-u3xsltc3ck"
+      "link": "enc_v1$Itb-otgsBbZC1BFvx8QcMktFDSReSET9g5te9gAi3eLjVcvj-iSO-uOqZReOxgit-qvEgpwLREJ8K0C1f08lLDAoqM4Pm6nYvp1kyK2ogJYauYzSb-u3xsltc3ck",
+      "faultId": "microcontroller-pin-details"
     }
   ],
   "microtek-24x7-Non-Smd": [
@@ -26,7 +29,8 @@
       "id": 10,
       "name": "Microcontroller",
       "Used Pins": "",
-      "link": "enc_v1$JJclppcHWqGG9BPxofEIFS8yjULpAFjBpEMcIrx0mMHP4xr6cGwHNVcScgU6WuPf5lT03f3GZBMrbD4qk4ridlAoIgN_wIgjC2QiwWArhR5a75zWKVrru-14O4E-"
+      "link": "enc_v1$JJclppcHWqGG9BPxofEIFS8yjULpAFjBpEMcIrx0mMHP4xr6cGwHNVcScgU6WuPf5lT03f3GZBMrbD4qk4ridlAoIgN_wIgjC2QiwWArhR5a75zWKVrru-14O4E-",
+      "faultId": "microcontroller-pin-details"
     }
   ]
 }

@@ -8,6 +8,8 @@ import com.facebook.react.bridge.ReactContextBaseJavaModule
 import com.facebook.react.bridge.ReactMethod
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory
 import com.google.android.play.core.install.model.UpdateAvailability
+import com.google.android.play.core.install.InstallException
+import com.google.android.play.core.install.model.InstallErrorCode
 
 class PlayStoreUpdateModule(private val context: ReactApplicationContext) : ReactContextBaseJavaModule(context) {
   override fun getName() = "PlayStoreUpdate"
@@ -31,9 +33,19 @@ class PlayStoreUpdateModule(private val context: ReactApplicationContext) : Reac
             promise.resolve(result)
           }
         }
-        .addOnFailureListener { error -> promise.reject("PLAY_UPDATE_FAILED", "Unable to check Google Play", error) }
+        .addOnFailureListener { error -> rejectUpdateCheck(promise, error) }
     } catch (error: Exception) {
-      promise.reject("PLAY_UPDATE_FAILED", "Unable to check Google Play", error)
+      rejectUpdateCheck(promise, error)
     }
+  }
+
+  private fun rejectUpdateCheck(promise: Promise, error: Exception) {
+    val code = when ((error as? InstallException)?.errorCode) {
+      InstallErrorCode.ERROR_APP_NOT_OWNED -> "PLAY_APP_NOT_OWNED"
+      InstallErrorCode.ERROR_PLAY_STORE_NOT_FOUND -> "PLAY_STORE_NOT_FOUND"
+      InstallErrorCode.ERROR_API_NOT_AVAILABLE -> "PLAY_API_UNAVAILABLE"
+      else -> "PLAY_UPDATE_FAILED"
+    }
+    promise.reject(code, "Google Play could not verify update availability", error)
   }
 }

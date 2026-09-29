@@ -38,6 +38,22 @@ export async function openPlayStore(_customUrl?: string): Promise<void> {
   await Linking.openURL(PLAY_STORE_WEB_URL);
 }
 
+export function getUpdateCheckErrorMessage(error: unknown, isHindi = false): string {
+  const code = (error as { code?: string } | null)?.code;
+  if (code === 'PLAY_APP_NOT_OWNED') return isHindi
+    ? 'Google Play खाते में यह ऐप उपलब्ध नहीं है। इसी खाते से Play Store से ऐप इंस्टॉल करें या स्टोर पर अपडेट देखें।'
+    : 'Google Play does not recognise this app for the current account. Install it from the Play Store using this account, or check the store directly.';
+  if (code === 'PLAY_STORE_NOT_FOUND') return isHindi
+    ? 'इस डिवाइस पर Google Play Store उपलब्ध नहीं है। ब्राउज़र में स्टोर पेज देखें।'
+    : 'Google Play Store is unavailable on this device. You can open the store page in your browser.';
+  if (code === 'PLAY_API_UNAVAILABLE') return isHindi
+    ? 'इस डिवाइस पर Google Play की स्वचालित अपडेट जाँच उपलब्ध नहीं है। स्टोर पर सीधे देखें।'
+    : 'Google Play cannot check updates automatically on this device. Check the store directly.';
+  return isHindi
+    ? 'Google Play से अपडेट की पुष्टि नहीं हो सकी। दोबारा कोशिश करें या Play Store पर सीधे देखें।'
+    : 'Google Play could not confirm whether an update is available. Try again or check the Play Store directly.';
+}
+
 export async function checkPlayStoreUpdate(): Promise<UpdateInfo> {
   const bridge = NativeModules.PlayStoreUpdate as { checkForUpdate(): Promise<NativeUpdateResult> } | undefined;
   if (Platform.OS !== 'android' || !bridge) {

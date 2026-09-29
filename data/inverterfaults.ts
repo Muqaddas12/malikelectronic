@@ -1,3 +1,4 @@
+import { diagramCatalog } from '@/data/diagramCatalog';
 import { getDiagramImage, getDiagramLink, getDriveImageSource } from '@/data/diagrams';
 import { decryptUrl } from '@/utils/crypto';
 import { InverterFaultDetail } from '@/types/faultDetail';
@@ -5439,6 +5440,22 @@ export const inverterFaultsMap: Record<
 // ─────────────────────────────────────────────────────────────────────────────
 // Helper functions
 // ─────────────────────────────────────────────────────────────────────────────
+
+// Register every sheet before list/detail lookups, retaining existing repair notes.
+for (const model of diagramCatalog) {
+  const faults = inverterFaultsMap[model.id] ?? (inverterFaultsMap[model.id] = {});
+  for (const row of model.diagrams) {
+    const existing = faults[row.faultId];
+    faults[row.faultId] = {
+      ...(existing ?? {
+        id: row.faultId, title: row.title, subtitle: 'Circuit diagram',
+        icon: '📋', severity: 'medium', symptoms: [], basicChecks: [],
+        possibleCauses: [], repairProcedure: [],
+      }),
+      usedPins: row.usedPins || existing?.usedPins,
+    };
+  }
+}
 
 import { isDiagramNew, isDiagramUpdated } from '@/data/diagramUpdates';
 import { getTranslatedFault } from '@/data/faultTranslationsHi';

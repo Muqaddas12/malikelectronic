@@ -10,7 +10,7 @@ import { Alert, AppState, Platform } from 'react-native';
 
 import PlayStoreUpdateModal from '@/components/PlayStoreUpdateModal';
 import { useLanguage } from '@/context/LanguageContext';
-import { checkPlayStoreUpdate, UpdateInfo } from '@/utils/appUpdateService';
+import { checkPlayStoreUpdate, getUpdateCheckErrorMessage, openPlayStore, UpdateInfo } from '@/utils/appUpdateService';
 
 interface UpdateContextType {
   updateInfo: UpdateInfo | null;
@@ -31,6 +31,16 @@ export function UpdateProvider({ children }: { children: React.ReactNode }) {
   const mounted = useRef(false);
   const appState = useRef(AppState.currentState);
 
+  const storeButtons = useCallback(() => [
+    { text: isHindi ? 'बंद करें' : 'Close', style: 'cancel' as const },
+    { text: isHindi ? 'Play Store खोलें' : 'Open Play Store', onPress: () => {
+      void openPlayStore().catch(() => Alert.alert(
+        isHindi ? 'स्टोर नहीं खुल सका' : 'Could not open store',
+        isHindi ? 'Play Store ऐप में Malik Electronic खोजें।' : 'Search for Malik Electronic in the Play Store app.',
+      ));
+    } },
+  ], [isHindi]);
+
   useEffect(() => {
     mounted.current = true;
     return () => { mounted.current = false; };
@@ -49,6 +59,7 @@ export function UpdateProvider({ children }: { children: React.ReactNode }) {
           if (manual) Alert.alert(
             isHindi ? 'प्ले स्टोर जाँच उपलब्ध नहीं' : 'Play Store check unavailable',
             isHindi ? 'यह सुविधा Google Play से इंस्टॉल किए गए Android ऐप में उपलब्ध है।' : 'This check requires the Android app installed from Google Play.',
+            storeButtons(),
           );
           return;
         }
@@ -69,14 +80,12 @@ export function UpdateProvider({ children }: { children: React.ReactNode }) {
             );
           }
         }
-      } catch {
+      } catch (error) {
         if (manual && mounted.current) {
           Alert.alert(
             isHindi ? 'त्रुटि' : 'Check Failed',
-            isHindi
-              ? 'अपडेट की जांच करने में असमर्थ। कृपया इंटरनेट कनेक्शन जांचें।'
-              : 'Unable to check for updates. Please check your internet connection.',
-            [{ text: isHindi ? 'ठीक है' : 'OK' }],
+            getUpdateCheckErrorMessage(error, isHindi),
+            storeButtons(),
           );
         }
       } finally {
@@ -84,7 +93,7 @@ export function UpdateProvider({ children }: { children: React.ReactNode }) {
         if (mounted.current) setIsChecking(false);
       }
     },
-    [isHindi],
+    [isHindi, storeButtons],
   );
 
   const latestCheck = useRef(checkForUpdates);

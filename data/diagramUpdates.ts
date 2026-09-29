@@ -1,3 +1,5 @@
+import { diagramCatalog } from '@/data/diagramCatalog';
+
 export interface DiagramUpdate {
   id: string;
   inverterId: string;
@@ -16,12 +18,22 @@ export interface DiagramUpdate {
 /**
  * Current release update version identifier.
  */
-export const LATEST_UPDATE_VERSION = '2026.09.2';
+export const LATEST_UPDATE_VERSION = '2026.09.3';
 
 /**
  * Registry of newly added and updated circuit diagrams.
  */
 export const DIAGRAM_UPDATES: DiagramUpdate[] = [
+  ...diagramCatalog.flatMap(model => model.diagrams
+    .filter(row => ['luminous-lb', 'luminous-shakti-charge', 'luminous-eco-watt'].includes(model.id)
+      || (model.id === 'LuminousEcoWatt' && ['dead-vcc', 'relay-fan-buzzer'].includes(row.faultId)))
+    .map(row => ({
+      id: `${model.id}-${row.faultId}`, inverterId: model.id,
+      inverterName: model.brand, inverterModel: model.model, faultId: row.faultId,
+      title: row.title, titleHi: row.title, usedPins: row.usedPins,
+      type: 'NEW' as const, description: 'Circuit diagram added to the model library.',
+      descriptionHi: 'मॉडल की सूची में सर्किट डायग्राम जोड़ा गया है।', date: 'New',
+    }))),
   {
     id: 'sukam-shark-mosfet-drive',
     inverterId: 'sukam-shark-inverter',
