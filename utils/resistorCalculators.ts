@@ -243,10 +243,9 @@ function bandValue(index: number, role: 'digit' | 'multiplier' | 'tolerance' | '
   return value;
 }
 
-function firstDigit(index: number): number {
-  const value = bandValue(index, 'digit');
-  if (value === 0) throw new RangeError('The first significant band cannot be black');
-  return value;
+// Single-black-band jumper marking: Vishay FRJ, document 31016.
+export function calculateZeroOhm(): DipCalculation {
+  return { valueNum: 0, formatted: formatOhms(0), toleranceStr: '' };
 }
 
 /**
@@ -259,7 +258,8 @@ export function calculate4Band(
   tolIndex: number,
   standard: ResistorStandard = 'iec',
 ): DipCalculation {
-  const d1 = firstDigit(band1Index);
+  // Allow leading black (0), as in Vishay's colour-code calculator.
+  const d1 = bandValue(band1Index, 'digit');
   const d2 = bandValue(band2Index, 'digit');
   const mult = bandValue(multIndex, 'multiplier');
   const tol = toleranceValue(tolIndex, standard);
@@ -284,7 +284,7 @@ export function calculate5Band(
   tolIndex: number,
   standard: ResistorStandard = 'iec',
 ): DipCalculation {
-  const d1 = firstDigit(band1Index);
+  const d1 = bandValue(band1Index, 'digit');
   const d2 = bandValue(band2Index, 'digit');
   const d3 = bandValue(band3Index, 'digit');
   const mult = bandValue(multIndex, 'multiplier');
@@ -310,4 +310,3 @@ export function calculate6Band(band1: number, band2: number, band3: number, mult
     temperatureCoefficient: bandValue(tcr, 'temperatureCoefficient'),
   };
 }
-

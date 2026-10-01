@@ -27,7 +27,16 @@ assert.equal(four('Brown', 'Black', 'Red', 'Gray').toleranceStr, '±0.01%');
 assert.equal(r.calculate4Band(...['Brown', 'Black', 'Red', 'Gray'].map(color), 'legacy').toleranceStr, '±0.05%');
 assert.throws(() => r.calculate4Band(...['Brown', 'Black', 'Red', 'Orange'].map(color), 'legacy'), RangeError);
 assert.throws(() => r.calculate4Band(99, 0, 2, 10), RangeError);
-assert.throws(() => four('Black', 'Brown', 'Red', 'Gold'), RangeError);
+assert.equal(four('Black', 'Brown', 'Red', 'Gold').valueNum, 100);
+assert.deepEqual(four('Black', 'Black', 'Gold', 'Gold'), { valueNum: 0, formatted: '0 Ω (Jumper)', toleranceStr: '±5%' });
+assert.equal(r.calculate5Band(...['Black', 'Brown', 'Black', 'Silver', 'Gold'].map(color)).valueNum, 0.1);
+assert.deepEqual(r.calculateZeroOhm(), { valueNum: 0, formatted: '0 Ω (Jumper)', toleranceStr: '' });
+// Every IEC multiplier and TCR colour is available, including pink and black.
+assert.deepEqual(r.getResistorColors('iec').filter(c => c.multiplier !== undefined).map(c => c.name),
+  ['Black', 'Brown', 'Red', 'Orange', 'Yellow', 'Green', 'Blue', 'Violet', 'Gray', 'White', 'Gold', 'Silver', 'Pink']);
+for (const [name, expected] of Object.entries({ Black: 250, Brown: 100, Red: 50, Orange: 15, Yellow: 25, Green: 20, Blue: 10, Violet: 5, Gray: 1 })) {
+  assert.equal(r.calculate6Band(...['Brown', 'Black', 'Black', 'Red', 'Brown', name].map(color)).temperatureCoefficient, expected);
+}
 assert.throws(() => four('Gold', 'Brown', 'Red', 'Gold'), RangeError);
 assert.throws(() => r.calculate5Band(...['Brown', 'Black', 'Black', 'Red', 'None'].map(color)), RangeError);
 assert.throws(() => r.calculate6Band(...['Brown', 'Black', 'Black', 'Red', 'Brown', 'Gold'].map(color)), RangeError);

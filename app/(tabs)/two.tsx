@@ -1,209 +1,68 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
 
 import AppHeader from '@/components/AppHeader';
-import {
-  layout,
-  lineFor,
-  radius,
-  size,
-  space,
-  weight,
-} from '@/constants/theme';
+import { layout, lineFor, radius, size, space, weight } from '@/constants/theme';
 import { useLanguage } from '@/context/LanguageContext';
 import { useTheme } from '@/context/ThemeContext';
 import { tr } from '@/data/translations';
 import { useSafeNavigate } from '@/hooks/useSafeNavigate';
 
-export default function ToolsListScreen() {
+function ToolsListScreen() {
   const { language, isHindi } = useLanguage();
   const { colors } = useTheme();
   const { safePush } = useSafeNavigate();
-
-  /**
-   * Each tool carries an accent drawn from the palette's functional roles:
-   * readout for the two value-decoders, signal for the pinout directory.
-   */
-  const toolsList = [
+  const tools = [
     {
-      id: 'smd-calculator',
-      icon: '⬚',
+      id: 'resistor',
+      icon: 'calculator' as const,
+      title: isHindi ? 'रेजिस्टेंस कैलकुलेटर' : 'Resistor Calculator',
+      description: isHindi ? 'कलर बैंड और SMD कोड से मान निकालें।' : 'Read color bands and decode SMD markings.',
+      detail: 'DIP · SMD · EIA-96',
+      route: '/tools/resistor-calculator' as const,
       accent: colors.readout,
-      badge: isHindi ? 'SMD कोड' : 'SMD Code',
-      title: tr(language, 'smdTitle'),
-      subtitle: tr(language, 'smdSubtitle'),
-      description: isHindi
-        ? '3-डिजिट, 4-डिजिट और EIA-96 SMD कोड डिकोड करें। लाइव चिप सिमुलेटर और इन्वर्टर PCB प्रीसेट्स (1001, 1502, 2201, 4R7) उपलब्ध हैं।'
-        : 'Decode 3-digit, 4-digit and EIA-96 SMD resistor markings instantly. Includes a live chip graphic and inverter PCB presets.',
-      tags: ['3-Digit', '4-Digit 1%', 'EIA-96', 'Decimal R/K/M'],
-      route: '/tools/smd-calculator' as const,
+      background: colors.readoutSoft,
     },
     {
-      id: 'dip-calculator',
-      icon: '≡',
-      accent: colors.verified,
-      badge: isHindi ? 'कलर बैंड्स' : 'Color Bands',
-      title: tr(language, 'dipTitle'),
-      subtitle: tr(language, 'dipSubtitle'),
-      description: isHindi
-        ? '4-बैंड और 5-बैंड थ्रू-होल रेजिस्टेंस का मान और टॉलरेंस निकालें। लाइव कलर स्ट्राइप सिमुलेटर के साथ।'
-        : 'Interactive 4-band and 5-band color code calculator with a live graphical resistor body.',
-      tags: ['4-Band', '5-Band', 'Live Graphics', '±0.05% to ±10%'],
-      route: '/tools/dip-calculator' as const,
-    },
-    {
-      id: 'ic-guide',
-      icon: '⊞',
-      accent: colors.signal,
-      badge: isHindi ? 'DIP व SMD ICs' : 'DIP & SMD ICs',
+      id: 'ic',
+      icon: 'microchip' as const,
       title: tr(language, 'icGuideTitle'),
-      subtitle: tr(language, 'icGuideSubtitle'),
-      description: isHindi
-        ? 'LM324, SG3525, ULN2003, 7805, MOC3021, PC817, PIC16F72 आदि 200+ मुख्य ICs के कंबाइंड DIP और SMD विजुअल डायग्राम, कार्यप्रणाली, पिन विवरण और टेस्टिंग टिप्स।'
-        : '200+ IC directory with combined DIP & SMD graphics, complete pinout details, working principles, and multimeter testing voltages.',
-      tags: [
-        '200+ ICs',
-        'DIP & SMD Graphic',
-        'Working Principles',
-        'Pin Tables',
-      ],
+      description: isHindi ? 'IC खोजें, पिनआउट और टेस्टिंग विवरण देखें।' : 'Find pinouts, diagrams and testing details.',
+      detail: isHindi ? 'पिनआउट · डायग्राम' : 'Pinouts · Diagrams',
       route: '/tools/ic-guide' as const,
+      accent: colors.signal,
+      background: colors.signalSoft,
     },
   ];
 
   return (
-    <SafeAreaView
-      edges={['top', 'left', 'right']}
-      style={[styles.safeArea, { backgroundColor: colors.surface }]}
-    >
-      <AppHeader
-        showBack={false}
-        showMenu
-        title={tr(language, 'tools')}
-        subtitle={
-          isHindi
-            ? 'इन्वर्टर और इलेक्ट्रॉनिक PCB रिपेयरिंग के लिए उपयोगी टूल्स, कैलकुलेटर व IC गाइड।'
-            : 'Calculators, pinout guides, and reference tables for inverter & PCB work.'
-        }
-      />
-
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.content}
-      >
-        {toolsList.map((tool) => (
+    <SafeAreaView edges={['top', 'left', 'right']} style={[styles.safe, { backgroundColor: colors.surface }]}>
+      <AppHeader showMenu title={tr(language, 'tools')} />
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
+        <Text style={[styles.intro, { color: colors.textDim, lineHeight: lineFor('small', isHindi) }]}>
+          {isHindi ? 'कैलकुलेटर और कंपोनेंट गाइड' : 'Calculators & component reference'}
+        </Text>
+        {tools.map(tool => (
           <Pressable
             key={tool.id}
-            onPress={() => safePush(tool.route)}
             accessibilityRole="button"
-            accessibilityLabel={`${tool.title}. ${tool.subtitle}`}
-            style={({ pressed }) => [
-              styles.card,
-              {
-                borderColor: pressed ? colors.ruleStrong : colors.rule,
-                backgroundColor: pressed
-                  ? colors.panelRaised
-                  : colors.panel,
-              },
-            ]}
+            accessibilityLabel={tool.title}
+            accessibilityHint={tool.description}
+            onPress={() => safePush(tool.route)}
+            android_ripple={{ color: colors.rule }}
+            style={({ pressed }) => [styles.card, { backgroundColor: pressed ? colors.panelRaised : colors.panel, borderColor: pressed ? colors.ruleStrong : colors.rule }]}
           >
-            {/* Same structural edge the fault list uses, so the two read as siblings. */}
-            <View style={[styles.edge, { backgroundColor: tool.accent }]} />
-
-            <View style={styles.inner}>
-              <View style={styles.headRow}>
-                <View
-                  style={[
-                    styles.iconWell,
-                    {
-                      backgroundColor: colors.panelSunken,
-                      borderColor: colors.rule,
-                    },
-                  ]}
-                >
-                  <Text style={[styles.icon, { color: tool.accent }]}>
-                    {tool.icon}
-                  </Text>
-                </View>
-
-                <View style={styles.headText}>
-                  <Text
-                    style={[styles.badge, { color: tool.accent }]}
-                    numberOfLines={1}
-                  >
-                    {tool.badge}
-                  </Text>
-
-                  <Text
-                    style={[
-                      styles.title,
-                      {
-                        color: colors.text,
-                        lineHeight: lineFor('sub', isHindi),
-                      },
-                    ]}
-                  >
-                    {tool.title}
-                  </Text>
-
-                  <Text
-                    style={[
-                      styles.subtitle,
-                      {
-                        color: colors.textDim,
-                        lineHeight: lineFor('small', isHindi),
-                      },
-                    ]}
-                  >
-                    {tool.subtitle}
-                  </Text>
-                </View>
-              </View>
-
-              <Text
-                style={[
-                  styles.description,
-                  {
-                    color: colors.textDim,
-                    lineHeight: lineFor('small', isHindi),
-                  },
-                ]}
-              >
-                {tool.description}
-              </Text>
-
-              <View style={styles.tagRow}>
-                {tool.tags.map((tag) => (
-                  <View
-                    key={tag}
-                    style={[
-                      styles.tag,
-                      {
-                        borderColor: colors.rule,
-                        backgroundColor: colors.panelSunken,
-                      },
-                    ]}
-                  >
-                    <Text style={[styles.tagText, { color: colors.textDim }]}>
-                      {tag}
-                    </Text>
-                  </View>
-                ))}
-              </View>
-
-              <View
-                style={[styles.footRow, { borderTopColor: colors.rule }]}
-              >
-                <Text style={[styles.action, { color: colors.signal }]}>
-                  {tr(language, 'openTool')}
-                </Text>
-
-                <Text style={[styles.chevron, { color: colors.signal }]}>
-                  ›
-                </Text>
-              </View>
+            <View style={[styles.icon, { backgroundColor: tool.background }]}>
+              <FontAwesome name={tool.icon} size={21} color={tool.accent} />
             </View>
+            <View style={styles.copy}>
+              <Text style={[styles.title, { color: colors.text, lineHeight: lineFor('sub', isHindi) }]}>{tool.title}</Text>
+              <Text style={[styles.description, { color: colors.textDim, lineHeight: lineFor('small', isHindi) }]}>{tool.description}</Text>
+              <Text style={[styles.detail, { color: tool.accent }]}>{tool.detail}</Text>
+            </View>
+            <FontAwesome name="angle-right" size={22} color={colors.textFaint} />
           </Pressable>
         ))}
       </ScrollView>
@@ -211,115 +70,16 @@ export default function ToolsListScreen() {
   );
 }
 
+export default memo(ToolsListScreen);
+
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-  },
-
-  content: {
-    paddingHorizontal: layout.gutter,
-    paddingTop: space.md,
-    paddingBottom: space.xxxl,
-    gap: space.md,
-  },
-
-  card: {
-    flexDirection: 'row',
-    borderRadius: radius.lg,
-    borderWidth: StyleSheet.hairlineWidth,
-    overflow: 'hidden',
-  },
-
-  edge: {
-    width: 3,
-  },
-
-  inner: {
-    flex: 1,
-    padding: space.md,
-  },
-
-  headRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: space.md,
-  },
-
-  iconWell: {
-    width: 42,
-    height: 42,
-    borderRadius: radius.sm,
-    borderWidth: StyleSheet.hairlineWidth,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-
-  icon: {
-    fontSize: 20,
-  },
-
-  headText: {
-    flex: 1,
-  },
-
-  badge: {
-    fontSize: size.micro,
-    fontWeight: weight.bold,
-  },
-
-  title: {
-    fontSize: size.sub,
-    fontWeight: weight.bold,
-    letterSpacing: -0.2,
-    marginTop: 1,
-  },
-
-  subtitle: {
-    fontSize: size.small,
-    marginTop: 1,
-  },
-
-  description: {
-    fontSize: size.small,
-    marginTop: space.md,
-  },
-
-  tagRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: space.xs + 2,
-    marginTop: space.md,
-  },
-
-  tag: {
-    paddingHorizontal: space.sm,
-    paddingVertical: 3,
-    borderRadius: radius.sm,
-    borderWidth: StyleSheet.hairlineWidth,
-  },
-
-  tagText: {
-    fontSize: size.micro,
-    fontWeight: weight.medium,
-  },
-
-  footRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-    gap: space.xs,
-    marginTop: space.md,
-    paddingTop: space.sm,
-    borderTopWidth: StyleSheet.hairlineWidth,
-  },
-
-  action: {
-    fontSize: size.small,
-    fontWeight: weight.bold,
-  },
-
-  chevron: {
-    fontSize: 19,
-    marginTop: -2,
-  },
+  safe: { flex: 1 },
+  content: { padding: layout.gutter, gap: space.md, paddingBottom: space.xxl, width: '100%', maxWidth: 720, alignSelf: 'center' },
+  intro: { fontSize: size.small, marginBottom: space.xs },
+  card: { flexDirection: 'row', alignItems: 'center', gap: space.md, padding: space.md, borderWidth: StyleSheet.hairlineWidth, borderRadius: radius.lg, overflow: 'hidden' },
+  icon: { width: 44, height: 44, borderRadius: radius.md, alignItems: 'center', justifyContent: 'center' },
+  copy: { flex: 1, gap: space.xs },
+  title: { fontSize: size.sub, fontWeight: weight.bold },
+  description: { fontSize: size.small },
+  detail: { fontSize: size.micro, fontWeight: weight.semi, marginTop: space.xs },
 });

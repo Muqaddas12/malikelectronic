@@ -16,6 +16,7 @@ const originalLoad = Module._load;
 Module._load = function (request, parent, isMain) {
   if (request === 'react-native') return {
     View: 'View', Text: 'Text', Pressable: 'Pressable', ScrollView: 'ScrollView', StatusBar: 'StatusBar', TextInput: 'TextInput',
+    Keyboard: { dismiss() {} }, useWindowDimensions: () => ({ width: 390, height: 844 }),
     StyleSheet: { create: value => value }, Dimensions: { get: () => ({ width: 390 }) },
     BackHandler: { addEventListener: () => ({ remove() {} }) }, Linking: { openURL: async () => {} }, Alert: { alert() {} },
     FlatList: props => React.createElement('View', null, props.ListHeaderComponent, ...props.data.map(item => React.createElement(React.Fragment, { key: item.id }, props.renderItem({ item })))),
@@ -42,11 +43,12 @@ async function press(root, label) {
 (async () => {
   let calculator;
   await act(() => { calculator = create(React.createElement(Calculator)); });
+  assert.equal(calculator.root.findAllByType('TextInput').length, 0, 'SMD should not mount before it is opened');
   for (const mode of [6, 3, 5, 4]) {
-    const target = calculator.root.findAllByType('Pressable').find(x => x.props.children?.props?.children?.[0] === mode);
+    const target = button(calculator, `${mode} bands`);
     assert.ok(target, `Mode ${mode}`);
     await act(() => target.props.onPress());
-    if (mode === 6) assert.ok(visible(calculator).includes('100 ppm/°C'));
+    if (mode === 6) assert.ok(calculator.root.findAllByType('Text').some(x => textContent(x.props.children) === '100 ppm/°C'));
     if (mode === 3) assert.ok(visible(calculator).includes('±20%'));
   }
   const pink = calculator.root.findAllByType('Pressable').find(x => x.props.accessibilityLabel?.includes('Multiplier: Pink'));
@@ -55,12 +57,20 @@ async function press(root, label) {
   assert.ok(visible(calculator).includes('0.037 Ω'));
   const orangeTolerance = calculator.root.findAllByType('Pressable').find(x => x.props.accessibilityLabel?.includes('Tolerance: Orange'));
   await act(() => orangeTolerance.props.onPress());
-  await press(calculator, 'Legacy chart');
-  assert.ok(visible(calculator).includes('±5%')); // unsupported tolerance resets safely
-  assert.ok(!calculator.root.findAllByType('Pressable').some(x => x.props.accessibilityLabel?.includes('Tolerance: Orange')));
+  assert.ok(visible(calculator).includes('±0.05%'));
+  assert.ok(!button(calculator, 'Legacy chart'));
   const noBand = calculator.root.findAllByType('Pressable').find(x => x.props.accessibilityLabel?.includes('Tolerance: None'));
   await act(() => noBand.props.onPress());
-  assert.ok(visible(calculator).includes('No tolerance band'));
+  assert.ok(visible(calculator).includes('±20%'));
+  assert.equal(button(calculator, 'DIP').props.accessibilityState.selected, true);
+  await press(calculator, 'SMD');
+  assert.equal(button(calculator, 'SMD').props.accessibilityState.selected, true);
+  await act(() => calculator.root.findByType('TextInput').props.onChangeText('472'));
+  await press(calculator, 'DIP');
+  assert.ok(visible(calculator).includes('0.037 Ω'));
+  await press(calculator, 'SMD');
+  assert.equal(calculator.root.findByType('TextInput').props.value, '472');
+  assert.equal(calculator.root.findByType('AppHeader').props.title, undefined);
   await act(() => calculator.unmount());
 
   let guide;

@@ -167,6 +167,7 @@ function RootShell() {
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="inverter/[id]" />
         <Stack.Screen name="inverter/fault/[faultId]" />
+        <Stack.Screen name="tools/resistor-calculator" />
         <Stack.Screen name="tools/smd-calculator" />
         <Stack.Screen name="tools/dip-calculator" />
         <Stack.Screen name="tools/ic-guide" />
