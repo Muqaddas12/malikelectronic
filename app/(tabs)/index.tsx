@@ -61,8 +61,6 @@ export default function TabOneScreen() {
       <AppHeader
         showBack={false}
         showMenu
-        title={tr(language, 'appTagline')}
-        subtitle={tr(language, 'appDescription')}
       />
 
       <FlatList
