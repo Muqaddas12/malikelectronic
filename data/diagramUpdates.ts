@@ -1,4 +1,4 @@
-import { diagramCatalog } from '@/data/diagramCatalog';
+import { diagramCatalog, getConfiguredDiagrams } from '@/data/diagramCatalog';
 
 export interface DiagramUpdate {
   id: string;
@@ -23,10 +23,10 @@ export const LATEST_UPDATE_VERSION = '2026.09.3';
 /**
  * Registry of newly added and updated circuit diagrams.
  */
-export const DIAGRAM_UPDATES: DiagramUpdate[] = [
+const updateCandidates: DiagramUpdate[] = [
   ...diagramCatalog.flatMap(model => model.diagrams
-    .filter(row => ['luminous-lb', 'luminous-shakti-charge', 'luminous-eco-watt'].includes(model.id)
-      || (model.id === 'LuminousEcoWatt' && ['dead-vcc', 'relay-fan-buzzer'].includes(row.faultId)))
+    .filter(row => row.isNew ?? (['luminous-lb', 'luminous-shakti-charge', 'luminous-eco-watt'].includes(model.id)
+      || (model.id === 'LuminousEcoWatt' && ['dead-vcc', 'relay-fan-buzzer'].includes(row.faultId))))
     .map(row => ({
       id: `${model.id}-${row.faultId}`, inverterId: model.id,
       inverterName: model.brand, inverterModel: model.model, faultId: row.faultId,
@@ -120,6 +120,13 @@ export const DIAGRAM_UPDATES: DiagramUpdate[] = [
   },
 ];
 
+// Config flags override historical announcements; keep one row per diagram.
+export const DIAGRAM_UPDATES: DiagramUpdate[] = updateCandidates.filter((update, index, all) => {
+  const row = getConfiguredDiagrams(update.inverterId).find(item => item.faultId === update.faultId);
+  if (update.type === 'NEW' && row?.isNew === false) return false;
+  return all.findIndex(item => item.inverterId === update.inverterId && item.faultId === update.faultId) === index;
+});
+
 /**
  * Checks if a specific fault diagram is newly added in this update.
  */
@@ -149,4 +156,3 @@ export function getDiagramUpdate(
     (u) => u.inverterId === inverterId && u.faultId === faultId,
   );
 }
-

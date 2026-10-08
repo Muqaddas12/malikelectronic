@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
     ActivityIndicator,
+    Animated,
+    FlatList,
     Image,
     Modal,
     NativeScrollEvent,
@@ -58,7 +60,10 @@ export default function PdfDocumentViewerModal({
   const displayHeight = Math.round(baseHeight * zoomScale);
   const displayItemHeight = displayHeight + 16; // Page height + margin
 
-  const scrollViewRef = useRef<ScrollView>(null);
+  const scrollViewRef = useRef<FlatList<any>>(null);
+  const pinchPreview = useRef(new Animated.Value(1)).current;
+  const pendingZoom = useRef(1);
+  const pendingOffset = useRef<number | null>(null);
   const horizontalScrollRef = useRef<ScrollView>(null);
   const currentScrollY = useRef(0);
   const lastTapTime = useRef(0);
@@ -75,6 +80,9 @@ export default function PdfDocumentViewerModal({
       setZoomScale(1.0);
       zoomScaleRef.current = 1.0;
       currentScrollY.current = 0;
+      pendingOffset.current = 0;
+      pinchPreview.setValue(1);
+      horizontalScrollRef.current?.scrollTo({ x: 0, animated: false });
     }
   }, [visible, doc?.chipName]);
 
@@ -89,7 +97,7 @@ export default function PdfDocumentViewerModal({
       const ratio = clamped / oldScale;
       const targetY = currentScrollY.current * ratio;
       currentScrollY.current = targetY;
-      scrollViewRef.current.scrollTo({ y: targetY, animated: false });
+      pendingOffset.current = targetY;
     }
 
     if (clamped <= 1.05 && horizontalScrollRef.current) {
@@ -100,7 +108,7 @@ export default function PdfDocumentViewerModal({
   // Scroll to a specific page
   const scrollToPage = (pageNumber: number) => {
     const targetY = (pageNumber - 1) * displayItemHeight;
-    scrollViewRef.current?.scrollTo({ y: targetY, animated: true });
+    scrollViewRef.current?.scrollToOffset({ offset: targetY, animated: true });
     setCurrentPage(pageNumber);
   };
 
@@ -138,6 +146,9 @@ export default function PdfDocumentViewerModal({
     }
   };
 
+  const latestUpdateZoom = useRef(updateZoom);
+  latestUpdateZoom.current = updateZoom;
+
   // 2-Finger Pinch-to-Zoom PanResponder (only intercepts multi-touch; leaves 1-finger scroll untouched)
   const panResponder = useRef(
     PanResponder.create({
@@ -153,6 +164,7 @@ export default function PdfDocumentViewerModal({
             evt.nativeEvent.touches[1]
           );
           pinchStartScale.current = zoomScaleRef.current;
+          pendingZoom.current = zoomScaleRef.current;
         }
       },
 
@@ -169,20 +181,24 @@ export default function PdfDocumentViewerModal({
           }
           const ratio = dist / initialDistance.current;
           const target = Math.min(Math.max(pinchStartScale.current * ratio, 1.0), 3.2);
-          updateZoom(Number(target.toFixed(2)));
+          pendingZoom.current = Number(target.toFixed(2));
+          pinchPreview.setValue(target / pinchStartScale.current);
         }
       },
 
       onPanResponderRelease: () => {
         initialDistance.current = null;
+        pinchPreview.setValue(1);
+        latestUpdateZoom.current(pendingZoom.current);
       },
       onPanResponderTerminate: () => {
+        pinchPreview.setValue(1);
         initialDistance.current = null;
       },
     })
   ).current;
 
-  if (!doc) return null;
+  if (!doc || !visible) return null;
 
   return (
     <Modal
@@ -275,12 +291,26 @@ export default function PdfDocumentViewerModal({
               { width: Math.max(displayWidth, windowWidth) },
             ]}
           >
-            <ScrollView
+            <Animated.View style={{ width: displayWidth, flex: 1, transform: [{ scale: pinchPreview }], transformOrigin: 'top left' }}>
+            <FlatList
               ref={scrollViewRef}
+              data={doc.pages}
+              keyExtractor={(_item, index) => String(index)}
+              initialNumToRender={2}
+              maxToRenderPerBatch={2}
+              windowSize={3}
+              extraData={displayItemHeight}
+              getItemLayout={(_data, index) => ({ length: displayItemHeight, offset: displayItemHeight * index, index })}
+              onContentSizeChange={() => {
+                if (pendingOffset.current !== null) {
+                  scrollViewRef.current?.scrollToOffset({ offset: pendingOffset.current, animated: false });
+                  pendingOffset.current = null;
+                }
+              }}
               style={{ width: displayWidth, flex: 1 }}
               contentContainerStyle={[
                 styles.verticalContent,
-                { width: displayWidth },
+                { width: displayWidth, paddingBottom: 104 },
               ]}
               showsVerticalScrollIndicator={true}
               indicatorStyle="white"
@@ -288,8 +318,7 @@ export default function PdfDocumentViewerModal({
               scrollEventThrottle={16}
               nestedScrollEnabled={true}
               bounces={true}
-            >
-              {doc.pages.map((pageSource, index) => (
+              renderItem={({ item: pageSource, index }) => (
                 <Pressable
                   key={`page-${index}`}
                   onPress={handlePageDoubleTap}
@@ -298,7 +327,7 @@ export default function PdfDocumentViewerModal({
                     {
                       width: displayWidth,
                       height: displayHeight,
-                      marginBottom: index === totalPages - 1 ? 120 : 16,
+                      marginBottom: 16,
                     },
                   ]}
                 >
@@ -315,8 +344,9 @@ export default function PdfDocumentViewerModal({
                     </Text>
                   </View>
                 </Pressable>
-              ))}
-            </ScrollView>
+              )}
+            />
+            </Animated.View>
           </ScrollView>
         </View>
 
@@ -409,10 +439,12 @@ function PdfPageImage({
 }) {
   const [isLoading, setIsLoading] = useState(false);
   const [hasError, setHasError] = useState(false);
+  const [retry, setRetry] = useState(0);
 
   return (
     <View style={[styles.pageImageWrapper, { width, height }]}>
       <Image
+        key={retry}
         source={source}
         style={{ width, height: height - 26 }}
         resizeMode="contain"
@@ -436,7 +468,8 @@ function PdfPageImage({
       {hasError && (
         <View style={styles.pageError}>
           <Text style={styles.errorIcon}>⚠️</Text>
-          <Text style={styles.errorText}>Unable to load document page</Text>
+          <Text style={styles.errorText}>Unable to load document page. Check your connection or file access.</Text>
+          <Pressable accessibilityRole="button" onPress={() => { setHasError(false); setRetry(n => n + 1); }} style={{ padding: 16 }}><Text style={styles.errorText}>Retry</Text></Pressable>
         </View>
       )}
     </View>
@@ -591,7 +624,7 @@ const styles = StyleSheet.create({
   },
 
   horizontalContent: {
-    alignItems: 'flex-start',
+    alignItems: 'stretch',
     justifyContent: 'flex-start',
   },
 

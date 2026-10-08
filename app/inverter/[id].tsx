@@ -1,3 +1,5 @@
+import BenchActions from '@/components/BenchActions';
+import OfflinePack from '@/components/OfflinePack';
 import React, { useMemo, useState } from 'react';
 import {
     FlatList,
@@ -90,12 +92,12 @@ export default function InverterFaultsScreen() {
   const specs: Spec[] = [
     {
       label: tr(language, 'specCapacity'),
-      value: inverter.capacity,
+      value: inverter.capacity === '—' ? (isHindi ? 'पुष्टि बाकी' : 'Unconfirmed') : inverter.capacity,
       grow: 1.5,
     },
     {
       label: tr(language, 'specBattery'),
-      value: inverter.batteryVoltage,
+      value: inverter.batteryVoltage === '—' ? (isHindi ? 'पुष्टि बाकी' : 'Unconfirmed') : inverter.batteryVoltage,
     },
     {
       label: tr(language, 'specSheets'),
@@ -120,6 +122,8 @@ export default function InverterFaultsScreen() {
     >
       <AppHeader showBack showMenu />
 
+      <BenchActions item={{ id: `model:${inverter.id}`, title: `${inverter.brand} ${inverter.model}`, route: `/inverter/${encodeURIComponent(inverter.id)}` }} />
+      <OfflinePack model={inverter.id} />
       <DiagramViewerModal
         visible={isPcbModalOpen}
         source={inverter.pcbImage}

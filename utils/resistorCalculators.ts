@@ -51,7 +51,7 @@ export function formatOhms(ohms: number): string {
     const val = ohms / 1000;
     return `${Number(val.toFixed(3))} kΩ (${ohms.toLocaleString()} Ω)`;
   }
-  return `${Number(ohms.toFixed(3))} Ω`;
+  return `${Number(ohms.toPrecision(12))} Ω`;
 }
 
 /**
@@ -85,7 +85,7 @@ export function decodeSmdResistor(rawCode: string): SmdResult {
   }
 
   // Codes containing 'R', 'K', 'M' as decimal point (e.g. 4R7, R10, 0R22, 1K2, 2M2, R010, 1R00)
-  if (/^[0-9]*[RKM][0-9]*$/.test(code)) {
+  if (/^(?:[0-9]+[RKM][0-9]*|[RKM][0-9]+)$/.test(code)) {
     let multiplier = 1;
     let sep = 'R';
     if (code.includes('K')) {

@@ -1,7 +1,8 @@
+import { useStoredPreference } from '@/hooks/useStoredPreference';
+const LANGUAGES = ['en', 'hi'] as const;
 import React, {
   createContext,
   useContext,
-  useState,
 } from 'react';
 
 export type Language = 'en' | 'hi';
@@ -24,7 +25,7 @@ export function LanguageProvider({
   children: React.ReactNode;
 }) {
   const [language, setLanguage] =
-    useState<Language>('hi');
+    useStoredPreference<Language>('settings.language', 'hi', LANGUAGES);
 
   return (
     <LanguageContext.Provider

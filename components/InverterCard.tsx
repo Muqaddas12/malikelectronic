@@ -1,3 +1,4 @@
+import { offlineCount, useOffline } from '@/utils/offlineDiagrams';
 import React from 'react';
 import {
   Image,
@@ -26,6 +27,8 @@ type Props = {
 };
 
 export default function InverterCard({ inverter, onPress }: Props) {
+  useOffline();
+  const savedDiagrams = offlineCount(inverter.id);
   const { language, isHindi } = useLanguage();
   const { colors } = useTheme();
 
@@ -38,14 +41,15 @@ export default function InverterCard({ inverter, onPress }: Props) {
     : inverter.type;
 
   const specs: Spec[] = [
+    ...(savedDiagrams ? [{ label: isHindi ? 'ऑफलाइन' : 'Offline', value: String(savedDiagrams), tone: colors.verified }] : []),
     {
       label: tr(language, 'specCapacity'),
-      value: inverter.capacity,
+      value: inverter.capacity === '—' ? (isHindi ? 'पुष्टि बाकी' : 'Unconfirmed') : inverter.capacity,
       grow: 1.4,
     },
     {
       label: tr(language, 'specBattery'),
-      value: inverter.batteryVoltage,
+      value: inverter.batteryVoltage === '—' ? (isHindi ? 'पुष्टि बाकी' : 'Unconfirmed') : inverter.batteryVoltage,
     },
     {
       label: tr(language, 'specSheets'),
@@ -58,7 +62,7 @@ export default function InverterCard({ inverter, onPress }: Props) {
     <Pressable
       onPress={onPress}
       accessibilityRole="button"
-      accessibilityLabel={`${brand} ${inverter.model}`}
+      accessibilityLabel={`${brand} ${inverter.model}${inverter.newDiagramsCount ? `, ${inverter.newDiagramsCount} ${isHindi ? 'नए डायग्राम' : 'new diagrams'}` : ''}`}
       style={({ pressed }) => [
         styles.card,
         {
@@ -85,12 +89,19 @@ export default function InverterCard({ inverter, onPress }: Props) {
         </View>
 
         <View style={styles.text}>
+          <View style={styles.brandRow}>
           <Text
-            style={[styles.brand, { color: colors.textDim }]}
+            style={[styles.brand, { color: colors.textDim, flexShrink: 1 }]}
             numberOfLines={1}
           >
             {brand}
           </Text>
+          {!!inverter.newDiagramsCount && (
+            <View style={[styles.newBadge, { backgroundColor: colors.verifiedSoft }]}>
+              <Text style={[styles.newBadgeText, { color: colors.verified }]}>{isHindi ? 'नया' : 'NEW'}</Text>
+            </View>
+          )}
+          </View>
 
           <Text
             style={[
@@ -167,6 +178,9 @@ const styles = StyleSheet.create({
     fontSize: size.micro,
     fontWeight: weight.semi,
   },
+  brandRow: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
+  newBadge: { borderRadius: radius.pill, paddingHorizontal: 6, paddingVertical: 2 },
+  newBadgeText: { fontSize: size.micro, fontWeight: weight.bold },
 
   model: {
     fontSize: size.sub,

@@ -12,6 +12,9 @@ const r = require('../utils/resistorCalculators.ts');
 const { IC_DATABASE } = require('../data/ics.ts');
 const color = name => r.RESISTOR_COLORS.findIndex(c => c.name === name);
 const four = (...names) => r.calculate4Band(...names.map(color));
+for (const code of ['R', 'K', 'M']) assert.equal(r.decodeSmdResistor(code).isValid, false);
+assert.equal(r.decodeSmdResistor('R0001').formatted, '0.0001 Ω');
+assert.equal(r.decodeSmdResistor('0R0001').valueNum, 0.0001);
 assert.equal(four('Brown', 'Black', 'Red', 'Gold').valueNum, 1000);
 assert.equal(four('Yellow', 'Violet', 'Orange', 'Silver').valueNum, 47000);
 assert.equal(four('Brown', 'Black', 'Pink', 'Gold').valueNum, 0.01);
@@ -76,3 +79,5 @@ for (const item of IC_DATABASE) {
   if (item.diagramLayout === 'dual-row') assert.equal(item.totalPins % 2, 0, item.id);
 }
 console.log(`Electronics regression checks passed. ${IC_DATABASE.filter(x => x.verification === 'verified').length} reviewed ICs; ${IC_DATABASE.filter(x => x.verification === 'pending').length} explicitly pending.`);
+
+for (const [id, pins] of Object.entries({ cd4047: 'CT RT RC_COMMON /ASTABLE ASTABLE -TRIGGER VSS +TRIGGER EXT_RESET Q /Q RETRIGGER OSC_OUT VDD', cd4013: 'Q1 /Q1 CLOCK1 RESET1 D1 SET1 VSS SET2 D2 RESET2 CLOCK2 /Q2 Q2 VDD', lm833: '1OUT 1IN- 1IN+ V- 2IN+ 2IN- 2OUT V+', lm348: '1OUT 1IN- 1IN+ V+ 2IN+ 2IN- 2OUT 3OUT 3IN- 3IN+ V- 4IN+ 4IN- 4OUT' })) assert.deepEqual(IC_DATABASE.find(i => i.id === id).pins.map(p => p.name), pins.split(' '));

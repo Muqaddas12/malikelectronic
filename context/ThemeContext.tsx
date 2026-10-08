@@ -1,3 +1,5 @@
+import { useStoredPreference } from '@/hooks/useStoredPreference';
+const THEMES = ['system', 'light', 'dark'] as const;
 import React, {
   createContext,
   useCallback,
@@ -45,7 +47,7 @@ export function ThemeProvider({
 }) {
   const systemScheme = useSystemColorScheme();
   const [preference, setPreference] =
-    useState<ThemePreference>('system');
+    useStoredPreference<ThemePreference>('settings.theme', 'system', THEMES);
   const [reduceMotion, setReduceMotion] = useState(false);
 
   useEffect(() => {
@@ -53,7 +55,7 @@ export function ThemeProvider({
 
     AccessibilityInfo.isReduceMotionEnabled().then((enabled) => {
       if (!cancelled) setReduceMotion(enabled);
-    });
+    }).catch(() => {});
 
     const subscription = AccessibilityInfo.addEventListener(
       'reduceMotionChanged',
@@ -75,7 +77,7 @@ export function ThemeProvider({
 
   const handleSetPreference = useCallback(
     (next: ThemePreference) => setPreference(next),
-    [],
+    [setPreference],
   );
 
   const value = useMemo<ThemeContextValue>(

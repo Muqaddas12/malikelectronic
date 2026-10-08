@@ -32,4 +32,5 @@ export type Inverter = {
   image: any;
   pcbImage: any;
   faults: string[];
+  newDiagramsCount?: number;
 };

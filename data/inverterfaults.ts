@@ -5453,6 +5453,7 @@ for (const model of diagramCatalog) {
         possibleCauses: [], repairProcedure: [],
       }),
       usedPins: row.usedPins || existing?.usedPins,
+      isNew: row.isNew ?? existing?.isNew,
     };
   }
 }
@@ -5484,7 +5485,7 @@ export function getFaultsForInverter(
 
     const faultWithDiagram: InverterFaultDetail = {
       ...fault,
-      isNew: fault.isNew ?? isDiagramNew(inverterId, fault.id),
+      isNew: isDiagramNew(inverterId, fault.id),
       isUpdated: fault.isUpdated ?? isDiagramUpdated(inverterId, fault.id),
       diagramImage: diagramImg,
       diagramLink,
@@ -5519,7 +5520,7 @@ export function getInverterFault(
   const diagramLink = decryptUrl(getDiagramLink(inverterId, faultId) ?? fault.diagramLink) || undefined;
   const faultWithDiagram = {
     ...fault,
-    isNew: fault.isNew ?? isDiagramNew(inverterId, faultId),
+    isNew: isDiagramNew(inverterId, faultId),
     isUpdated: fault.isUpdated ?? isDiagramUpdated(inverterId, faultId),
     diagramImage: diagram ?? fault.diagramImage ?? getDriveImageSource(diagramLink),
     diagramLink,

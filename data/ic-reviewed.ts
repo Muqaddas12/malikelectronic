@@ -21,6 +21,8 @@ const timing: [string, string] = ['The timing capacitor, comparators and latch g
 // Each definition is scoped to the manufacturer and packages in its source.
 // Never derive a pinout from category or assume similar numbers are substitutes.
 const definitions: Definition[] = [
+  { ids: ['cd4013'], source: ti('cd4013b'), category: 'Logic & Switch', packages: ['PDIP-14 (N)', 'SOIC-14 (D)'], pins: 'Q1 /Q1 CLOCK1 RESET1 D1 SET1 VSS SET2 D2 RESET2 CLOCK2 /Q2 Q2 VDD', summary: ['Two independent D-type flip-flops (TI CD4013B).', 'दो स्वतंत्र D-टाइप फ्लिप-फ्लॉप (TI CD4013B)।'], working: ['A rising clock edge transfers D to Q. SET and RESET are asynchronous, active-high inputs. Check the truth table before wiring both controls.', 'क्लॉक के बढ़ते किनारे पर D का मान Q पर आता है। SET और RESET हाई-सक्रिय हैं और क्लॉक से स्वतंत्र हैं। दोनों कंट्रोल जोड़ने से पहले ट्रुथ टेबल देखें।'] },
+  { ids: ['cd4047'], source: ti('cd4047b'), category: 'Timer', packages: ['PDIP-14 (N)', 'SOIC-14 (D)'], pins: 'CT RT RC_COMMON /ASTABLE ASTABLE -TRIGGER VSS +TRIGGER EXT_RESET Q /Q RETRIGGER OSC_OUT VDD', summary: ['Monostable/astable multivibrator (TI CD4047B).', 'मोनोस्टेबल/अस्टेबल मल्टीवाइब्रेटर (TI CD4047B)।'], working: ['External resistance and capacitance set timing. In astable mode Q and its complement have half the oscillator output frequency; the oscillator output is a separate pin.', 'बाहरी रेजिस्टेंस और कैपेसिटेंस समय तय करते हैं। अस्टेबल मोड में Q और उसके उल्टे आउटपुट की फ्रीक्वेंसी ऑसिलेटर की आधी है; ऑसिलेटर आउटपुट अलग पिन पर है।'] },
   ...[
     { ids: ['lm324', 'lm2902'], source: 'lm324', count: 4 },
     { ids: ['lm358', 'lm2904'], source: 'lm358', count: 2 },
@@ -28,6 +30,8 @@ const definitions: Definition[] = [
     { ids: ['tl074'], source: 'tl072', count: 4 },
     { ids: ['tl082'], source: 'tl082', count: 2 },
     { ids: ['tl084'], source: 'tl082', count: 4 },
+    { ids: ['lm833'], source: 'lm833', count: 2 },
+    { ids: ['lm348'], source: 'lm348', count: 4 },
   ].map(({ ids, source, count }): Definition => ({ ids, source: ti(source), category: 'Op-Amp', packages: count === 4 ? ['PDIP-14', 'SOIC-14'] : ['PDIP-8', 'SOIC-8'], pins: count === 4 ? quad : dual, summary: [`${count} operational amplifiers.`, `${count} ऑपरेशनल एम्प्लीफायर।`], working: opWorking })),
   { ids: ['lm339'], source: ti('lm339'), category: 'Comparator', packages: ['PDIP-14', 'SOIC-14'], pins: '2OUT 1OUT VCC 1IN- 1IN+ 2IN- 2IN+ 3IN- 3IN+ 4IN- 4IN+ GND 4OUT 3OUT', summary: ['Quad open-collector comparator.', 'चार ओपन-कलेक्टर कंपैरेटर।'], working: comparatorWorking },
   { ids: ['lm393'], source: ti('lm393'), category: 'Comparator', packages: ['PDIP-8', 'SOIC-8'], pins: '1OUT 1IN- 1IN+ GND 2IN+ 2IN- 2OUT VCC', summary: ['Dual open-collector comparator.', 'दो ओपन-कलेक्टर कंपैरेटर।'], working: comparatorWorking },
@@ -136,6 +140,15 @@ const descriptions: Record<string, Description> = {
 };
 
 function describe(name: string, category: string): Description {
+  if (name === 'VSS') return ['Ground', 'Negative supply / ground reference.', 'नेगेटिव सप्लाई / ग्राउंड संदर्भ।'];
+  if (/^\/?Q[12]?$/.test(name)) return ['Output', name.startsWith('/') ? 'Complementary logic output.' : 'Logic output.', name.startsWith('/') ? 'उल्टा लॉजिक आउटपुट।' : 'लॉजिक आउटपुट।'];
+  if (/^CLOCK[12]$/.test(name)) return ['Input', 'Rising-edge clock input.', 'बढ़ते किनारे वाला क्लॉक इनपुट।'];
+  if (/^(RESET[12]|EXT_RESET)$/.test(name)) return ['Input', 'Asynchronous active-high reset.', 'क्लॉक से स्वतंत्र हाई-सक्रिय रीसेट।'];
+  if (/^SET[12]$/.test(name)) return ['Input', 'Asynchronous active-high set.', 'क्लॉक से स्वतंत्र हाई-सक्रिय सेट।'];
+  if (/^D[12]$/.test(name)) return ['Input', 'Flip-flop data input.', 'फ्लिप-फ्लॉप डेटा इनपुट।'];
+  if (name === 'RC_COMMON') return ['Passive', 'Common connection for timing resistor and capacitor.', 'टाइमिंग रेजिस्टर और कैपेसिटर का कॉमन कनेक्शन।'];
+  if (name === '/ASTABLE' || name === 'ASTABLE') return ['Input', name.startsWith('/') ? 'Low enables astable operation.' : 'High enables astable operation.', name.startsWith('/') ? 'लो पर अस्टेबल मोड चालू।' : 'हाई पर अस्टेबल मोड चालू।'];
+  if (name === '-TRIGGER' || name === '+TRIGGER' || name === 'RETRIGGER') return ['Input', 'Timing trigger; follow the datasheet mode connections.', 'टाइमिंग ट्रिगर; डेटाशीट के मोड कनेक्शन देखें।'];
   if (descriptions[name]) return descriptions[name];
   if (/^V(CC|DD|C|\+)$/.test(name)) return ['Power', 'Positive supply; check exact part limits.', 'पॉजिटिव सप्लाई; पूरे पार्ट की सीमा देखें।'];
   if (/^(VREF|REF)$/.test(name)) return ['Output', 'Reference voltage output (not a supply input).', 'रेफरेंस वोल्टेज आउटपुट (सप्लाई इनपुट नहीं)।'];

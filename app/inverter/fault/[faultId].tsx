@@ -1,3 +1,6 @@
+import BenchActions from '@/components/BenchActions';
+import { offlineSource, useOffline } from '@/utils/offlineDiagrams';
+import { getConfiguredDiagrams } from '@/data/diagramCatalog';
 import React, { useState } from 'react';
 import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -437,6 +440,7 @@ export default function FaultDetailScreen() {
   const { colors } = useTheme();
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
 
+  useOffline();
   const fault = getInverterFault(id, faultId, language);
 
   if (!fault) {
@@ -456,6 +460,8 @@ export default function FaultDetailScreen() {
     );
   }
 
+  const diagramSource = offlineSource(id, faultId, fault.diagramImage);
+  const metadata = getConfiguredDiagrams(id).find(row => row.faultId === faultId);
   const severityColor =
     colors.severity[fault.severity] ?? colors.severity.medium;
 
@@ -473,7 +479,9 @@ export default function FaultDetailScreen() {
 
       <DiagramViewerModal
         visible={isImageModalOpen}
-        source={fault.diagramImage}
+        modelId={id}
+        item={{ id: `diagram:${id}:${faultId}`, title: fault.title, route: `/inverter/fault/${encodeURIComponent(faultId)}?id=${encodeURIComponent(id)}` }}
+        source={diagramSource}
         title={fault.title}
         subtitle={tr(language, 'zoomHint')}
         onClose={() => setIsImageModalOpen(false)}
@@ -483,6 +491,8 @@ export default function FaultDetailScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.content}
       >
+        <BenchActions item={{ id: `diagram:${id}:${faultId}`, title: fault.title, route: `/inverter/fault/${encodeURIComponent(faultId)}?id=${encodeURIComponent(id)}` }} />
+        <Text selectable style={{ color: colors.textDim }}>{isHindi ? 'PCB रिवीजन' : 'PCB revision'}: {metadata?.pcbRevision || (isHindi ? 'पुष्टि बाकी' : 'Unconfirmed')}{'\n'}{isHindi ? 'स्रोत' : 'Source'}: {metadata?.source || (isHindi ? 'ऐप डायग्राम संग्रह' : 'App diagram collection')}{'\n'}{isHindi ? 'पुष्टि की तारीख' : 'Verified date'}: {metadata?.verifiedAt || '—'}</Text>
         {fault.isNew ? (
           <View
             style={[
@@ -587,7 +597,7 @@ export default function FaultDetailScreen() {
               ]}
             >
               <Image
-                source={fault.diagramImage}
+                source={diagramSource}
                 style={styles.diagramImage}
                 resizeMode="contain"
               />

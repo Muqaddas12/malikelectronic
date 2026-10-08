@@ -1,3 +1,7 @@
+import BenchActions from '@/components/BenchActions';
+import { useLocalSearchParams } from 'expo-router';
+import { useTheme } from '@/context/ThemeContext';
+import { Palette } from '@/constants/theme';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
     BackHandler,
@@ -96,6 +100,8 @@ function getCategoryTheme(category: string) {
 // ─── Combined DIP & SMD Visual Graphic Component ─────────────────────────────
 
 const CombinedIcGraphic = React.memo(function CombinedIcGraphic({ ic }: { ic: IcDetail }) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const { language } = useLanguage();
   if (ic.verification !== 'verified' || ic.diagramLayout !== 'dual-row') return null;
   const left = ic.pins.slice(0, ic.totalPins / 2);
@@ -132,6 +138,8 @@ interface IcCardItemProps {
 }
 
 const IcCardItem = React.memo(function IcCardItem({ ic, language, onSelect }: IcCardItemProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const theme = getCategoryTheme(ic.category);
 
   return (
@@ -165,6 +173,7 @@ const IcCardItem = React.memo(function IcCardItem({ ic, language, onSelect }: Ic
 
       {/* IC Name & Aliases */}
       <Text style={styles.icTitleText}>{ic.name}</Text>
+      <Text style={styles.icAliasesText}>{[ic.dipPackageName, ic.smdPackageName].filter(Boolean).join(" / ")}</Text>
       {ic.aliases && ic.aliases.length > 0 && (
         <Text style={styles.icAliasesText} numberOfLines={1}>
           {language === 'hi' ? 'अन्य नाम:' : 'Search names:'} {ic.aliases.join(', ')}
@@ -202,6 +211,8 @@ interface IcDetailViewProps {
 }
 
 const IcDetailView = React.memo(function IcDetailView({ ic, language, onBack }: IcDetailViewProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const theme = getCategoryTheme(ic.category);
 
   return (
@@ -220,6 +231,7 @@ const IcDetailView = React.memo(function IcDetailView({ ic, language, onBack }: 
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.detailScrollContent}
       >
+        <BenchActions item={{ id: `ic:${ic.id}`, title: ic.name, route: `/tools/ic-guide?ic=${encodeURIComponent(ic.id)}` }} />
         {/* IC Summary Card */}
         <View style={styles.icTitleCard}>
           <View style={styles.icTitleRow}>
@@ -245,7 +257,7 @@ const IcDetailView = React.memo(function IcDetailView({ ic, language, onBack }: 
           <Text style={styles.cardSectionBody}>{language === 'hi' ? ic.pinoutNoteHi : ic.pinoutNoteEn}</Text>
           {ic.datasheetUrl && <Pressable accessibilityRole="link" onPress={() => {
             void Linking.openURL(ic.datasheetUrl!).catch(() => Alert.alert(language === 'hi' ? 'डेटाशीट नहीं खुल सकी' : 'Could not open datasheet', ic.datasheetUrl));
-          }}><Text style={{ color: '#2563EB', fontWeight: '700', paddingVertical: 12 }}>{language === 'hi' ? 'निर्माता की डेटाशीट खोलें' : 'Open manufacturer datasheet'}</Text></Pressable>}
+          }}><Text style={{ color: colors.readout, fontWeight: '700', paddingVertical: 12 }}>{language === 'hi' ? 'निर्माता की डेटाशीट खोलें' : 'Open manufacturer datasheet'}</Text></Pressable>}
         </View>
         {/* Combined DIP & SMD Visual Package Graphic */}
         <CombinedIcGraphic ic={ic} />
@@ -304,7 +316,7 @@ const IcDetailView = React.memo(function IcDetailView({ ic, language, onBack }: 
             {/* Pin Rows */}
             {ic.pins.map((p, idx) => {
               const isEven = idx % 2 === 0;
-              const typeColor = PIN_TYPE_COLORS[p.type] || '#6B7280';
+              const typeColor = colors.mode === 'dark' ? colors.readout : PIN_TYPE_COLORS[p.type];
               const typeLabel = language === 'hi' ? (PIN_TYPE_NAMES_HI[p.type] ?? p.type) : p.type;
 
               return (
@@ -371,12 +383,17 @@ const IcDetailView = React.memo(function IcDetailView({ ic, language, onBack }: 
 // ─── Main Screen Component ───────────────────────────────────────────────────
 
 export default function IcGuideScreen() {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const { language } = useLanguage();
   const { safeBack } = useSafeNavigate();
 
+  const { ic: linkedIc } = useLocalSearchParams<{ ic?: string }>();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
-  const [selectedIcId, setSelectedIcId] = useState<string | null>(null);
+  const [selectedIcId, setSelectedIcId] = useState<string | null>(typeof linkedIc === 'string' ? linkedIc : null);
+
+  useEffect(() => { if (typeof linkedIc === 'string') setSelectedIcId(linkedIc); }, [linkedIc]);
 
   // Hardware Back button handling: return to list view if detail view is open
   useEffect(() => {
@@ -439,12 +456,12 @@ export default function IcGuideScreen() {
             value={searchQuery}
             onChangeText={setSearchQuery}
             placeholder={tr(language, 'searchIc')}
-            placeholderTextColor="#9CA3AF"
+            placeholderTextColor={colors.textFaint}
             style={styles.searchInput}
           />
           {searchQuery.length > 0 && (
             <Pressable onPress={() => setSearchQuery('')} style={{ padding: 4 }}>
-              <Text style={{ color: '#9CA3AF', fontWeight: '800' }}>✕</Text>
+              <Text style={{ color: colors.textFaint, fontWeight: '800' }}>✕</Text>
             </Pressable>
           )}
         </View>
@@ -488,7 +505,7 @@ export default function IcGuideScreen() {
         </View>
       </View>
     ),
-    [searchQuery, selectedCategory, language, filteredIcs.length]
+    [searchQuery, selectedCategory, language, filteredIcs.length, styles, colors]
   );
 
   const ListEmpty = useMemo(
@@ -500,12 +517,12 @@ export default function IcGuideScreen() {
         </Text>
       </View>
     ),
-    [language]
+    [language, styles]
   );
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="dark-content" backgroundColor="#F7F8FA" />
+      <StatusBar barStyle={colors.mode === 'dark' ? 'light-content' : 'dark-content'} backgroundColor={colors.surface} />
 
       {activeIc ? (
         <IcDetailView ic={activeIc} language={language} onBack={handleBackToList} />
@@ -542,10 +559,10 @@ export default function IcGuideScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: Palette) => StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#F7F8FA',
+    backgroundColor: colors.surface,
   },
 
   flatListContent: {
@@ -568,12 +585,12 @@ const styles = StyleSheet.create({
   searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.panel,
     borderRadius: 14,
     paddingHorizontal: 14,
     height: 48,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: colors.rule,
     marginBottom: 10,
   },
 
@@ -585,7 +602,7 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     fontSize: 14,
-    color: '#111827',
+    color: colors.text,
   },
 
   catScroll: {
@@ -597,24 +614,24 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 7,
     borderRadius: 10,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.panel,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: colors.rule,
   },
 
   catPillSelected: {
-    backgroundColor: '#2563EB',
-    borderColor: '#2563EB',
+    backgroundColor: colors.signal,
+    borderColor: colors.signal,
   },
 
   catPillText: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#4B5563',
+    color: colors.textDim,
   },
 
   catPillTextSelected: {
-    color: '#FFFFFF',
+    color: colors.signalInk,
     fontWeight: '800',
   },
 
@@ -629,7 +646,7 @@ const styles = StyleSheet.create({
   countBadgeText: {
     fontSize: 12,
     fontWeight: '800',
-    color: '#6B7280',
+    color: colors.textDim,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
@@ -637,11 +654,11 @@ const styles = StyleSheet.create({
   /* IC LIST CARDS */
 
   icCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.panel,
     borderRadius: 14,
     padding: 11,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: colors.rule,
     shadowColor: '#000',
     shadowOpacity: 0.02,
     shadowRadius: 4,
@@ -650,8 +667,8 @@ const styles = StyleSheet.create({
   },
 
   icCardPressed: {
-    borderColor: '#2563EB',
-    backgroundColor: '#F8FAFC',
+    borderColor: colors.signal,
+    backgroundColor: colors.panelRaised,
     transform: [{ scale: 0.99 }],
   },
 
@@ -682,7 +699,7 @@ const styles = StyleSheet.create({
   },
 
   icPinsBadge: {
-    backgroundColor: '#F1F5F9',
+    backgroundColor: colors.panelSunken,
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 5,
@@ -691,19 +708,19 @@ const styles = StyleSheet.create({
   icPinsBadgeText: {
     fontSize: 10,
     fontWeight: '700',
-    color: '#475569',
+    color: colors.textDim,
   },
 
   icTitleText: {
     fontSize: 15,
     fontWeight: '900',
-    color: '#0F172A',
+    color: colors.text,
     marginBottom: 1,
   },
 
   icAliasesText: {
     fontSize: 11,
-    color: '#64748B',
+    color: colors.textDim,
     marginBottom: 4,
     fontWeight: '600',
   },
@@ -711,23 +728,23 @@ const styles = StyleSheet.create({
   icDescText: {
     fontSize: 12,
     lineHeight: 17,
-    color: '#334155',
+    color: colors.textDim,
     marginBottom: 6,
   },
 
   icAppSnippet: {
-    backgroundColor: '#F8FAFC',
+    backgroundColor: colors.panelRaised,
     borderRadius: 6,
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderLeftWidth: 3,
-    borderLeftColor: '#2563EB',
+    borderLeftColor: colors.signal,
     marginBottom: 8,
   },
 
   icAppSnippetText: {
     fontSize: 11,
-    color: '#1E40AF',
+    color: colors.readout,
     fontWeight: '600',
   },
 
@@ -736,24 +753,24 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     alignItems: 'center',
     borderTopWidth: 1,
-    borderTopColor: '#F1F5F9',
+    borderTopColor: colors.panelSunken,
     paddingTop: 6,
   },
 
   icCardFooterAction: {
     fontSize: 12,
     fontWeight: '800',
-    color: '#2563EB',
+    color: colors.signal,
   },
 
   /* DETAIL VIEW CONTAINER */
 
   icTitleCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.panel,
     borderRadius: 20,
     padding: 16,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: colors.rule,
     marginBottom: 14,
   },
 
@@ -768,7 +785,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 12,
-    backgroundColor: '#EFF6FF',
+    backgroundColor: colors.readoutSoft,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -780,24 +797,24 @@ const styles = StyleSheet.create({
   activeIcName: {
     fontSize: 20,
     fontWeight: '900',
-    color: '#111827',
+    color: colors.text,
   },
 
   activeIcAliases: {
     fontSize: 11,
-    color: '#6B7280',
+    color: colors.textDim,
     marginTop: 2,
   },
 
   icSummaryText: {
     fontSize: 13,
     lineHeight: 20,
-    color: '#374151',
-    backgroundColor: '#F8FAFC',
+    color: colors.textDim,
+    backgroundColor: colors.panelRaised,
     padding: 12,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: colors.rule,
   },
 
   /* COMBINED GRAPHIC CARD */
@@ -1080,49 +1097,49 @@ const styles = StyleSheet.create({
   /* SHARED DETAIL CARD */
 
   card: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.panel,
     borderRadius: 18,
     padding: 16,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: colors.rule,
     marginBottom: 14,
   },
 
   cardSectionHeading: {
     fontSize: 15,
     fontWeight: '900',
-    color: '#111827',
+    color: colors.text,
     marginBottom: 8,
   },
 
   cardSectionBody: {
     fontSize: 13,
     lineHeight: 20,
-    color: '#374151',
+    color: colors.textDim,
   },
 
   /* TESTING CARD */
 
   testingCard: {
-    backgroundColor: '#F0FDF4',
+    backgroundColor: colors.verifiedSoft,
     borderRadius: 18,
     padding: 16,
     borderWidth: 1,
-    borderColor: '#BBF7D0',
+    borderColor: colors.rule,
     marginBottom: 14,
   },
 
   testingCardTitle: {
     fontSize: 15,
     fontWeight: '900',
-    color: '#15803D',
+    color: colors.verified,
     marginBottom: 6,
   },
 
   testingCardText: {
     fontSize: 13,
     lineHeight: 20,
-    color: '#14532D',
+    color: colors.verified,
   },
 
   /* PIN TABLE */
@@ -1130,13 +1147,13 @@ const styles = StyleSheet.create({
   pinTable: {
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: colors.rule,
     overflow: 'hidden',
     marginTop: 8,
   },
 
   pinTableHeader: {
-    backgroundColor: '#1E3A5F',
+    backgroundColor: colors.signal,
   },
 
   pinTableRow: {
@@ -1147,11 +1164,11 @@ const styles = StyleSheet.create({
   },
 
   pinTableRowAlt: {
-    backgroundColor: '#F8FAFC',
+    backgroundColor: colors.panelRaised,
   },
 
   pinTableCellHeader: {
-    color: '#FFFFFF',
+    color: colors.signalInk,
     fontSize: 11,
     fontWeight: '800',
   },
@@ -1160,13 +1177,13 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: '#2563EB',
+    backgroundColor: colors.signal,
     alignItems: 'center',
     justifyContent: 'center',
   },
 
   pinBadgeText: {
-    color: '#FFFFFF',
+    color: colors.signalInk,
     fontSize: 11,
     fontWeight: '900',
   },
@@ -1174,7 +1191,7 @@ const styles = StyleSheet.create({
   pinNameBold: {
     fontSize: 12,
     fontWeight: '900',
-    color: '#111827',
+    color: colors.text,
   },
 
   pinTypePill: {
@@ -1193,11 +1210,11 @@ const styles = StyleSheet.create({
   pinDescText: {
     fontSize: 12,
     lineHeight: 17,
-    color: '#4B5563',
+    color: colors.textDim,
   },
 
   bottomReturnBtn: {
-    backgroundColor: '#2563EB',
+    backgroundColor: colors.signal,
     borderRadius: 14,
     paddingVertical: 14,
     alignItems: 'center',
@@ -1206,7 +1223,7 @@ const styles = StyleSheet.create({
   },
 
   bottomReturnBtnText: {
-    color: '#FFFFFF',
+    color: colors.signalInk,
     fontSize: 15,
     fontWeight: '800',
   },
@@ -1222,7 +1239,7 @@ const styles = StyleSheet.create({
   },
 
   noResultText: {
-    color: '#9CA3AF',
+    color: colors.textFaint,
     fontSize: 14,
     fontWeight: '700',
   },

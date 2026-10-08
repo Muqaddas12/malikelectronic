@@ -4,37 +4,42 @@
       "id": 1,
       "name": "Dead | Switch Not Working",
       "Used Pins": "1,20,26",
-      "link": "enc_v1$2VsmZHZ84RgFtbRM3nDK3F8KGVjpW32ZwzW4t6ccRTpVdJyG8FzZBfQTzuNMkSndccgKAUBZ8qpV6O4AsRjG-eRW84ogXGPHe79L5OiysgFj40CfxcDUuMmXDzIw",
+      "link": "enc_v1$oG4zgRrNA9VrVINSIldIVzLuOS0slMd0P9EJp6t24wKuD4b-GFUwKxeKwVWHFGKpw0pS_rLlGLqg2Ke3L3HRWuvhpbo5zKNAjP5fKGpWiM7Ux9czljqul6T5cc6P",
       "faultId": "dead-vcc"
     },
     {
       "id": 3,
       "name": "Battery Low | OverCharge | Not Charging | Low Back UP",
       "Used Pins": "4",
-      "link": "enc_v1$4W3Z4pl-Dp_AKU-ulawWFUpDs2AP544do7qe55qjLDGXvYloNY7WZoRG_-uSHA4b5RP5_9NnD2zEUPOkXQJmkEhoIgqshk3yGfR8xTYOyykPT4caUjDF3rP9NdiM",
+      "link": "enc_v1$zbiID5bCvtnsbzUccTbLrps6DE4cLExXF34eF1XFPUqDnEHakZFSwQ5b9WjPV8IJtUiICju32WbbvJbj2LStjA7TpZjS9MbvinoMoacchJKR31h6D44iApztlfdO",
       "faultId": "low-battery"
     },
     {
       "id": 4,
       "name": "Charging&OuptRelay Relay|Fan|Buzzer",
       "Used Pins": "23,6,22,Display ic Pin-1",
-      "link": "enc_v1$RY7BBVH_1ygZMkUsmHrCIUKJMKTZeHcHgBjRS7wgILDdPpTiCReWKl-X_8rCq0pi6hVr-ZPMYWm5AtF5g13aGKjHWU1LFqarVzSWxUjZ4pqK_6gFjm0CoU5kHq-Z",
+      "link": "enc_v1$TC-wV8dtj1MEwQiZabxMclCvsUmKS5tnTUNhq2hU5w-qLrep-s0AR4t5uQgn7gAmtvFXgn1eUwXooEwecZGfn13Ku84odRAu3NHeTWALPIVEwuha5nrXrsAknSsA",
       "faultId": "relay-fan-buzzer"
     },
     {
-      "id": 4,
+      "id": 6,
       "name": "Main FeedBack | Buzzer Sound On Mains Mode ",
       "Used Pins": "5",
-      "link": "enc_v1$TNlxsK_JxuPYK9rmHnmWdnKqrBfmAGTHriMUq4n81M6AvUwZ-oWVuPb2mI5yzG2gPgsKSgOAOjuEAuCzEtSkpBi42wBljTBIm653NSNgpyKainXmd6HZqgvsRkJr",
+      "link": "enc_v1$3p8rjuhqJV_ka7biIN1-gQ1M01E0ZzavRr61krQYi-_OoK6xor9UFuBqSk2TjdMgc65DnSU0n7qFIxSoWMn1OqsNC2SY5AEY6wM-WXRm2AOuDZr1DdXZJ6hdS-2I",
       "faultId": "main-feedback"
-    }
-  ],
-  "Luminous-Eco-Watt": [
+    },
+    {
+      "id": 5,
+      "name": "ChangeOver | Zero Cross Sense",
+      "Used Pins": "1,7",
+      "link": "enc_v1$n6A0poy59qtCJ9ODmJjHnqkFxf9x-ymk94UE5ozfWC9OzMUfYmCPCfiEJem-cSsMqgkkvRDkRg8HjzcW-EvzSJRyQJmJe_QEu4vlF5Ds7BVExp-LIW52Y9B5urmX",
+      "faultId": "changeover"
+    },
     {
       "id": 10,
       "name": "microcontroller",
-      "used Pins": "",
-      "link": "enc_v1$_Dras7EJxN9NkIZ_YhHIYSMpzgK-agjPbi9hO68pkR1oxTQLu5vA-uVK-EIlcQUfiVJ67yiU7lCJh50D38w-cuZ_UCiOguyRBoIE_EybYkZ0SX31a34dWhuEbTDi",
+      "Used Pins": "",
+      "link": "enc_v1$sF6GDjU31cGQ1aoa1I5s5hFXYAsM_FBs8-BZ6u1yxJqy3tmA8d9JUb2mIbM6eNvBtOQGjSJKCvYpKKLAAgZJVDlcXrMg4kH2l3KEAtzEgyJ7apb2b_siAskdonN_",
       "faultId": "microcontroller-pin-details"
     }
   ],
@@ -43,17 +48,54 @@
       "id": 1,
       "name": "Dead| Not Working ",
       "Used Pins": "1,20,19",
-      "link": "enc_v1$BQQIPlsdTu4iJPpq--scfZ_XSrROOwFg0xR6WFjLggZAEEJLkE9poSDv7xowVYLoQJ_UQeHd0ZDtCKV7r_uO-I4qZwqKadQ7Fx7EOjuznbQ3Lf4P8qwGwquX_7ON",
+      "link": "enc_v1$hCosd3FErm8xT6_HurmwC8eWOKkAgRV9CNvXupRS7UcQWwLJTdTrt3SP9OlrtP20lYpZJldOLrx6vfpZ79H-iz68EZPbgvtjnIehy4ADlNBmRJX5ovoAc3Wdat95",
       "faultId": "dead-vcc"
+    },
+    {
+      "id": 10,
+      "name": "microcontroller",
+      "Used Pins": "",
+      "link": "enc_v1$830xLe7YXh0VIDllZCBL4C9hQQ7NZ7_fVMyoxteFYFAcADp1Z-bimnLikutrnpTx5fRxxSgWoLLabpmWEaAL1JsVRtDQ4srsiDCCvjUPaqV6D9TVTfFXOE30Jzu2",
+      "faultId": "microcontroller-pin-details"
     }
   ],
   "Luminous-Shakti-Charge": [
     {
       "id": 10,
       "name": "microcontroller",
-      "usedPins": "",
-      "link": "enc_v1$jQGianHZVTDA86Yei2ynoLZmYqcNld3wasnUH2bhHRbOW6wnj4jpceGmvtjA9h3YKcIUsF__OvWY2VggXKLtfaKdtL6EBDQQmndwkJ2Iwyh51354hQu-VFLJ6X1p",
+      "Used Pins": "",
+      "link": "enc_v1$5w3G7pYQhmmuDK8rmcKn11ZvcxhoMWsW_OK3LpYWvqJTAOlPnzeSB_wdN1KB-dJLaZdWTBO8gl1k8Va3MyXmc7wuKecQiT4bAogJaNKLRRmWrLzVOHPDJ191dUJA",
       "faultId": "microcontroller-pin-details"
+    }
+  ],
+  "Luminous-Eco-watt-Neo": [
+    {
+      "id": 1,
+      "name": "Dead| Not Working ",
+      "used Pins": "2,3,11",
+      "link": "enc_v1$RRnw2iRd3T6Mh8QvUll4UG2cPxPaEu8xME0iwqhzxWOHTBXINzv1j1c9yzh-zc2XTTsBT9TK4nLJCkaB-4WUwbsX1JHw4CGC50Yfs-odvGu5MQ-ptXGOSLNK9I8Q",
+      "faultId": "dead-vcc"
+    },
+    {
+      "id": 2,
+      "name": "Switch | Buzzer | Fan",
+      "used Pins": "4,16,20",
+      "link": "enc_v1$K73E23GWCYDYOfFjv0Gcy4LUpvqGp9P6MA7AzfokUXtI_avIn0pHv6Apeg6W6jM_xYtlBwEKYA0jRJFNdLVpFY3q5VFVCF6ah_rN3gfTbLB6tQMA4wwOLSqrMSTQ",
+      "faultId": "switch-buzzer-fan"
+    },
+    {
+      "id": 3,
+      "name": "charging and output relay",
+      "used Pins": "18,19",
+      "link": "enc_v1$bpxfba6Oo5xa9xML7QHWHd80XaLUlPuHTKvlT6hNU6K8Q8aGOYTOA7nC5-VmOWzbIWJYE6aqDfswu-rjI38I0MUU0ZiMHuW2MnquklRjBjSYvkdXaP-phRXG5Mw6",
+      "faultId": "relay-fan-buzzer"
+    },
+    {
+      "id": 4,
+      "name": "Battery Low | OverCharge | Not Charging | Low Back UP",
+      "used Pins": "36",
+      "link": "enc_v1$k8d_Dxq3mu8Ky9dFc0w9rxOwfNUvJzEMLLCvOs8zKP-NnzyiwWrurYWBkETcyyYUasDf9HR5HN9iAjaSdKvwXL7a9LiuqHutFfk8fQJn7yaleWWirDKXxeZEOxgV",
+      "faultId": "low-battery"
     }
   ]
 }

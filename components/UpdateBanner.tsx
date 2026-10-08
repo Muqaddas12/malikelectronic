@@ -95,8 +95,8 @@ export default function UpdateBanner({ onPressViewAll, onDismiss }: Props) {
           numberOfLines={2}
         >
           {isHindi
-            ? `${newItemsCount} नए और ${updatedItemsCount} अपडेटेड डायग्राम उपलब्ध हैं। Eco Watt New, LB 675/875/1075 और Shakti Charge 1150 भी देखें।`
-            : `${newItemsCount} new and ${updatedItemsCount} updated diagrams available, including Eco Watt New, LB 675/875/1075 and Shakti Charge 1150.`}
+            ? `${newItemsCount} नए और ${updatedItemsCount} अपडेटेड डायग्राम उपलब्ध हैं। Eco Watt Neo, LB 675/875/1075 और Shakti Charge 1150 भी देखें।`
+            : `${newItemsCount} new and ${updatedItemsCount} updated diagrams available, including Eco Watt Neo, LB 675/875/1075 and Shakti Charge 1150.`}
         </Text>
 
         {/* Action Button */}

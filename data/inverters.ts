@@ -129,12 +129,27 @@ const configuredModelImages: Record<string, Inverter['image']> = {
   'luminous-shakti-charge': require('@/assets/inverters/luminous shakti charge.webp'),
 };
 
+// Use rated capacity, never a model number as an assumed VA rating.
+// Luminous catalogue, Shakti Charge+ 1150: 900 VA / 12 V.
+// https://www.nantech.in/wp-content/uploads/2022/01/Luminous-Inverter-and-Batteries1.pdf
+const configuredModelSpecs: Record<string, { capacity: string; batteryVoltage: string }> = {
+  // Model-family ratings supplied by the app owner.
+  'luminous-eco-watt': { capacity: '700–1050 VA', batteryVoltage: '12V' },
+  'luminous-lb': { capacity: '675–1075 VA', batteryVoltage: '12V' },
+  'luminous-shakti-charge': { capacity: '900 VA', batteryVoltage: '12V' },
+};
+
 // New config groups appear automatically, without inventing electrical ratings.
 export const inverters: Inverter[] = [
   ...existingInverters,
   ...diagramCatalog.filter(model => !existingInverters.some(item => item.id === model.id)).map(model => ({
     id: model.id, brand: model.brand, model: model.model,
-    capacity: '—', batteryVoltage: '—', type: 'Inverter', typeHi: 'इन्वर्टर',
+    capacity: configuredModelSpecs[model.id]?.capacity ?? '—',
+    batteryVoltage: configuredModelSpecs[model.id]?.batteryVoltage ?? '—',
+    type: 'Inverter', typeHi: 'इन्वर्टर',
     image: configuredModelImages[model.id] ?? null, pcbImage: null, faults: [],
   })),
-].map(model => ({ ...model, faults: getFaultsForInverter(model.id).map(fault => fault.id) }));
+].map(model => {
+  const faults = getFaultsForInverter(model.id);
+  return { ...model, faults: faults.map(fault => fault.id), newDiagramsCount: faults.filter(fault => fault.isNew).length };
+});

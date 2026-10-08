@@ -1,4 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useLanguage } from '@/context/LanguageContext';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
     ActivityIndicator,
     Animated,
@@ -6,6 +7,7 @@ import {
     Image,
     ImageSourcePropType,
     PanResponder,
+    Pressable,
     StyleSheet,
     Text,
     useWindowDimensions,
@@ -13,6 +15,7 @@ import {
 } from 'react-native';
 
 type Props = {
+  rotation?: number;
   source: ImageSourcePropType;
   baseWidth?: number;
   baseHeight?: number;
@@ -34,6 +37,7 @@ type Props = {
  */
 export default function InteractiveViewer({
   source,
+  rotation = 0,
   baseWidth: propWidth,
   baseHeight: propHeight,
   minScale = 1.0,
@@ -41,6 +45,9 @@ export default function InteractiveViewer({
   scaleValue,
   onScaleChange,
 }: Props) {
+  const { isHindi } = useLanguage();
+  const [retry, setRetry] = useState(0);
+  const dragOrigin = useRef({ x: 0, y: 0 });
   const { width: windowWidth, height: windowHeight } = useWindowDimensions();
   const [isLoading, setIsLoading] = useState(false);
   const [hasError, setHasError] = useState(false);
@@ -112,15 +119,18 @@ export default function InteractiveViewer({
     return Math.hypot(dx, dy);
   };
 
-  const panResponder = useRef(
+  const panResponder = useMemo(() =>
     PanResponder.create({
-      onStartShouldSetPanResponder: () => true,
-      onMoveShouldSetPanResponder: () => true,
+      onStartShouldSetPanResponder: () => !hasError,
+      onMoveShouldSetPanResponder: () => !hasError,
       onStartShouldSetPanResponderCapture: () => false,
       onMoveShouldSetPanResponderCapture: () => false,
 
       onPanResponderGrant: (evt) => {
         const touches = evt.nativeEvent.touches;
+        dragOrigin.current = { x: 0, y: 0 };
+        scale.stopAnimation();
+        pan.stopAnimation();
 
         // Double-tap zoom toggle (1.0x <-> 2.5x)
         const now = Date.now();
@@ -203,13 +213,14 @@ export default function InteractiveViewer({
           if (initialPinchDist.current !== null) {
             initialPinchDist.current = null;
             pinchStartPan.current = { ...currentPan.current };
+            dragOrigin.current = { x: gestureState.dx, y: gestureState.dy };
           }
 
           const maxPanX = Math.max(0, (baseWidth * (currentScale.current - 1)) / 2);
           const maxPanY = Math.max(0, (baseHeight * (currentScale.current - 1)) / 2);
 
-          let targetX = pinchStartPan.current.x + gestureState.dx;
-          let targetY = pinchStartPan.current.y + gestureState.dy;
+          let targetX = pinchStartPan.current.x + gestureState.dx - dragOrigin.current.x;
+          let targetY = pinchStartPan.current.y + gestureState.dy - dragOrigin.current.y;
 
           // Strict boundary clamping: diagram never pulls inside screen to expose black gutters
           targetX = Math.min(Math.max(targetX, -maxPanX), maxPanX);
@@ -249,8 +260,15 @@ export default function InteractiveViewer({
       onPanResponderTerminate: () => {
         initialPinchDist.current = null;
       },
-    })
-  ).current;
+    }),
+    [baseWidth, baseHeight, minScale, maxScale, onScaleChange, pan, scale, hasError],
+  );
+
+  useEffect(() => {
+    currentPan.current = { x: 0, y: 0 };
+    pan.setValue({ x: 0, y: 0 });
+    initialPinchDist.current = null;
+  }, [baseWidth, baseHeight, pan]);
 
   return (
     <View style={styles.container} {...panResponder.panHandlers}>
@@ -267,10 +285,12 @@ export default function InteractiveViewer({
         ]}
       >
         <Image
+          key={retry}
           source={source}
           style={{
-            width: baseWidth,
-            height: baseHeight,
+            width: rotation % 180 ? baseHeight : baseWidth,
+            height: rotation % 180 ? baseWidth : baseHeight,
+            transform: [{ rotate: `${rotation}deg` }],
           }}
           resizeMode="contain"
           onLoadStart={() => {
@@ -288,16 +308,16 @@ export default function InteractiveViewer({
             <ActivityIndicator size="large" color="#38BDF8" />
           </View>
         )}
-        {hasError && (
-          <View style={styles.errorContainer}>
-            <Text style={styles.errorIcon}>⚠️</Text>
-            <Text style={styles.errorTitle}>Diagram Not Accessible</Text>
-            <Text style={styles.errorSubtitle}>
-              Google Drive file access restricted. Please set file sharing to "Anyone with the link can view".
-            </Text>
-          </View>
-        )}
       </Animated.View>
+      {hasError && (
+        <View style={[styles.errorContainer, StyleSheet.absoluteFillObject]}>
+          <Text style={styles.errorTitle}>{isHindi ? 'डायग्राम लोड नहीं हुआ' : 'Could not load diagram'}</Text>
+          <Text style={styles.errorSubtitle}>{isHindi ? 'इंटरनेट जाँचें और फिर कोशिश करें। फ़ाइल उपलब्ध नहीं हो सकती या अनुमति की ज़रूरत हो सकती है।' : 'Check your connection and try again. The file may be unavailable or require access permission.'}</Text>
+          <Pressable accessibilityRole="button" onPress={() => { setHasError(false); setRetry(n => n + 1); }} style={{ padding: 16 }}>
+            <Text style={{ color: '#38BDF8', fontWeight: '700' }}>{isHindi ? 'फिर कोशिश करें' : 'Retry'}</Text>
+          </Pressable>
+        </View>
+      )}
     </View>
   );
 }

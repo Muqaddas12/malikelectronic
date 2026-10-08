@@ -1,4 +1,7 @@
-import React, { useState } from 'react';
+import CalculationActions from '@/components/CalculationActions';
+import { useTheme } from '@/context/ThemeContext';
+import { Palette } from '@/constants/theme';
+import React, { useMemo, useState } from 'react';
 import {
   Pressable,
   ScrollView,
@@ -12,23 +15,25 @@ import { useLanguage } from '@/context/LanguageContext';
 import { tr } from '@/data/translations';
 import { decodeSmdResistor } from '@/utils/resistorCalculators';
 
-// Popular SMD codes found on Luminous, Microtek, and Livguard inverter PCBs
+// Generic marking examples; no specific board has been verified.
 const POPULAR_SMD = [
-  { code: '1001', label: '1kΩ (R126, R35, R46)' },
-  { code: '1002', label: '10kΩ (R56 Sensing)' },
-  { code: '1502', label: '15kΩ (R27 Battery Low)' },
-  { code: '2201', label: '2.2kΩ (R78, R89 Relay)' },
-  { code: '3301', label: '3.3kΩ (R28 Divider)' },
-  { code: '4701', label: '4.7kΩ (R80 Buzzer)' },
-  { code: '5101', label: '5.1kΩ (R1, R11 Heat Sensor)' },
-  { code: '5601', label: '5.6kΩ (R26 Op-Amp)' },
-  { code: '5600', label: '560Ω (R45-R52 LEDs)' },
-  { code: '8200', label: '820Ω (R9 Reference)' },
-  { code: '4R7', label: '4.7Ω (Gate Drive)' },
-  { code: '01C', label: '10kΩ (EIA-96 1%)' },
+  { code: '1001', label: '1kΩ' },
+  { code: '1002', label: '10kΩ' },
+  { code: '1502', label: '15kΩ' },
+  { code: '2201', label: '2.2kΩ' },
+  { code: '3301', label: '3.3kΩ' },
+  { code: '4701', label: '4.7kΩ' },
+  { code: '5101', label: '5.1kΩ' },
+  { code: '5601', label: '5.6kΩ' },
+  { code: '5600', label: '560Ω' },
+  { code: '8200', label: '820Ω' },
+  { code: '4R7', label: '4.7Ω' },
+  { code: '01C', label: '10kΩ' },
 ];
 
 export default function SmdCalculator() {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const { language } = useLanguage();
   const [smdInput, setSmdInput] = useState('1001');
   const smdResult = decodeSmdResistor(smdInput);
@@ -39,6 +44,7 @@ export default function SmdCalculator() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.content}
       >
+        <Text style={{ color: colors.textDim, fontSize: 12, marginBottom: 8 }}>{language === 'hi' ? 'सामान्य उदाहरण • PCB मॉडल की पुष्टि नहीं' : 'Generic examples • PCB model not verified'}</Text>
         {/* Input & Simulation Card */}
         <View style={styles.card}>
           <Text style={styles.cardLabel}>
@@ -50,7 +56,7 @@ export default function SmdCalculator() {
               value={smdInput}
               onChangeText={(val) => setSmdInput(val.toUpperCase())}
               placeholder={tr(language, 'smdPlaceholder')}
-              placeholderTextColor="#9CA3AF"
+              placeholderTextColor={colors.textFaint}
               style={styles.textInput}
               autoCapitalize="characters"
               maxLength={6}
@@ -83,7 +89,8 @@ export default function SmdCalculator() {
               <Text style={styles.resultLabel}>
                 {tr(language, 'calculatedResistance')}
               </Text>
-              <Text style={styles.resultValue}>{smdResult.formatted}</Text>
+              <Text style={styles.resultValue}>{smdResult.formatted} <Text style={{ fontSize: 16 }}>{smdResult.tolerance}</Text></Text>
+              <CalculationActions value={`SMD ${smdInput} → ${smdResult.formatted} ${smdResult.tolerance}`} />
 
               <View style={styles.metaGrid}>
                 <View style={styles.metaItem}>
@@ -147,7 +154,7 @@ export default function SmdCalculator() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: Palette) => StyleSheet.create({
   content: {
     paddingHorizontal: 18,
     paddingTop: 6,
@@ -155,12 +162,12 @@ const styles = StyleSheet.create({
   },
 
   card: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.panel,
     borderRadius: 20,
     padding: 18,
     marginBottom: 14,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: colors.rule,
     shadowColor: '#000',
     shadowOpacity: 0.04,
     shadowRadius: 6,
@@ -170,14 +177,14 @@ const styles = StyleSheet.create({
   cardLabel: {
     fontSize: 14,
     fontWeight: '800',
-    color: '#374151',
+    color: colors.textDim,
     marginBottom: 10,
   },
 
   cardTitle: {
     fontSize: 15,
     fontWeight: '900',
-    color: '#111827',
+    color: colors.text,
     marginBottom: 12,
   },
 
@@ -185,9 +192,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: '#2563EB',
+    borderColor: colors.signal,
     borderRadius: 14,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: colors.panelRaised,
     paddingHorizontal: 14,
   },
 
@@ -196,7 +203,7 @@ const styles = StyleSheet.create({
     height: 52,
     fontSize: 22,
     fontWeight: '900',
-    color: '#111827',
+    color: colors.text,
     letterSpacing: 2,
   },
 
@@ -206,7 +213,7 @@ const styles = StyleSheet.create({
 
   clearBtnText: {
     fontSize: 16,
-    color: '#9CA3AF',
+    color: colors.textFaint,
     fontWeight: '800',
   },
 
@@ -264,18 +271,18 @@ const styles = StyleSheet.create({
   /* RESULT BOX */
 
   resultBox: {
-    backgroundColor: '#EFF6FF',
+    backgroundColor: colors.readoutSoft,
     borderRadius: 16,
     padding: 16,
     borderWidth: 1,
-    borderColor: '#BFDBFE',
+    borderColor: colors.rule,
     alignItems: 'center',
   },
 
   resultLabel: {
     fontSize: 12,
     fontWeight: '800',
-    color: '#2563EB',
+    color: colors.signal,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
@@ -283,7 +290,7 @@ const styles = StyleSheet.create({
   resultValue: {
     fontSize: 26,
     fontWeight: '900',
-    color: '#1E3A8A',
+    color: colors.readout,
     marginVertical: 6,
     textAlign: 'center',
   },
@@ -294,7 +301,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
     paddingTop: 10,
     borderTopWidth: 1,
-    borderTopColor: '#DBEAFE',
+    borderTopColor: colors.rule,
     justifyContent: 'space-between',
   },
 
@@ -305,28 +312,28 @@ const styles = StyleSheet.create({
 
   metaKey: {
     fontSize: 10,
-    color: '#6B7280',
+    color: colors.textDim,
     fontWeight: '700',
   },
 
   metaVal: {
     fontSize: 11,
     fontWeight: '800',
-    color: '#1E3A8A',
+    color: colors.readout,
     marginTop: 2,
     textAlign: 'center',
   },
 
   errorBox: {
-    backgroundColor: '#FEF2F2',
+    backgroundColor: colors.panelSunken,
     padding: 14,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#FECACA',
+    borderColor: colors.rule,
   },
 
   errorText: {
-    color: '#DC2626',
+    color: colors.severity.critical,
     fontSize: 13,
     fontWeight: '700',
     textAlign: 'center',
@@ -344,29 +351,29 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 10,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: colors.panelRaised,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: colors.rule,
   },
 
   quickChipActive: {
-    backgroundColor: '#EFF6FF',
-    borderColor: '#2563EB',
+    backgroundColor: colors.readoutSoft,
+    borderColor: colors.signal,
   },
 
   quickChipCode: {
     fontSize: 14,
     fontWeight: '900',
-    color: '#111827',
+    color: colors.text,
   },
 
   quickChipCodeActive: {
-    color: '#1D4ED8',
+    color: colors.readout,
   },
 
   quickChipLabel: {
     fontSize: 10,
-    color: '#6B7280',
+    color: colors.textDim,
     marginTop: 2,
   },
 });

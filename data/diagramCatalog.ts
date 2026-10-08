@@ -2,8 +2,8 @@ import luminous from '@/config/Luminous.json';
 import microtek from '@/config/Microtek.json';
 import sukam from '@/config/sukam.json';
 
-type DiagramRow = { id: number; faultId?: string; name: string; link: string; usedPins?: string; 'Used Pins'?: string; 'used Pins'?: string };
-export type CatalogDiagram = { faultId: string; title: string; link: string; usedPins: string };
+type DiagramRow = { pcbRevision?: string; source?: string; verifiedAt?: string; id: number; faultId?: string; name: string; link: string; isNew?: boolean; usedPins?: string; 'Used Pins'?: string; 'used Pins'?: string };
+export type CatalogDiagram = { pcbRevision?: string; source?: string; verifiedAt?: string; faultId: string; title: string; link: string; usedPins: string; isNew?: boolean };
 export type CatalogModel = { id: string; brand: string; model: string; diagrams: CatalogDiagram[] };
 
 const existingIds: Record<string, string> = {
@@ -16,10 +16,29 @@ const existingIds: Record<string, string> = {
 };
 const slug = (text: string) => text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 const modelNames: Record<string, string> = {
-  'Luminous-Eco-Watt': 'Eco Watt New',
+  'Luminous-Eco-Watt': 'Eco Watt Neo',
   'Luminous-LB': 'LB 675/875/1075',
   'Luminous-Shakti-Charge': 'Shakti Charge 1150',
 };
+
+export function parseDiagramRows(rows: unknown): CatalogDiagram[] {
+  if (!Array.isArray(rows)) return [];
+  const seen = new Set<string>();
+  return rows.flatMap((row: unknown) => {
+    if (!row || typeof row !== 'object') return [];
+    const item = row as Partial<DiagramRow>;
+    if (typeof item.name !== 'string' || !item.name.trim() || typeof item.link !== 'string' || !item.link.trim()) return [];
+    const explicitId = typeof item.faultId === 'string' ? item.faultId.trim() : '';
+    if (!explicitId && !Number.isSafeInteger(item.id)) return [];
+    const faultId = explicitId || (item.name.toLowerCase().includes('microcontroller') ? 'microcontroller-pin-details' : `${item.id}-${slug(item.name)}`);
+    if (seen.has(faultId)) return [];
+    seen.add(faultId);
+    const pins = item.usedPins ?? item['Used Pins'] ?? item['used Pins'];
+    return [{ pcbRevision: typeof item.pcbRevision === 'string' ? item.pcbRevision : undefined, source: typeof item.source === 'string' ? item.source : undefined, verifiedAt: typeof item.verifiedAt === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(item.verifiedAt) ? item.verifiedAt : undefined, faultId, title: item.name.trim(), link: item.link.trim(),
+      isNew: typeof item.isNew === 'boolean' ? item.isNew : undefined,
+      usedPins: typeof pins === 'string' ? pins : '' }];
+  });
+}
 
 // Every configured group becomes a model and every row becomes a visible sheet.
 // Explicit fault IDs keep links stable when rows are inserted or reordered.
@@ -31,12 +50,7 @@ export const diagramCatalog: CatalogModel[] = [
   id: existingIds[key] ?? slug(key),
   brand,
   model: modelNames[key] ?? key.replace(/^(Luminous|microtek|sukam)-/i, '').replace(/-/g, ' '),
-  diagrams: (rows as DiagramRow[]).map(row => ({
-    faultId: row.faultId ?? (row.name.toLowerCase().includes('microcontroller') ? 'microcontroller-pin-details' : `${row.id}-${slug(row.name)}`),
-    title: row.name.trim(),
-    link: row.link,
-    usedPins: row.usedPins ?? row['Used Pins'] ?? row['used Pins'] ?? '',
-  })),
+  diagrams: parseDiagramRows(rows),
 })));
 
 export function getConfiguredDiagrams(inverterId: string): CatalogDiagram[] {

@@ -1,4 +1,4 @@
-import { Href, router } from 'expo-router';
+import { Href, router, usePathname, useLocalSearchParams } from 'expo-router';
 import { useCallback, useRef } from 'react';
 
 /**
@@ -6,6 +6,8 @@ import { useCallback, useRef } from 'react';
  * Debounces navigation calls by ignoring subsequent presses within the cooldown period.
  */
 export function useSafeNavigate() {
+  const pathname = usePathname();
+  const { id } = useLocalSearchParams<{ id?: string }>();
   const isNavigating = useRef(false);
 
   const safePush = useCallback((href: Href, cooldownMs = 600) => {
@@ -24,11 +26,13 @@ export function useSafeNavigate() {
       return;
     }
     isNavigating.current = true;
-    router.back();
+    if (router.canGoBack()) router.back();
+    else if (pathname.startsWith('/inverter/fault/') && typeof id === 'string') router.replace({ pathname: '/inverter/[id]', params: { id } });
+    else router.replace(pathname.startsWith('/tools/') ? '/(tabs)/two' : '/(tabs)');
     setTimeout(() => {
       isNavigating.current = false;
     }, cooldownMs);
-  }, []);
+  }, [pathname, id]);
 
   return { safePush, safeBack };
 }

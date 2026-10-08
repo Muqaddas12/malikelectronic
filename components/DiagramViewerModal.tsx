@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import { downloadModel, useOffline } from '@/utils/offlineDiagrams';
+import { SavedItem, toggleFavorite, useBench } from '@/utils/benchStore';
+import React, { useEffect, useState } from 'react';
 import {
-    Dimensions,
+    Alert,
     ImageSourcePropType,
     Modal,
     Pressable,
@@ -14,9 +16,11 @@ import InteractiveViewer from '@/components/InteractiveViewer';
 import { useLanguage } from '@/context/LanguageContext';
 import { tr } from '@/data/translations';
 
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+
 
 type Props = {
+  modelId?: string;
+  item?: SavedItem;
   visible: boolean;
   source: ImageSourcePropType | undefined;
   title: string;
@@ -26,15 +30,24 @@ type Props = {
 
 export default function DiagramViewerModal({
   visible,
+  modelId,
+  item,
   source,
   title,
   subtitle,
   onClose,
 }: Props) {
+  const { favorites } = useBench();
+  const { busy, progress } = useOffline();
+  const [canvas, setCanvas] = useState({ width: 0, height: 0 });
   const { language } = useLanguage();
+  const [rotation, setRotation] = useState(0);
+  const [reset, setReset] = useState(0);
   const [currentScale, setCurrentScale] = useState(1.0);
 
-  if (!source) return null;
+  useEffect(() => { if (!visible) { setCurrentScale(1); setRotation(0); setReset(n => n + 1); } }, [visible]);
+
+  if (!visible || !source) return null;
 
   return (
     <Modal
@@ -76,14 +89,23 @@ export default function DiagramViewerModal({
           </View>
 
           {/* CANVAS WITH NATIVE HARDWARE PINCH-TO-ZOOM */}
-          <View style={styles.viewerCanvas}>
+          <View style={styles.viewerCanvas} onLayout={e => setCanvas(e.nativeEvent.layout)}>
             <InteractiveViewer
+              key={`${rotation}-${reset}`}
+              rotation={rotation}
+              baseWidth={canvas.width || undefined}
+              baseHeight={canvas.height || undefined}
               source={source}
               scaleValue={currentScale}
               onScaleChange={setCurrentScale}
             />
           </View>
 
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-evenly' }}>
+            {item && <Pressable accessibilityRole="button" onPress={() => { void toggleFavorite(item).catch(() => Alert.alert('Could not save')); }} style={{ minHeight: 48, padding: 12 }}><Text style={{ color: '#E2E8F0' }}>{favorites.some(v => v.id === item.id) ? '★' : '☆'} {language === 'hi' ? 'पसंदीदा' : 'Favorite'}</Text></Pressable>}
+            {modelId && <Pressable disabled={busy} accessibilityRole="button" onPress={() => { void downloadModel(modelId).then(r => Alert.alert(language === 'hi' ? 'डाउनलोड' : 'Download', `${r.total - r.failed}/${r.total}`)).catch(() => Alert.alert(language === 'hi' ? 'डाउनलोड नहीं हुआ' : 'Could not download')); }} style={{ minHeight: 48, padding: 12 }}><Text style={{ color: '#E2E8F0' }}>{busy ? progress : (language === 'hi' ? 'मॉडल डाउनलोड' : 'Download model')}</Text></Pressable>}
+          </View>
+          <Pressable accessibilityRole="button" onPress={() => { setRotation(r => (r + 90) % 360); setCurrentScale(1); }} style={{ minHeight: 48, alignItems: 'center', justifyContent: 'center' }}><Text style={{ color: '#E2E8F0' }}>{language === 'hi' ? '90° घुमाएँ' : 'Rotate 90°'}</Text></Pressable>
           {/* FLOATING ZOOM HUD CONTROLS */}
           <View style={styles.bottomHud}>
             <Pressable
@@ -109,7 +131,7 @@ export default function DiagramViewerModal({
             </Pressable>
 
             <Pressable
-              onPress={() => setCurrentScale(1.0)}
+              onPress={() => { setCurrentScale(1.0); setRotation(0); setReset(n => n + 1); }}
               style={styles.hudResetBtn}
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >

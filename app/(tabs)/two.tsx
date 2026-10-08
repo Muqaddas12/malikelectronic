@@ -1,3 +1,4 @@
+import { Href } from 'expo-router';
 import React, { memo } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -16,6 +17,7 @@ function ToolsListScreen() {
   const { safePush } = useSafeNavigate();
   const tools = [
     {
+      group: isHindi ? 'कैलकुलेटर' : 'Calculators',
       id: 'resistor',
       icon: 'calculator' as const,
       title: isHindi ? 'रेजिस्टेंस कैलकुलेटर' : 'Resistor Calculator',
@@ -25,7 +27,9 @@ function ToolsListScreen() {
       accent: colors.readout,
       background: colors.readoutSoft,
     },
+    { group: isHindi ? 'कैलकुलेटर' : 'Calculators', id: 'bench', icon: 'sliders' as const, title: isHindi ? 'बेंच कैलकुलेटर' : 'Bench calculators', description: isHindi ? 'मान से रंग, सीरीज / पैरेलल, ओम का नियम और कैपेसिटर।' : 'Reverse bands, series / parallel, Ohm’s law and capacitors.', detail: isHindi ? 'सेव किए परिणाम' : 'Saved calculations', route: '/tools/bench-calculators' as const, accent: colors.readout, background: colors.readoutSoft },
     {
+      group: isHindi ? 'कंपोनेंट' : 'Components',
       id: 'ic',
       icon: 'microchip' as const,
       title: tr(language, 'icGuideTitle'),
@@ -35,6 +39,8 @@ function ToolsListScreen() {
       accent: colors.signal,
       background: colors.signalSoft,
     },
+    { group: isHindi ? 'मरम्मत संदर्भ' : 'Repair references', id: 'library', icon: 'search' as const, title: isHindi ? 'खोज और लाइब्रेरी' : 'Search & library', description: isHindi ? 'सभी मॉडल, IC और खराबियाँ खोजें।' : 'Find models, ICs and symptoms across the app.', detail: isHindi ? 'पसंदीदा · हाल में खोले' : 'Favorites · Recently opened', route: '/tools/library' as const, accent: colors.signal, background: colors.signalSoft },
+    { group: isHindi ? 'मरम्मत संदर्भ' : 'Repair references', id: 'notes', icon: 'pencil' as const, title: isHindi ? 'मरम्मत नोट्स' : 'Repair notes', description: isHindi ? 'माप, कंपोनेंट और जॉब के परिणाम सेव करें।' : 'Save measurements, components and job outcomes.', detail: isHindi ? 'इस डिवाइस पर सेव' : 'Stored on this device', route: '/tools/repair-notes' as const, accent: colors.signal, background: colors.signalSoft },
   ];
 
   return (
@@ -44,13 +50,15 @@ function ToolsListScreen() {
         <Text style={[styles.intro, { color: colors.textDim, lineHeight: lineFor('small', isHindi) }]}>
           {isHindi ? 'कैलकुलेटर और कंपोनेंट गाइड' : 'Calculators & component reference'}
         </Text>
-        {tools.map(tool => (
+        {tools.map((tool, index) => (
+          <React.Fragment key={tool.id}>
+          {(index === 0 || tools[index - 1].group !== tool.group) && <Text style={{ color: colors.textDim, fontWeight: '700', marginTop: 8 }}>{tool.group}</Text>}
           <Pressable
             key={tool.id}
             accessibilityRole="button"
             accessibilityLabel={tool.title}
             accessibilityHint={tool.description}
-            onPress={() => safePush(tool.route)}
+            onPress={() => safePush(tool.route as Href)}
             android_ripple={{ color: colors.rule }}
             style={({ pressed }) => [styles.card, { backgroundColor: pressed ? colors.panelRaised : colors.panel, borderColor: pressed ? colors.ruleStrong : colors.rule }]}
           >
@@ -64,6 +72,7 @@ function ToolsListScreen() {
             </View>
             <FontAwesome name="angle-right" size={22} color={colors.textFaint} />
           </Pressable>
+          </React.Fragment>
         ))}
       </ScrollView>
     </SafeAreaView>
