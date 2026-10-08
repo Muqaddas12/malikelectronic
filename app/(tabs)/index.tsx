@@ -61,7 +61,7 @@ export default function TabOneScreen() {
       <AppHeader
         showBack={false}
         showMenu
-      />
+       />
 
       <FlatList
         data={filteredInverters}
