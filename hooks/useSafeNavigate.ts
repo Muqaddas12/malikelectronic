@@ -10,7 +10,7 @@ export function useSafeNavigate() {
   const { id } = useLocalSearchParams<{ id?: string }>();
   const isNavigating = useRef(false);
 
-  const safePush = useCallback((href: Href, cooldownMs = 600) => {
+  const safePush = useCallback((href: Href, cooldownMs = 300) => {
     if (isNavigating.current) {
       return;
     }
@@ -21,7 +21,7 @@ export function useSafeNavigate() {
     }, cooldownMs);
   }, []);
 
-  const safeBack = useCallback((cooldownMs = 500) => {
+  const safeBack = useCallback((cooldownMs = 300) => {
     if (isNavigating.current) {
       return;
     }

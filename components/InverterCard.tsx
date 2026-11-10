@@ -1,6 +1,7 @@
-import React, { useRef } from 'react';
+import React, { memo, useRef } from 'react';
 import {
   Animated,
+  Easing,
   Image,
   Platform,
   Pressable,
@@ -26,26 +27,26 @@ type Props = {
   onPress: () => void;
 };
 
-export default function InverterCard({ inverter, onPress }: Props) {
+function InverterCard({ inverter, onPress }: Props) {
   const { isHindi } = useLanguage();
   const { colors } = useTheme();
 
   const scaleAnim = useRef(new Animated.Value(1)).current;
 
   const handlePressIn = () => {
-    Animated.spring(scaleAnim, {
-      toValue: 0.975,
-      tension: 140,
-      friction: 10,
+    Animated.timing(scaleAnim, {
+      toValue: 0.98,
+      duration: 80,
+      easing: Easing.out(Easing.quad),
       useNativeDriver: true,
     }).start();
   };
 
   const handlePressOut = () => {
-    Animated.spring(scaleAnim, {
+    Animated.timing(scaleAnim, {
       toValue: 1,
-      tension: 140,
-      friction: 10,
+      duration: 120,
+      easing: Easing.out(Easing.quad),
       useNativeDriver: true,
     }).start();
   };
@@ -344,3 +345,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
 });
+
+export default memo(InverterCard);

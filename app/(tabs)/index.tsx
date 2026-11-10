@@ -1,5 +1,5 @@
-import React, { useMemo, useState } from 'react';
-import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import React, { useCallback, useMemo, useState } from 'react';
+import { FlatList, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import AppHeader from '@/components/AppHeader';
@@ -30,24 +30,37 @@ export default function TabOneScreen() {
 
   const filteredInverters = useMemo(() => {
     const query = search.trim().toLowerCase();
-
     if (!query) {
       return inverters;
     }
 
-    return inverters.filter((inverter) =>
-      [
-        inverter.brand,
-        inverter.model,
-        inverter.capacity,
-        inverter.type,
-        inverter.batteryVoltage,
-      ]
-        .join(' ')
-        .toLowerCase()
-        .includes(query),
-    );
+    return inverters.filter((inverter) => {
+      const fullText = `${inverter.brand} ${inverter.model} ${inverter.capacity} ${inverter.type} ${inverter.batteryVoltage}`.toLowerCase();
+      return fullText.includes(query);
+    });
   }, [search]);
+
+  const handleSelectInverter = useCallback(
+    (item: (typeof inverters)[0]) => {
+      safePush({
+        pathname: '/inverter/[id]',
+        params: { id: item.id },
+      });
+    },
+    [safePush],
+  );
+
+  const renderItem = useCallback(
+    ({ item }: { item: (typeof inverters)[0] }) => (
+      <InverterCard
+        inverter={item}
+        onPress={() => handleSelectInverter(item)}
+      />
+    ),
+    [handleSelectInverter],
+  );
+
+  const keyExtractor = useCallback((item: (typeof inverters)[0]) => item.id, []);
 
   const searching = search.trim().length > 0;
 
@@ -63,18 +76,12 @@ export default function TabOneScreen() {
 
       <FlatList
         data={filteredInverters}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <InverterCard
-            inverter={item}
-            onPress={() =>
-              safePush({
-                pathname: '/inverter/[id]',
-                params: { id: item.id },
-              })
-            }
-          />
-        )}
+        keyExtractor={keyExtractor}
+        renderItem={renderItem}
+        initialNumToRender={8}
+        maxToRenderPerBatch={8}
+        windowSize={5}
+        removeClippedSubviews={Platform.OS === 'android'}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"

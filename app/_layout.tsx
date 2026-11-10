@@ -51,25 +51,25 @@ function PowerUpSplash({ onFinished }: { onFinished: () => void }) {
     Animated.sequence([
       Animated.spring(core, {
         toValue: 1,
-        damping: 13,
-        mass: 0.6,
-        stiffness: 200,
+        damping: 14,
+        mass: 0.5,
+        stiffness: 260,
         useNativeDriver: true,
       }),
       Animated.timing(trace, {
         toValue: 1,
-        duration: 260,
+        duration: 120,
         useNativeDriver: true,
       }),
       Animated.timing(name, {
         toValue: 1,
-        duration: 220,
+        duration: 100,
         useNativeDriver: true,
       }),
-      Animated.delay(160),
+      Animated.delay(60),
       Animated.timing(screen, {
         toValue: 0,
-        duration: 240,
+        duration: 140,
         useNativeDriver: true,
       }),
     ]).start(onFinished);

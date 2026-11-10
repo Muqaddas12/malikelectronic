@@ -1,6 +1,7 @@
-import React, { useRef } from 'react';
+import React, { memo, useMemo, useRef } from 'react';
 import {
   Animated,
+  Easing,
   GestureResponderEvent,
   Platform,
   Pressable,
@@ -26,6 +27,7 @@ type Props = {
   onPress: () => void;
   inverterId?: string;
   modelName?: string;
+  isFavorite?: boolean;
 };
 
 export type MatchedIcon = {
@@ -172,40 +174,49 @@ export function getMatchingDiagramIcon(title: string, colors: any): MatchedIcon 
   return { name: 'file-text-o', color: colors.readout };
 }
 
-export default function FaultCard({
+function FaultCard({
   fault,
   onPress,
   inverterId,
   modelName,
+  isFavorite: isFavoriteProp,
 }: Props) {
   const { isHindi } = useLanguage();
   const { colors } = useTheme();
-  const { favorites } = useBench();
+  const bench = isFavoriteProp === undefined ? useBench() : null;
 
-  const iconMeta = getMatchingDiagramIcon(fault.title, colors);
+  const iconMeta = useMemo(
+    () => getMatchingDiagramIcon(fault.title, colors),
+    [fault.title, colors],
+  );
 
   const scaleAnim = useRef(new Animated.Value(1)).current;
 
   const handlePressIn = () => {
-    Animated.spring(scaleAnim, {
+    Animated.timing(scaleAnim, {
       toValue: 0.98,
-      tension: 140,
-      friction: 10,
+      duration: 80,
+      easing: Easing.out(Easing.quad),
       useNativeDriver: true,
     }).start();
   };
 
   const handlePressOut = () => {
-    Animated.spring(scaleAnim, {
+    Animated.timing(scaleAnim, {
       toValue: 1,
-      tension: 140,
-      friction: 10,
+      duration: 120,
+      easing: Easing.out(Easing.quad),
       useNativeDriver: true,
     }).start();
   };
 
   const itemId = inverterId ? `diagram:${inverterId}:${fault.id}` : '';
-  const isFavorite = itemId ? favorites.some((item) => item.id === itemId) : false;
+  const isFavorite =
+    isFavoriteProp !== undefined
+      ? isFavoriteProp
+      : itemId && bench
+      ? bench.favorites.some((item) => item.id === itemId)
+      : false;
 
   const handleToggleFavorite = (e: GestureResponderEvent) => {
     e.stopPropagation();
@@ -411,3 +422,5 @@ const styles = StyleSheet.create({
     marginLeft: 2,
   },
 });
+
+export default memo(FaultCard);

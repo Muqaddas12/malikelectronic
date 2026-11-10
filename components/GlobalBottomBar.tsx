@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import {
   Platform,
   Pressable,
@@ -15,7 +15,7 @@ import { useTheme } from '@/context/ThemeContext';
 import { tr } from '@/data/translations';
 import { useBench } from '@/utils/benchStore';
 
-export default function GlobalBottomBar() {
+function GlobalBottomBar() {
   const { language, isHindi } = useLanguage();
   const { colors } = useTheme();
   const { favorites } = useBench();
@@ -220,4 +220,6 @@ const styles = StyleSheet.create({
     fontWeight: weight.semi,
   },
 });
+
+export default memo(GlobalBottomBar);
 

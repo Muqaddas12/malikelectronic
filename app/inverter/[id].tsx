@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import {
     FlatList,
     Image,
@@ -34,6 +34,8 @@ import { inverters } from '@/data/inverters';
 import { getMicrocontrollerDoc } from '@/data/microcontroller';
 import { tr } from '@/data/translations';
 import { useSafeNavigate } from '@/hooks/useSafeNavigate';
+import { InverterFaultDetail } from '@/types/faultDetail';
+import { useBench } from '@/utils/benchStore';
 
 export default function InverterFaultsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -86,6 +88,35 @@ export default function InverterFaultsScreen() {
   }
 
   const brand = isHindi ? inverter.brandHi ?? inverter.brand : inverter.brand;
+  const modelName = useMemo(() => `${brand} ${inverter.model}`, [brand, inverter.model]);
+
+  const { favorites } = useBench();
+  const favoriteSet = useMemo(() => new Set(favorites.map((f) => f.id)), [favorites]);
+
+  const handleSelectFault = useCallback(
+    (faultId: string) => {
+      safePush({
+        pathname: '/inverter/fault/[faultId]',
+        params: { id: inverter.id, faultId },
+      });
+    },
+    [safePush, inverter.id],
+  );
+
+  const renderItem = useCallback(
+    ({ item }: { item: InverterFaultDetail }) => (
+      <FaultCard
+        fault={item}
+        inverterId={inverter.id}
+        modelName={modelName}
+        isFavorite={favoriteSet.has(`diagram:${inverter.id}:${item.id}`)}
+        onPress={() => handleSelectFault(item.id)}
+      />
+    ),
+    [inverter.id, modelName, favoriteSet, handleSelectFault],
+  );
+
+  const keyExtractor = useCallback((item: InverterFaultDetail) => item.id, []);
 
   return (
     <SafeAreaView
@@ -120,20 +151,12 @@ export default function InverterFaultsScreen() {
 
       <FlatList
         data={inverterFaults}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <FaultCard
-            fault={item}
-            inverterId={inverter.id}
-            modelName={`${brand} ${inverter.model}`}
-            onPress={() =>
-              safePush({
-                pathname: '/inverter/fault/[faultId]',
-                params: { id: inverter.id, faultId: item.id },
-              })
-            }
-          />
-        )}
+        keyExtractor={keyExtractor}
+        renderItem={renderItem}
+        initialNumToRender={10}
+        maxToRenderPerBatch={10}
+        windowSize={5}
+        removeClippedSubviews={Platform.OS === 'android'}
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
