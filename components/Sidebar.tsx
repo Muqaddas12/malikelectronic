@@ -203,7 +203,7 @@ export default function Sidebar({ visible, onClose }: Props) {
 
   if (!visible) return null;
 
-  const go = (path: '/(tabs)' | '/(tabs)/two') => {
+  const go = (path: '/(tabs)' | '/(tabs)/two' | '/favorites') => {
     onClose();
     safePush(path);
   };
@@ -286,6 +286,12 @@ export default function Sidebar({ visible, onClose }: Props) {
             title={tr(language, 'homepage')}
             detail={tr(language, 'modelsAndFaults')}
             onPress={() => go('/(tabs)')}
+          />
+
+          <NavRow
+            title={tr(language, 'tabFavorites')}
+            detail={isHindi ? 'सेव किए गए सर्किट डायग्राम' : 'Saved circuit diagrams'}
+            onPress={() => go('/favorites')}
           />
 
           <NavRow

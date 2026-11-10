@@ -166,6 +166,7 @@ export const t: Translations = {
 
     // Tab bar — short enough to fit under an icon
     tabInverters: 'Inverters',
+    tabFavorites: 'Favorites',
     tabTools: 'Tools',
   },
 
@@ -331,6 +332,7 @@ export const t: Translations = {
 
     // Tab bar — short enough to fit under an icon
     tabInverters: 'इन्वर्टर',
+    tabFavorites: 'पसंदीदा',
     tabTools: 'टूल्स',
   },
 };

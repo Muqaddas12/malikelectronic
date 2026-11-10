@@ -17,52 +17,15 @@ function TabBarIcon(props: {
 }
 
 export default function TabLayout() {
-  const { language, isHindi } = useLanguage();
-  const { colors } = useTheme();
-
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: colors.signal,
-        tabBarInactiveTintColor: colors.textFaint,
-
-        /* A hairline rule, not a shadow — the bar reads as part of the panel. */
-        tabBarStyle: {
-          backgroundColor: colors.panel,
-          borderTopWidth: StyleSheet.hairlineWidth,
-          borderTopColor: colors.rule,
-          height: Platform.OS === 'ios' ? 82 : 62,
-          paddingTop: space.sm,
-          paddingBottom: Platform.OS === 'ios' ? space.xxl : space.sm,
-          elevation: 0,
-        },
-
-        tabBarLabelStyle: {
-          fontSize: size.micro,
-          fontWeight: weight.semi,
-          /* Devanagari matras need the extra room above the baseline. */
-          marginTop: isHindi ? 3 : 1,
-        },
+        tabBarStyle: { display: 'none' },
       }}
     >
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: tr(language, 'tabInverters'),
-          tabBarIcon: ({ color }) => <TabBarIcon name="bolt" color={color} />,
-        }}
-      />
-
-      <Tabs.Screen
-        name="two"
-        options={{
-          title: tr(language, 'tabTools'),
-          tabBarIcon: ({ color }) => (
-            <TabBarIcon name="calculator" color={color} />
-          ),
-        }}
-      />
+      <Tabs.Screen name="index" />
+      <Tabs.Screen name="two" />
     </Tabs>
   );
 }

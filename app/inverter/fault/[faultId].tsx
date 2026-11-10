@@ -1,434 +1,23 @@
-import BenchActions from '@/components/BenchActions';
-import { offlineSource, useOffline } from '@/utils/offlineDiagrams';
-import { getConfiguredDiagrams } from '@/data/diagramCatalog';
 import React, { useState } from 'react';
-import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  Alert,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
+import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { useLocalSearchParams } from 'expo-router';
 
 import AppHeader from '@/components/AppHeader';
-import DiagramViewerModal from '@/components/DiagramViewerModal';
-import {
-    layout,
-    lineFor,
-    mono,
-    radius,
-    size,
-    space,
-    weight,
-} from '@/constants/theme';
+import InteractiveViewer from '@/components/InteractiveViewer';
+import { radius, size, space, weight } from '@/constants/theme';
 import { useLanguage } from '@/context/LanguageContext';
 import { useTheme } from '@/context/ThemeContext';
 import { getInverterFault } from '@/data/inverterfaults';
 import { tr } from '@/data/translations';
-import { ComponentDetail, InverterFaultDetail } from '@/types/faultDetail';
-
-const severityKeys: Record<string, string> = {
-  low: 'lowRisk',
-  medium: 'mediumRisk',
-  high: 'highRisk',
-  critical: 'criticalRisk',
-};
-
-/**
- * Every section on this screen is the same panel with the same header rule —
- * a datasheet, not a stack of differently-shaped cards. Only the note and the
- * diagnosis break the pattern, because they carry a different kind of weight.
- */
-function Card({
-  title,
-  lead,
-  children,
-}: {
-  title: string;
-  lead?: string;
-  children: React.ReactNode;
-}) {
-  const { colors } = useTheme();
-  const { isHindi } = useLanguage();
-
-  return (
-    <View
-      style={[
-        styles.card,
-        { backgroundColor: colors.panel, borderColor: colors.rule },
-      ]}
-    >
-      <Text
-        style={[
-          styles.cardTitle,
-          { color: colors.text, lineHeight: lineFor('sub', isHindi) },
-        ]}
-      >
-        {title}
-      </Text>
-
-      <View style={[styles.cardRule, { backgroundColor: colors.rule }]} />
-
-      {lead ? (
-        <Text
-          style={[
-            styles.lead,
-            { color: colors.textDim, lineHeight: lineFor('small', isHindi) },
-          ]}
-        >
-          {lead}
-        </Text>
-      ) : null}
-
-      {children}
-    </View>
-  );
-}
-
-function BulletSection({ title, items }: { title: string; items: string[] }) {
-  const { colors } = useTheme();
-  const { isHindi } = useLanguage();
-
-  if (!items || items.length === 0) return null;
-
-  return (
-    <Card title={title}>
-      <View style={styles.list}>
-        {items.map((item, i) => (
-          <View key={i} style={styles.listItem}>
-            {/* A dash, the way a spec sheet marks an entry. */}
-            <View
-              style={[styles.dash, { backgroundColor: colors.textFaint }]}
-            />
-
-            <Text
-              style={[
-                styles.listText,
-                {
-                  color: colors.textDim,
-                  lineHeight: lineFor('body', isHindi),
-                },
-              ]}
-            >
-              {item}
-            </Text>
-          </View>
-        ))}
-      </View>
-    </Card>
-  );
-}
-
-function TechnicalSection({
-  fault,
-  title,
-  compTitle,
-  funcTitle,
-  valTitle,
-}: {
-  fault: InverterFaultDetail;
-  title: string;
-  compTitle: string;
-  funcTitle: string;
-  valTitle: string;
-}) {
-  const { colors } = useTheme();
-  const { isHindi } = useLanguage();
-
-  const tech = fault.technicalExplanation;
-  if (!tech) return null;
-
-  return (
-    <Card title={tech.title || title} lead={tech.explanation}>
-      <View style={[styles.table, { borderColor: colors.rule }]}>
-        <View
-          style={[
-            styles.tableRow,
-            { backgroundColor: colors.panelSunken },
-          ]}
-        >
-          <Text style={[styles.headCell, { color: colors.textDim, flex: 1.2 }]}>
-            {compTitle}
-          </Text>
-          <Text style={[styles.headCell, { color: colors.textDim, flex: 2 }]}>
-            {funcTitle}
-          </Text>
-          <Text style={[styles.headCell, { color: colors.textDim, flex: 1 }]}>
-            {valTitle}
-          </Text>
-        </View>
-
-        {tech.components.map((comp: ComponentDetail, i: number) => (
-          <View
-            key={i}
-            style={[
-              styles.tableRow,
-              {
-                borderTopWidth: StyleSheet.hairlineWidth,
-                borderTopColor: colors.rule,
-              },
-            ]}
-          >
-            <Text
-              style={[styles.refCell, { color: colors.readout, flex: 1.2 }]}
-            >
-              {comp.component}
-            </Text>
-
-            <View style={styles.funcCell}>
-              <Text
-                style={[
-                  styles.bodyCell,
-                  {
-                    color: colors.textDim,
-                    lineHeight: lineFor('small', isHindi),
-                  },
-                ]}
-              >
-                {comp.function}
-              </Text>
-
-              {comp.important ? (
-                <Text
-                  style={[
-                    styles.warnCell,
-                    { color: colors.severity.high },
-                  ]}
-                >
-                  ⚠ {comp.important}
-                </Text>
-              ) : null}
-            </View>
-
-            <Text style={[styles.valueCell, { color: colors.text, flex: 1 }]}>
-              {comp.value ?? comp.value12V ?? comp.package ?? '—'}
-            </Text>
-          </View>
-        ))}
-      </View>
-    </Card>
-  );
-}
-
-function ResistorSection({
-  fault,
-  pcbTypeTitle,
-  valTitle,
-}: {
-  fault: InverterFaultDetail;
-  pcbTypeTitle: string;
-  valTitle: string;
-}) {
-  const { colors } = useTheme();
-  const { isHindi } = useLanguage();
-
-  const rv = fault.resistorValues;
-  if (!rv) return null;
-
-  return (
-    <Card title={rv.title} lead={rv.explanation}>
-      <View style={[styles.table, { borderColor: colors.rule }]}>
-        <View
-          style={[styles.tableRow, { backgroundColor: colors.panelSunken }]}
-        >
-          <Text style={[styles.headCell, { color: colors.textDim, flex: 1.3 }]}>
-            {pcbTypeTitle}
-          </Text>
-          <Text style={[styles.headCell, { color: colors.textDim, flex: 1 }]}>
-            {valTitle}
-          </Text>
-          <Text style={[styles.headCell, { color: colors.textDim, flex: 1 }]}>
-            {isHindi ? 'मार्किंग' : 'Marking'}
-          </Text>
-        </View>
-
-        {rv.values.map((v, i) => (
-          <View
-            key={i}
-            style={[
-              styles.tableRow,
-              {
-                borderTopWidth: StyleSheet.hairlineWidth,
-                borderTopColor: colors.rule,
-              },
-            ]}
-          >
-            <Text
-              style={[
-                styles.bodyCell,
-                {
-                  color: colors.textDim,
-                  flex: 1.3,
-                  lineHeight: lineFor('small', isHindi),
-                },
-              ]}
-            >
-              {v.pcb}
-            </Text>
-
-            <Text style={[styles.valueCell, { color: colors.readout, flex: 1 }]}>
-              {v.r24}
-            </Text>
-
-            <Text style={[styles.valueCell, { color: colors.text, flex: 1 }]}>
-              {v.marking}
-            </Text>
-          </View>
-        ))}
-      </View>
-
-      <View style={styles.reasons}>
-        {rv.values.map((v, i) => (
-          <View key={i} style={styles.listItem}>
-            <View
-              style={[styles.dash, { backgroundColor: colors.textFaint }]}
-            />
-
-            <Text
-              style={[
-                styles.listText,
-                {
-                  color: colors.textFaint,
-                  lineHeight: lineFor('small', isHindi),
-                  fontSize: size.small,
-                },
-              ]}
-            >
-              <Text style={{ color: colors.textDim, fontWeight: weight.semi }}>
-                {v.pcb}
-              </Text>
-              {`: ${v.reason}`}
-            </Text>
-          </View>
-        ))}
-      </View>
-    </Card>
-  );
-}
-
-/**
- * Causes are alternatives, not a sequence — so they get separators, not
- * numbers. Numbering them would imply a check order that does not exist.
- */
-function CausesSection({
-  fault,
-  title,
-}: {
-  fault: InverterFaultDetail;
-  title: string;
-}) {
-  const { colors } = useTheme();
-  const { isHindi } = useLanguage();
-
-  if (!fault.possibleCauses || fault.possibleCauses.length === 0) return null;
-
-  return (
-    <Card title={title}>
-      <View>
-        {fault.possibleCauses.map((item, i) => (
-          <View
-            key={i}
-            style={[
-              styles.cause,
-              i > 0 && {
-                borderTopWidth: StyleSheet.hairlineWidth,
-                borderTopColor: colors.rule,
-              },
-            ]}
-          >
-            <Text
-              style={[
-                styles.causeTitle,
-                { color: colors.text, lineHeight: lineFor('body', isHindi) },
-              ]}
-            >
-              {item.cause}
-            </Text>
-
-            <Text
-              style={[
-                styles.causeText,
-                {
-                  color: colors.textDim,
-                  lineHeight: lineFor('small', isHindi),
-                },
-              ]}
-            >
-              {item.explanation}
-            </Text>
-          </View>
-        ))}
-      </View>
-    </Card>
-  );
-}
-
-/** Repair steps are a real sequence, so here the numbering earns its place. */
-function RepairSection({
-  fault,
-  title,
-}: {
-  fault: InverterFaultDetail;
-  title: string;
-}) {
-  const { colors } = useTheme();
-  const { isHindi } = useLanguage();
-
-  if (!fault.repairProcedure || fault.repairProcedure.length === 0) return null;
-
-  return (
-    <Card title={title}>
-      <View>
-        {fault.repairProcedure.map((step, i) => (
-          <View
-            key={step.step}
-            style={[
-              styles.step,
-              i > 0 && {
-                borderTopWidth: StyleSheet.hairlineWidth,
-                borderTopColor: colors.rule,
-              },
-            ]}
-          >
-            <View
-              style={[
-                styles.stepMark,
-                {
-                  backgroundColor: colors.panelSunken,
-                  borderColor: colors.rule,
-                },
-              ]}
-            >
-              <Text style={[styles.stepNumber, { color: colors.signal }]}>
-                {step.step}
-              </Text>
-            </View>
-
-            <View style={styles.stepText}>
-              <Text
-                style={[
-                  styles.stepTitle,
-                  { color: colors.text, lineHeight: lineFor('body', isHindi) },
-                ]}
-              >
-                {step.title}
-              </Text>
-
-              <Text
-                style={[
-                  styles.stepBody,
-                  {
-                    color: colors.textDim,
-                    lineHeight: lineFor('small', isHindi),
-                  },
-                ]}
-              >
-                {step.explanation}
-              </Text>
-            </View>
-          </View>
-        ))}
-      </View>
-    </Card>
-  );
-}
+import { toggleFavorite, useBench } from '@/utils/benchStore';
 
 export default function FaultDetailScreen() {
   const { id, faultId } = useLocalSearchParams<{
@@ -438,9 +27,11 @@ export default function FaultDetailScreen() {
 
   const { language, isHindi } = useLanguage();
   const { colors } = useTheme();
-  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+  const { favorites } = useBench();
 
-  useOffline();
+  const [rotation, setRotation] = useState(0);
+  const [currentScale, setCurrentScale] = useState(1.0);
+
   const fault = getInverterFault(id, faultId, language);
 
   if (!fault) {
@@ -460,316 +51,142 @@ export default function FaultDetailScreen() {
     );
   }
 
-  const diagramSource = offlineSource(id, faultId, fault.diagramImage);
-  const metadata = getConfiguredDiagrams(id).find(row => row.faultId === faultId);
-  const severityColor =
-    colors.severity[fault.severity] ?? colors.severity.medium;
+  const itemId = `diagram:${id}:${faultId}`;
+  const isFavorite = favorites.some((v) => v.id === itemId);
 
-  const severityLabel = tr(
-    language,
-    severityKeys[fault.severity] ?? 'mediumRisk',
-  );
+  const handleToggleFavorite = () => {
+    void toggleFavorite({
+      id: itemId,
+      title: fault.title,
+      route: `/inverter/fault/${encodeURIComponent(faultId)}?id=${encodeURIComponent(id)}`,
+    }).catch(() => {
+      Alert.alert(isHindi ? 'सेव नहीं हुआ' : 'Could not save');
+    });
+  };
+
+  const handleRotate = () => {
+    setRotation((r) => (r + 90) % 360);
+    setCurrentScale(1.0);
+  };
+
+  const diagramSource = fault.diagramImage;
 
   return (
     <SafeAreaView
       edges={['top', 'left', 'right']}
-      style={[styles.safeArea, { backgroundColor: colors.surface }]}
+      style={[styles.safeArea, { backgroundColor: '#0B0F19' }]}
     >
-      <AppHeader showBack showMenu title={fault.title} subtitle={fault.subtitle} />
-
-      <DiagramViewerModal
-        visible={isImageModalOpen}
-        modelId={id}
-        item={{ id: `diagram:${id}:${faultId}`, title: fault.title, route: `/inverter/fault/${encodeURIComponent(faultId)}?id=${encodeURIComponent(id)}` }}
-        source={diagramSource}
+      <AppHeader
+        showBack
+        showMenu
         title={fault.title}
-        subtitle={tr(language, 'zoomHint')}
-        onClose={() => setIsImageModalOpen(false)}
+        subtitle={fault.usedPins ? `Pins: ${fault.usedPins}` : fault.subtitle}
       />
 
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.content}
-      >
-        <BenchActions item={{ id: `diagram:${id}:${faultId}`, title: fault.title, route: `/inverter/fault/${encodeURIComponent(faultId)}?id=${encodeURIComponent(id)}` }} />
-        <Text selectable style={{ color: colors.textDim }}>{isHindi ? 'PCB रिवीजन' : 'PCB revision'}: {metadata?.pcbRevision || (isHindi ? 'पुष्टि बाकी' : 'Unconfirmed')}{'\n'}{isHindi ? 'स्रोत' : 'Source'}: {metadata?.source || (isHindi ? 'ऐप डायग्राम संग्रह' : 'App diagram collection')}{'\n'}{isHindi ? 'पुष्टि की तारीख' : 'Verified date'}: {metadata?.verifiedAt || '—'}</Text>
-        {fault.isNew ? (
-          <View
-            style={[
-              styles.updateNotificationBar,
-              {
-                backgroundColor: 'rgba(16, 185, 129, 0.15)',
-                borderColor: colors.severity.low,
-              },
-            ]}
-          >
-            <Text
-              style={[
-                styles.updateNotificationText,
-                { color: colors.severity.low },
-              ]}
+      {diagramSource ? (
+        <View style={styles.viewerContainer}>
+          {/* FULL UNWRAPPED DIRECT VIEW OF THE DIAGRAM */}
+          <InteractiveViewer
+            key={rotation}
+            rotation={rotation}
+            source={diagramSource}
+            scaleValue={currentScale}
+            onScaleChange={setCurrentScale}
+          />
+
+          {/* FLOATING HUD CONTROLS */}
+          <View style={styles.bottomHud}>
+            {/* ROTATE BUTTON */}
+            <Pressable
+              onPress={handleRotate}
+              accessibilityRole="button"
+              accessibilityLabel={isHindi ? '90° घुमाएँ' : 'Rotate 90°'}
+              style={styles.hudBtn}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >
-              ✨ {isHindi ? 'नया सर्किट डायग्राम — हाल ही में जोड़ा गया' : 'NEWLY ADDED CIRCUIT DIAGRAM & PIN DETAILS'}
-            </Text>
-          </View>
-        ) : fault.isUpdated ? (
-          <View
-            style={[
-              styles.updateNotificationBar,
-              {
-                backgroundColor: 'rgba(59, 130, 246, 0.15)',
-                borderColor: colors.signal,
-              },
-            ]}
-          >
-            <Text
-              style={[
-                styles.updateNotificationText,
-                { color: colors.signal },
-              ]}
+              <FontAwesome name="repeat" size={13} color="#E2E8F0" style={{ marginRight: 5 }} />
+              <Text style={styles.hudBtnText}>
+                {isHindi ? '90° घुमाएँ' : '90°'}
+              </Text>
+            </Pressable>
+
+            {/* ZOOM IN */}
+            <Pressable
+              onPress={() => setCurrentScale((prev) => Math.min(prev + 0.5, 4.5))}
+              accessibilityRole="button"
+              accessibilityLabel="Zoom In"
+              style={styles.hudBtn}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >
-              🔄 {isHindi ? 'अपडेटेड सर्किट डायग्राम' : 'RECENTLY UPDATED CIRCUIT SCHEMATIC'}
-            </Text>
-          </View>
-        ) : null}
+              <FontAwesome name="plus" size={12} color="#E2E8F0" style={{ marginRight: 4 }} />
+              <Text style={styles.hudBtnText}>Zoom</Text>
+            </Pressable>
 
-        {/* Severity is the first thing a technician needs, before any procedure. */}
-        <View
-          style={[
-            styles.severityBar,
-            { backgroundColor: colors.panel, borderColor: colors.rule },
-          ]}
-        >
-          <View style={[styles.edge, { backgroundColor: severityColor }]} />
+            {/* ZOOM PERCENTAGE BADGE */}
+            <View style={styles.hudBadge}>
+              <Text style={styles.hudBadgeText}>
+                {Math.round(currentScale * 100)}%
+              </Text>
+            </View>
 
-          <View style={styles.severityInner}>
-            <Text style={styles.severityIcon}>{fault.icon}</Text>
+            {/* ZOOM OUT */}
+            <Pressable
+              onPress={() => setCurrentScale((prev) => Math.max(prev - 0.5, 1.0))}
+              accessibilityRole="button"
+              accessibilityLabel="Zoom Out"
+              style={styles.hudBtn}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <FontAwesome name="minus" size={12} color="#E2E8F0" style={{ marginRight: 4 }} />
+              <Text style={styles.hudBtnText}>Zoom</Text>
+            </Pressable>
 
-            <Text style={[styles.severityLabel, { color: severityColor }]}>
-              {severityLabel}
-            </Text>
+            {/* RESET BUTTON */}
+            {currentScale > 1.05 && (
+              <Pressable
+                onPress={() => setCurrentScale(1.0)}
+                accessibilityRole="button"
+                accessibilityLabel="Reset Zoom"
+                style={styles.hudBtn}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
+                <Text style={styles.hudBtnText}>⟲ Reset</Text>
+              </Pressable>
+            )}
+
+            {/* FAVORITE BUTTON */}
+            <Pressable
+              onPress={handleToggleFavorite}
+              accessibilityRole="button"
+              accessibilityLabel={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+              style={[
+                styles.hudBtn,
+                isFavorite && {
+                  backgroundColor: 'rgba(245, 158, 11, 0.25)',
+                  borderColor: colors.signal,
+                  borderWidth: 1,
+                },
+              ]}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <FontAwesome
+                name={isFavorite ? 'star' : 'star-o'}
+                size={14}
+                color={isFavorite ? colors.signal : '#E2E8F0'}
+              />
+            </Pressable>
           </View>
         </View>
-
-        {fault.usedPins ? (
-          <View
-            style={[
-              styles.pinsBar,
-              { backgroundColor: colors.panel, borderColor: colors.rule },
-            ]}
-          >
-            <Text style={[styles.pinsLabel, { color: colors.textDim }]}>
-              {isHindi ? 'IC पिन विवरण:' : 'Microcontroller Pins:'}
-            </Text>
-            <View
-              style={[
-                styles.pinsBadge,
-                {
-                  backgroundColor: colors.panelSunken,
-                  borderColor: colors.ruleStrong,
-                },
-              ]}
-            >
-              <Text style={[styles.pinsValue, { color: colors.readout }]}>
-                Pins: {fault.usedPins}
-              </Text>
-            </View>
-          </View>
-        ) : null}
-
-        <BulletSection
-          title={tr(language, 'symptoms')}
-          items={fault.symptoms}
-        />
-
-        <Card title={tr(language, 'pcbDiagram')}>
-          {fault.diagramImage ? (
-            <Pressable
-              onPress={() => setIsImageModalOpen(true)}
-              accessibilityRole="button"
-              accessibilityLabel={tr(language, 'viewSchematic')}
-              style={({ pressed }) => [
-                styles.diagramWell,
-                {
-                  backgroundColor: colors.panelSunken,
-                  borderColor: pressed ? colors.readout : colors.rule,
-                },
-              ]}
-            >
-              <Image
-                source={diagramSource}
-                style={styles.diagramImage}
-                resizeMode="contain"
-              />
-
-              <View
-                style={[
-                  styles.zoomHint,
-                  {
-                    backgroundColor: colors.panel,
-                    borderTopColor: colors.rule,
-                  },
-                ]}
-              >
-                <Text style={[styles.zoomHintText, { color: colors.readout }]}>
-                  {tr(language, 'tapToZoom')}
-                </Text>
-              </View>
-            </Pressable>
-          ) : (
-            <View
-              style={[
-                styles.noDiagram,
-                {
-                  borderColor: colors.rule,
-                  backgroundColor: colors.panelSunken,
-                },
-              ]}
-            >
-              <Text
-                style={[styles.noDiagramTitle, { color: colors.textDim }]}
-              >
-                {tr(language, 'noDiagramTitle')}
-              </Text>
-
-              <Text
-                style={[
-                  styles.noDiagramText,
-                  {
-                    color: colors.textFaint,
-                    lineHeight: lineFor('small', isHindi),
-                  },
-                ]}
-              >
-                {tr(language, 'noDiagramText')}
-              </Text>
-            </View>
-          )}
-        </Card>
-
-        <CausesSection
-          fault={fault}
-          title={tr(language, 'possibleCauses')}
-        />
-
-        <RepairSection
-          fault={fault}
-          title={tr(language, 'repairProcedure')}
-        />
-
-        {fault.circuitFlow ? (
-          <Card title={tr(language, 'circuitFlow')}>
-            <View
-              style={[
-                styles.flowWell,
-                {
-                  backgroundColor: colors.panelSunken,
-                  borderColor: colors.rule,
-                },
-              ]}
-            >
-              <Text style={[styles.flowText, { color: colors.readout }]}>
-                {fault.circuitFlow}
-              </Text>
-            </View>
-          </Card>
-        ) : null}
-
-        <BulletSection
-          title={tr(language, 'basicChecks')}
-          items={fault.basicChecks}
-        />
-
-        <ResistorSection
-          fault={fault}
-          pcbTypeTitle={tr(language, 'pcbType')}
-          valTitle={tr(language, 'value')}
-        />
-
-        <TechnicalSection
-          fault={fault}
-          title={tr(language, 'componentsTable')}
-          compTitle={tr(language, 'component')}
-          funcTitle={tr(language, 'function')}
-          valTitle={tr(language, 'value')}
-        />
-
-        {fault.importantNote ? (
-          <View
-            style={[
-              styles.flagCard,
-              {
-                backgroundColor: colors.panel,
-                borderColor: colors.rule,
-              },
-            ]}
-          >
-            <View
-              style={[
-                styles.edge,
-                { backgroundColor: colors.severity.high },
-              ]}
-            />
-
-            <View style={styles.flagInner}>
-              <Text
-                style={[
-                  styles.flagTitle,
-                  { color: colors.severity.high },
-                ]}
-              >
-                {tr(language, 'importantNote')}
-              </Text>
-
-              <Text
-                style={[
-                  styles.flagText,
-                  {
-                    color: colors.text,
-                    lineHeight: lineFor('small', isHindi),
-                  },
-                ]}
-              >
-                {fault.importantNote}
-              </Text>
-            </View>
-          </View>
-        ) : null}
-
-        {fault.diagnosis ? (
-          <View
-            style={[
-              styles.flagCard,
-              {
-                backgroundColor: colors.verifiedSoft,
-                borderColor: colors.rule,
-              },
-            ]}
-          >
-            <View
-              style={[styles.edge, { backgroundColor: colors.verified }]}
-            />
-
-            <View style={styles.flagInner}>
-              <Text style={[styles.flagTitle, { color: colors.verified }]}>
-                {tr(language, 'diagnosisSummary')}
-              </Text>
-
-              <Text
-                style={[
-                  styles.flagText,
-                  {
-                    color: colors.text,
-                    lineHeight: lineFor('small', isHindi),
-                  },
-                ]}
-              >
-                {fault.diagnosis}
-              </Text>
-            </View>
-          </View>
-        ) : null}
-      </ScrollView>
+      ) : (
+        <View style={styles.center}>
+          <Text style={[styles.notFound, { color: colors.textDim }]}>
+            {tr(language, 'noDiagramTitle')}
+          </Text>
+          <Text style={{ color: colors.textFaint, marginTop: 8 }}>
+            {tr(language, 'noDiagramText')}
+          </Text>
+        </View>
+      )}
     </SafeAreaView>
   );
 }
@@ -779,360 +196,6 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 
-  content: {
-    paddingHorizontal: layout.gutter,
-    paddingTop: space.md,
-    paddingBottom: space.xxxl + space.xl,
-    gap: space.md,
-  },
-
-  updateNotificationBar: {
-    paddingVertical: space.xs + 2,
-    paddingHorizontal: space.md,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-
-  updateNotificationText: {
-    fontSize: size.micro + 1,
-    fontWeight: weight.bold,
-    letterSpacing: 0.5,
-    textAlign: 'center',
-  },
-
-  /* SEVERITY BAR */
-
-  severityBar: {
-    flexDirection: 'row',
-    borderRadius: radius.md,
-    borderWidth: StyleSheet.hairlineWidth,
-    overflow: 'hidden',
-  },
-
-  edge: {
-    width: 3,
-  },
-
-  severityInner: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: space.sm,
-    paddingHorizontal: space.md,
-    paddingVertical: space.sm,
-  },
-
-  severityIcon: {
-    fontSize: 15,
-  },
-
-  severityLabel: {
-    fontSize: size.small,
-    fontWeight: weight.bold,
-  },
-
-  /* SHARED CARD */
-
-  card: {
-    borderRadius: radius.lg,
-    borderWidth: StyleSheet.hairlineWidth,
-    padding: space.lg,
-  },
-
-  cardTitle: {
-    fontSize: size.sub,
-    fontWeight: weight.bold,
-    letterSpacing: -0.2,
-  },
-
-  cardRule: {
-    height: StyleSheet.hairlineWidth,
-    marginTop: space.md,
-    marginBottom: space.md,
-  },
-
-  lead: {
-    fontSize: size.small,
-    marginBottom: space.md,
-  },
-
-  /* BULLET LIST */
-
-  list: {
-    gap: space.md,
-  },
-
-  listItem: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: space.md,
-  },
-
-  dash: {
-    width: 9,
-    height: 1.5,
-    marginTop: 10,
-    flexShrink: 0,
-  },
-
-  listText: {
-    flex: 1,
-    fontSize: size.body,
-  },
-
-  reasons: {
-    marginTop: space.md,
-    gap: space.sm,
-  },
-
-  /* TABLES */
-
-  table: {
-    borderRadius: radius.md,
-    borderWidth: StyleSheet.hairlineWidth,
-    overflow: 'hidden',
-  },
-
-  tableRow: {
-    flexDirection: 'row',
-    paddingHorizontal: space.md,
-    paddingVertical: space.sm + 1,
-    gap: space.sm,
-  },
-
-  headCell: {
-    fontSize: size.micro,
-    fontWeight: weight.semi,
-  },
-
-  bodyCell: {
-    fontSize: size.small,
-  },
-
-  funcCell: {
-    flex: 2,
-    paddingRight: space.xs,
-  },
-
-  /* Component references and measured values both read as data, so both are mono. */
-  refCell: {
-    fontFamily: mono,
-    fontSize: size.small,
-    fontWeight: weight.semi,
-  },
-
-  valueCell: {
-    fontFamily: mono,
-    fontSize: size.small,
-    fontWeight: weight.semi,
-  },
-
-  warnCell: {
-    fontSize: size.micro,
-    fontWeight: weight.medium,
-    marginTop: 3,
-  },
-
-  /* CAUSES */
-
-  cause: {
-    paddingVertical: space.md,
-  },
-
-  causeTitle: {
-    fontSize: size.body,
-    fontWeight: weight.semi,
-  },
-
-  causeText: {
-    fontSize: size.small,
-    marginTop: 2,
-  },
-
-  /* REPAIR STEPS */
-
-  step: {
-    flexDirection: 'row',
-    gap: space.md,
-    paddingVertical: space.md,
-  },
-
-  stepMark: {
-    width: 28,
-    height: 28,
-    borderRadius: radius.sm,
-    borderWidth: StyleSheet.hairlineWidth,
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexShrink: 0,
-    marginTop: 1,
-  },
-
-  stepNumber: {
-    fontFamily: mono,
-    fontSize: size.small,
-    fontWeight: weight.bold,
-  },
-
-  stepText: {
-    flex: 1,
-  },
-
-  stepTitle: {
-    fontSize: size.body,
-    fontWeight: weight.semi,
-  },
-
-  stepBody: {
-    fontSize: size.small,
-    marginTop: 2,
-  },
-
-  /* PINS BAR */
-
-  pinsBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: space.md,
-    paddingVertical: space.sm,
-    borderRadius: radius.md,
-    borderWidth: StyleSheet.hairlineWidth,
-    gap: space.sm,
-  },
-
-  pinsLabel: {
-    fontSize: size.small,
-    fontWeight: weight.semi,
-  },
-
-  pinsBadge: {
-    paddingHorizontal: space.sm,
-    paddingVertical: 2,
-    borderRadius: radius.sm,
-    borderWidth: StyleSheet.hairlineWidth,
-  },
-
-  pinsValue: {
-    fontFamily: mono,
-    fontSize: size.small,
-    fontWeight: weight.bold,
-  },
-
-  /* DIAGRAM LINK BUTTON */
-
-  diagramLinkButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: space.md,
-    paddingHorizontal: space.lg,
-    borderRadius: radius.md,
-    borderWidth: StyleSheet.hairlineWidth,
-    gap: space.sm,
-  },
-
-  diagramLinkIcon: {
-    fontSize: 16,
-  },
-
-  diagramLinkText: {
-    fontSize: size.body,
-    fontWeight: weight.bold,
-  },
-
-  diagramLinkArrow: {
-    fontSize: 16,
-    fontWeight: weight.bold,
-  },
-
-  /* DIAGRAM */
-
-  diagramWell: {
-    width: '100%',
-    borderRadius: radius.md,
-    borderWidth: StyleSheet.hairlineWidth,
-    overflow: 'hidden',
-  },
-
-  diagramImage: {
-    width: '100%',
-    height: 220,
-  },
-
-  zoomHint: {
-    alignItems: 'center',
-    paddingVertical: space.sm,
-    borderTopWidth: StyleSheet.hairlineWidth,
-  },
-
-  zoomHintText: {
-    fontSize: size.small,
-    fontWeight: weight.semi,
-  },
-
-  noDiagram: {
-    borderRadius: radius.md,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderStyle: 'dashed',
-    paddingVertical: space.xxl,
-    paddingHorizontal: space.lg,
-    alignItems: 'center',
-    gap: space.xs,
-  },
-
-  noDiagramTitle: {
-    fontSize: size.body,
-    fontWeight: weight.semi,
-  },
-
-  noDiagramText: {
-    fontSize: size.small,
-    textAlign: 'center',
-  },
-
-  /* CIRCUIT FLOW — a readout window, not a card. */
-
-  flowWell: {
-    borderRadius: radius.md,
-    borderWidth: StyleSheet.hairlineWidth,
-    padding: space.md,
-  },
-
-  flowText: {
-    fontFamily: mono,
-    fontSize: size.small,
-    fontWeight: weight.medium,
-    lineHeight: 22,
-  },
-
-  /* NOTE + DIAGNOSIS */
-
-  flagCard: {
-    flexDirection: 'row',
-    borderRadius: radius.lg,
-    borderWidth: StyleSheet.hairlineWidth,
-    overflow: 'hidden',
-  },
-
-  flagInner: {
-    flex: 1,
-    padding: space.lg,
-  },
-
-  flagTitle: {
-    fontSize: size.body,
-    fontWeight: weight.bold,
-    marginBottom: space.sm,
-  },
-
-  flagText: {
-    fontSize: size.small,
-  },
-
-  /* NOT FOUND */
-
   center: {
     flex: 1,
     alignItems: 'center',
@@ -1141,8 +204,60 @@ const styles = StyleSheet.create({
   },
 
   notFound: {
-    fontSize: size.sub,
+    fontSize: size.body,
+    fontWeight: weight.semi,
+  },
+
+  viewerContainer: {
+    flex: 1,
+    position: 'relative',
+    backgroundColor: '#0B0F19',
+    width: '100%',
+  },
+
+  /* FLOATING ZOOM & TOOL HUD */
+  bottomHud: {
+    position: 'absolute',
+    bottom: space.md,
+    left: space.md,
+    right: space.md,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: space.xs + 2,
+  },
+
+  hudBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(30, 41, 59, 0.92)',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    borderColor: 'rgba(71, 85, 105, 0.6)',
+  },
+
+  hudBtnText: {
+    color: '#E2E8F0',
+    fontSize: size.small,
+    fontWeight: weight.semi,
+  },
+
+  hudBadge: {
+    backgroundColor: 'rgba(15, 23, 42, 0.95)',
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    borderColor: 'rgba(71, 85, 105, 0.4)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  hudBadgeText: {
+    color: '#38BDF8',
+    fontSize: size.micro + 1,
     fontWeight: weight.bold,
   },
 });
-

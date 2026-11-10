@@ -1,24 +1,24 @@
-import { offlineCount, useOffline } from '@/utils/offlineDiagrams';
-import React from 'react';
+import React, { useRef } from 'react';
 import {
+  Animated,
   Image,
+  Platform,
   Pressable,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
 
-import SpecStrip, { Spec } from '@/components/SpecStrip';
 import {
   lineFor,
+  mono,
   radius,
-  size,
   space,
   weight,
 } from '@/constants/theme';
 import { useLanguage } from '@/context/LanguageContext';
 import { useTheme } from '@/context/ThemeContext';
-import { tr } from '@/data/translations';
 import { Inverter } from '@/types/inverter';
 
 type Props = {
@@ -27,177 +27,320 @@ type Props = {
 };
 
 export default function InverterCard({ inverter, onPress }: Props) {
-  useOffline();
-  const savedDiagrams = offlineCount(inverter.id);
-  const { language, isHindi } = useLanguage();
+  const { isHindi } = useLanguage();
   const { colors } = useTheme();
+
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+
+  const handlePressIn = () => {
+    Animated.spring(scaleAnim, {
+      toValue: 0.975,
+      tension: 140,
+      friction: 10,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const handlePressOut = () => {
+    Animated.spring(scaleAnim, {
+      toValue: 1,
+      tension: 140,
+      friction: 10,
+      useNativeDriver: true,
+    }).start();
+  };
 
   const brand = isHindi
     ? inverter.brandHi ?? inverter.brand
     : inverter.brand;
 
-  const type = isHindi
-    ? inverter.typeHi ?? inverter.type
-    : inverter.type;
+  const capacity =
+    inverter.capacity === '—'
+      ? isHindi
+        ? 'पुष्टि बाकी'
+        : 'Unconfirmed'
+      : inverter.capacity;
 
-  const specs: Spec[] = [
-    ...(savedDiagrams ? [{ label: isHindi ? 'ऑफलाइन' : 'Offline', value: String(savedDiagrams), tone: colors.verified }] : []),
-    {
-      label: tr(language, 'specCapacity'),
-      value: inverter.capacity === '—' ? (isHindi ? 'पुष्टि बाकी' : 'Unconfirmed') : inverter.capacity,
-      grow: 1.4,
-    },
-    {
-      label: tr(language, 'specBattery'),
-      value: inverter.batteryVoltage === '—' ? (isHindi ? 'पुष्टि बाकी' : 'Unconfirmed') : inverter.batteryVoltage,
-    },
-    {
-      label: tr(language, 'specSheets'),
-      value: String(inverter.faults.length),
-      tone: colors.signal,
-    },
-  ];
+  const battery =
+    inverter.batteryVoltage === '—'
+      ? isHindi
+        ? 'पुष्टि बाकी'
+        : 'Unconfirmed'
+      : inverter.batteryVoltage;
 
   return (
-    <Pressable
-      onPress={onPress}
-      accessibilityRole="button"
-      accessibilityLabel={`${brand} ${inverter.model}${inverter.newDiagramsCount ? `, ${inverter.newDiagramsCount} ${isHindi ? 'नए डायग्राम' : 'new diagrams'}` : ''}`}
-      style={({ pressed }) => [
-        styles.card,
-        {
-          borderColor: pressed ? colors.ruleStrong : colors.rule,
-          backgroundColor: pressed ? colors.panelRaised : colors.panel,
-        },
-      ]}
-    >
-      <View style={styles.body}>
+    <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
+      <Pressable
+        onPress={onPress}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        accessibilityRole="button"
+        accessibilityLabel={`${brand} ${inverter.model}${inverter.newDiagramsCount ? `, ${inverter.newDiagramsCount} ${isHindi ? 'नए डायग्राम' : 'new diagrams'}` : ''}`}
+        style={({ pressed }) => [
+          styles.card,
+          {
+            borderColor: pressed ? colors.signal : colors.rule,
+            backgroundColor: pressed ? colors.panelRaised : colors.panel,
+          },
+        ]}
+      >
+        {/* COMPACT IMAGE WELL */}
         <View
           style={[
-            styles.well,
+            styles.imageContainer,
             {
               backgroundColor: colors.panelSunken,
               borderColor: colors.rule,
             },
           ]}
         >
-          <Image
-            source={inverter.image}
-            style={styles.image}
-            resizeMode="contain"
-          />
+          {inverter.image ? (
+            <Image
+              source={inverter.image}
+              style={styles.image}
+              resizeMode="contain"
+            />
+          ) : (
+            <FontAwesome name="bolt" size={24} color={colors.signal} />
+          )}
         </View>
 
-        <View style={styles.text}>
-          <View style={styles.brandRow}>
-          <Text
-            style={[styles.brand, { color: colors.textDim, flexShrink: 1 }]}
-            numberOfLines={1}
-          >
-            {brand}
-          </Text>
-          {!!inverter.newDiagramsCount && (
-            <View style={[styles.newBadge, { backgroundColor: colors.verifiedSoft }]}>
-              <Text style={[styles.newBadgeText, { color: colors.verified }]}>{isHindi ? 'नया' : 'NEW'}</Text>
-            </View>
-          )}
+        {/* MIDDLE COLUMN: BRAND + NEW BADGE, MODEL, SPECS */}
+        <View style={styles.contentCol}>
+          {/* BRAND + NEW DIAGRAM BADGE */}
+          <View style={styles.topRow}>
+            <Text
+              style={[styles.brandText, { color: colors.signal }]}
+              numberOfLines={1}
+            >
+              {brand}
+            </Text>
+
+            {/* ONLY DISPLAYED WHEN NEW DIAGRAMS ARE ADDED */}
+            {Boolean(inverter.newDiagramsCount && inverter.newDiagramsCount > 0) && (
+              <View
+                style={[
+                  styles.newBadge,
+                  {
+                    backgroundColor: colors.verifiedSoft,
+                    borderColor: colors.verified,
+                  },
+                ]}
+              >
+                <Text style={[styles.newBadgeText, { color: colors.verified }]}>
+                  ✨ +{inverter.newDiagramsCount} {isHindi ? 'नया' : 'NEW'}
+                </Text>
+              </View>
+            )}
           </View>
 
+          {/* MODEL NAME */}
           <Text
             style={[
-              styles.model,
+              styles.modelName,
               {
                 color: colors.text,
-                lineHeight: lineFor('sub', isHindi),
+                lineHeight: lineFor('body', isHindi),
               },
             ]}
-            numberOfLines={2}
+            numberOfLines={1}
           >
             {inverter.model}
           </Text>
 
-          <Text
-            style={[
-              styles.type,
-              {
-                color: colors.textFaint,
-                lineHeight: lineFor('micro', isHindi),
-              },
-            ]}
-            numberOfLines={1}
-          >
-            {type}
-          </Text>
+          {/* COMPACT SPEC CHIPS */}
+          <View style={styles.specsRow}>
+            <View
+              style={[
+                styles.specChip,
+                {
+                  backgroundColor: colors.panelSunken,
+                  borderColor: colors.rule,
+                },
+              ]}
+            >
+              <FontAwesome
+                name="bolt"
+                size={9}
+                color={colors.textFaint}
+                style={styles.specIcon}
+              />
+              <Text
+                style={[styles.specText, { color: colors.textDim }]}
+                numberOfLines={1}
+              >
+                {capacity}
+              </Text>
+            </View>
+
+            <View
+              style={[
+                styles.specChip,
+                {
+                  backgroundColor: colors.panelSunken,
+                  borderColor: colors.rule,
+                },
+              ]}
+            >
+              <FontAwesome
+                name="battery-full"
+                size={9}
+                color={colors.verified}
+                style={styles.specIcon}
+              />
+              <Text
+                style={[styles.specText, { color: colors.textDim }]}
+                numberOfLines={1}
+              >
+                {battery}
+              </Text>
+            </View>
+
+            <View
+              style={[
+                styles.specChip,
+                {
+                  backgroundColor: colors.panelSunken,
+                  borderColor: colors.rule,
+                },
+              ]}
+            >
+              <FontAwesome
+                name="file-text-o"
+                size={9}
+                color={colors.readout}
+                style={styles.specIcon}
+              />
+              <Text
+                style={[styles.specText, { color: colors.readout }]}
+                numberOfLines={1}
+              >
+                {inverter.faults.length} {isHindi ? 'डायग्राम' : 'Diags'}
+              </Text>
+            </View>
+          </View>
         </View>
 
-        <Text style={[styles.chevron, { color: colors.textFaint }]}>
-          ›
-        </Text>
-      </View>
-
-      <SpecStrip specs={specs} />
-    </Pressable>
+        {/* RIGHT CHEVRON */}
+        <View style={styles.chevronWrapper}>
+          <FontAwesome name="chevron-right" size={11} color={colors.textFaint} />
+        </View>
+      </Pressable>
+    </Animated.View>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: radius.lg,
-    borderWidth: StyleSheet.hairlineWidth,
-    marginBottom: space.md,
-    overflow: 'hidden',
-  },
-
-  body: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: space.md,
-    gap: space.md,
+    borderRadius: 14,
+    borderWidth: 1,
+    marginBottom: space.sm + 2,
+    padding: space.sm + 2,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.08,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 2,
+      },
+      default: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.08,
+        shadowRadius: 4,
+      },
+    }),
   },
 
-  well: {
-    width: 66,
-    height: 66,
-    borderRadius: radius.sm,
-    borderWidth: StyleSheet.hairlineWidth,
+  imageContainer: {
+    width: 58,
+    height: 58,
+    borderRadius: radius.sm + 2,
+    borderWidth: 1,
+    padding: 3,
     alignItems: 'center',
     justifyContent: 'center',
-    overflow: 'hidden',
   },
 
   image: {
-    width: '86%',
-    height: '86%',
+    width: '100%',
+    height: '100%',
   },
 
-  text: {
+  contentCol: {
     flex: 1,
+    marginLeft: space.sm + 3,
+    justifyContent: 'center',
   },
 
-  brand: {
-    fontSize: size.micro,
-    fontWeight: weight.semi,
+  topRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.xs + 2,
+    marginBottom: 2,
   },
-  brandRow: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
-  newBadge: { borderRadius: radius.pill, paddingHorizontal: 6, paddingVertical: 2 },
-  newBadgeText: { fontSize: size.micro, fontWeight: weight.bold },
 
-  model: {
-    fontSize: size.sub,
+  brandText: {
+    fontSize: 11,
+    fontWeight: weight.bold,
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
+  },
+
+  newBadge: {
+    paddingHorizontal: 6,
+    paddingVertical: 1,
+    borderRadius: radius.pill,
+    borderWidth: 1,
+  },
+
+  newBadgeText: {
+    fontSize: 9,
+    fontWeight: weight.bold,
+  },
+
+  modelName: {
+    fontSize: 15,
     fontWeight: weight.bold,
     letterSpacing: -0.2,
-    marginTop: 1,
   },
 
-  type: {
-    fontSize: size.micro,
-    fontWeight: weight.regular,
-    marginTop: 2,
+  specsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 4,
+    flexWrap: 'nowrap',
   },
 
-  chevron: {
-    fontSize: 24,
-    fontWeight: weight.regular,
-    marginTop: -2,
+  specChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: radius.sm - 2,
+    borderWidth: StyleSheet.hairlineWidth,
+  },
+
+  specIcon: {
+    marginRight: 4,
+  },
+
+  specText: {
+    fontSize: 10,
+    fontWeight: weight.medium,
+    fontFamily: mono,
+  },
+
+  chevronWrapper: {
+    paddingLeft: space.xs,
+    paddingRight: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

@@ -15,6 +15,8 @@ import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 
+import GlobalBottomBar from '@/components/GlobalBottomBar';
+
 import {
     mono,
     size,
@@ -158,20 +160,25 @@ function RootShell() {
     <NavigationThemeProvider value={navigationTheme}>
       <StatusBar style={mode === 'dark' ? 'light' : 'dark'} />
 
-      <Stack
-        screenOptions={{
-          headerShown: false,
-          contentStyle: { backgroundColor: colors.surface },
-        }}
-      >
-        <Stack.Screen name="(tabs)" />
-        <Stack.Screen name="inverter/[id]" />
-        <Stack.Screen name="inverter/fault/[faultId]" />
-        <Stack.Screen name="tools/resistor-calculator" />
-        <Stack.Screen name="tools/smd-calculator" />
-        <Stack.Screen name="tools/dip-calculator" />
-        <Stack.Screen name="tools/ic-guide" />
-      </Stack>
+      <View style={{ flex: 1, backgroundColor: colors.surface }}>
+        <Stack
+          screenOptions={{
+            headerShown: false,
+            contentStyle: { backgroundColor: colors.surface },
+          }}
+        >
+          <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="favorites" />
+          <Stack.Screen name="inverter/[id]" />
+          <Stack.Screen name="inverter/fault/[faultId]" />
+          <Stack.Screen name="tools/resistor-calculator" />
+          <Stack.Screen name="tools/smd-calculator" />
+          <Stack.Screen name="tools/dip-calculator" />
+          <Stack.Screen name="tools/ic-guide" />
+        </Stack>
+
+        <GlobalBottomBar />
+      </View>
     </NavigationThemeProvider>
   );
 }

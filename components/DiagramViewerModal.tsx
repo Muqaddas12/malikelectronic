@@ -1,4 +1,3 @@
-import { downloadModel, useOffline } from '@/utils/offlineDiagrams';
 import { SavedItem, toggleFavorite, useBench } from '@/utils/benchStore';
 import React, { useEffect, useState } from 'react';
 import {
@@ -38,7 +37,6 @@ export default function DiagramViewerModal({
   onClose,
 }: Props) {
   const { favorites } = useBench();
-  const { busy, progress } = useOffline();
   const [canvas, setCanvas] = useState({ width: 0, height: 0 });
   const { language } = useLanguage();
   const [rotation, setRotation] = useState(0);
@@ -101,11 +99,10 @@ export default function DiagramViewerModal({
             />
           </View>
 
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-evenly' }}>
-            {item && <Pressable accessibilityRole="button" onPress={() => { void toggleFavorite(item).catch(() => Alert.alert('Could not save')); }} style={{ minHeight: 48, padding: 12 }}><Text style={{ color: '#E2E8F0' }}>{favorites.some(v => v.id === item.id) ? '★' : '☆'} {language === 'hi' ? 'पसंदीदा' : 'Favorite'}</Text></Pressable>}
-            {modelId && <Pressable disabled={busy} accessibilityRole="button" onPress={() => { void downloadModel(modelId).then(r => Alert.alert(language === 'hi' ? 'डाउनलोड' : 'Download', `${r.total - r.failed}/${r.total}`)).catch(() => Alert.alert(language === 'hi' ? 'डाउनलोड नहीं हुआ' : 'Could not download')); }} style={{ minHeight: 48, padding: 12 }}><Text style={{ color: '#E2E8F0' }}>{busy ? progress : (language === 'hi' ? 'मॉडल डाउनलोड' : 'Download model')}</Text></Pressable>}
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-evenly', alignItems: 'center' }}>
+            {item && <Pressable accessibilityRole="button" onPress={() => { void toggleFavorite(item).catch(() => Alert.alert('Could not save')); }} style={{ minHeight: 48, padding: 12, justifyContent: 'center' }}><Text style={{ color: '#E2E8F0' }}>{favorites.some(v => v.id === item.id) ? '★' : '☆'} {language === 'hi' ? 'पसंदीदा' : 'Favorite'}</Text></Pressable>}
+            <Pressable accessibilityRole="button" onPress={() => { setRotation(r => (r + 90) % 360); setCurrentScale(1); }} style={{ minHeight: 48, padding: 12, justifyContent: 'center' }}><Text style={{ color: '#E2E8F0' }}>{language === 'hi' ? '90° घुमाएँ' : 'Rotate 90°'}</Text></Pressable>
           </View>
-          <Pressable accessibilityRole="button" onPress={() => { setRotation(r => (r + 90) % 360); setCurrentScale(1); }} style={{ minHeight: 48, alignItems: 'center', justifyContent: 'center' }}><Text style={{ color: '#E2E8F0' }}>{language === 'hi' ? '90° घुमाएँ' : 'Rotate 90°'}</Text></Pressable>
           {/* FLOATING ZOOM HUD CONTROLS */}
           <View style={styles.bottomHud}>
             <Pressable

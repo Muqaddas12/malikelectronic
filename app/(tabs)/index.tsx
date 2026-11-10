@@ -6,7 +6,6 @@ import AppHeader from '@/components/AppHeader';
 import InverterCard from '@/components/InverterCard';
 import NewDiagramsModal from '@/components/NewDiagramsModal';
 import SearchBar from '@/components/SearchBar';
-import UpdateBanner from '@/components/UpdateBanner';
 import {
     layout,
     lineFor,
@@ -25,7 +24,6 @@ import { useSafeNavigate } from '@/hooks/useSafeNavigate';
 export default function TabOneScreen() {
   const [search, setSearch] = useState('');
   const [isNewDiagramsModalOpen, setIsNewDiagramsModalOpen] = useState(false);
-  const [isUpdateBannerDismissed, setIsUpdateBannerDismissed] = useState(false);
   const { language, isHindi } = useLanguage();
   const { colors } = useTheme();
   const { safePush } = useSafeNavigate();
@@ -82,13 +80,6 @@ export default function TabOneScreen() {
         keyboardShouldPersistTaps="handled"
         ListHeaderComponent={
           <View style={styles.listHeader}>
-            {!searching && !isUpdateBannerDismissed ? (
-              <UpdateBanner
-                onPressViewAll={() => setIsNewDiagramsModalOpen(true)}
-                onDismiss={() => setIsUpdateBannerDismissed(true)}
-              />
-            ) : null}
-
             <SearchBar
               value={search}
               onChangeText={setSearch}

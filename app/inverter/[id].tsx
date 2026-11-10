@@ -1,15 +1,15 @@
-import BenchActions from '@/components/BenchActions';
-import OfflinePack from '@/components/OfflinePack';
 import React, { useMemo, useState } from 'react';
 import {
     FlatList,
     Image,
+    Platform,
     Pressable,
     StyleSheet,
     Text,
     View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
 
 import { useLocalSearchParams } from 'expo-router';
 
@@ -18,7 +18,6 @@ import DiagramViewerModal from '@/components/DiagramViewerModal';
 import FaultCard from '@/components/FaultCard';
 import PdfDocumentViewerModal from '@/components/PdfDocumentViewerModal';
 import SearchBar from '@/components/SearchBar';
-import SpecStrip, { Spec } from '@/components/SpecStrip';
 import {
     layout,
     lineFor,
@@ -87,45 +86,26 @@ export default function InverterFaultsScreen() {
   }
 
   const brand = isHindi ? inverter.brandHi ?? inverter.brand : inverter.brand;
-  const type = isHindi ? inverter.typeHi ?? inverter.type : inverter.type;
-
-  const specs: Spec[] = [
-    {
-      label: tr(language, 'specCapacity'),
-      value: inverter.capacity === '—' ? (isHindi ? 'पुष्टि बाकी' : 'Unconfirmed') : inverter.capacity,
-      grow: 1.5,
-    },
-    {
-      label: tr(language, 'specBattery'),
-      value: inverter.batteryVoltage === '—' ? (isHindi ? 'पुष्टि बाकी' : 'Unconfirmed') : inverter.batteryVoltage,
-    },
-    {
-      label: tr(language, 'specSheets'),
-      value: String(allFaults.length),
-      tone: colors.signal,
-    },
-  ];
-
-  const newDiagramsCount = allFaults.filter((f) => f.isNew).length;
-  if (newDiagramsCount > 0) {
-    specs.push({
-      label: isHindi ? 'नया डायग्राम' : 'New Added',
-      value: `✨ +${newDiagramsCount}`,
-      tone: colors.severity.low,
-    });
-  }
 
   return (
     <SafeAreaView
       edges={['top', 'left', 'right']}
       style={[styles.safeArea, { backgroundColor: colors.surface }]}
     >
-      <AppHeader showBack showMenu />
+      <AppHeader
+        showBack
+        showMenu
+        title={inverter.model}
+        subtitle={brand}
+      />
 
-      <BenchActions item={{ id: `model:${inverter.id}`, title: `${inverter.brand} ${inverter.model}`, route: `/inverter/${encodeURIComponent(inverter.id)}` }} />
-      <OfflinePack model={inverter.id} />
       <DiagramViewerModal
         visible={isPcbModalOpen}
+        item={{
+          id: `pcb:${inverter.id}`,
+          title: `${brand} ${inverter.model} PCB`,
+          route: `/inverter/${encodeURIComponent(inverter.id)}`,
+        }}
         source={inverter.pcbImage}
         title={`${brand} ${inverter.model}`}
         subtitle={tr(language, 'zoomHint')}
@@ -144,6 +124,8 @@ export default function InverterFaultsScreen() {
         renderItem={({ item }) => (
           <FaultCard
             fault={item}
+            inverterId={inverter.id}
+            modelName={`${brand} ${inverter.model}`}
             onPress={() =>
               safePush({
                 pathname: '/inverter/fault/[faultId]',
@@ -157,97 +139,49 @@ export default function InverterFaultsScreen() {
         keyboardShouldPersistTaps="handled"
         ListHeaderComponent={
           <>
-            <View
-              style={[
-                styles.hero,
-                {
-                  backgroundColor: colors.panel,
-                  borderColor: colors.rule,
-                },
-              ]}
-            >
-              <View style={styles.heroBody}>
-                <View style={styles.heroText}>
-                  <Text
-                    style={[styles.brand, { color: colors.textDim }]}
-                    numberOfLines={1}
-                  >
-                    {brand}
-                  </Text>
-
-                  <Text
+            {inverter.pcbImage ? (
+              <Pressable
+                onPress={() => setIsPcbModalOpen(true)}
+                accessibilityRole="button"
+                accessibilityLabel={tr(language, 'viewPcbPhoto')}
+                style={({ pressed }) => [
+                  styles.mcCard,
+                  {
+                    borderColor: pressed ? colors.ruleStrong : colors.rule,
+                    backgroundColor: pressed
+                      ? colors.panelRaised
+                      : colors.panel,
+                  },
+                ]}
+              >
+                <View
+                  style={[styles.edge, { backgroundColor: colors.signal }]}
+                />
+                <View style={styles.mcInner}>
+                  <View
                     style={[
-                      styles.model,
-                      {
-                        color: colors.text,
-                        lineHeight: lineFor('title', isHindi),
-                      },
-                    ]}
-                    numberOfLines={2}
-                  >
-                    {inverter.model}
-                  </Text>
-
-                  <Text
-                    style={[
-                      styles.type,
-                      {
-                        color: colors.textFaint,
-                        lineHeight: lineFor('small', isHindi),
-                      },
-                    ]}
-                    numberOfLines={2}
-                  >
-                    {type}
-                  </Text>
-                </View>
-
-                {inverter.pcbImage ? (
-                  <Pressable
-                    onPress={() => setIsPcbModalOpen(true)}
-                    accessibilityRole="button"
-                    accessibilityLabel={tr(language, 'viewPcbPhoto')}
-                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                    style={({ pressed }) => [
-                      styles.pcbWell,
+                      styles.mcIconWell,
                       {
                         backgroundColor: colors.panelSunken,
-                        borderColor: pressed
-                          ? colors.readout
-                          : colors.rule,
+                        borderColor: colors.rule,
                       },
                     ]}
                   >
-                    <Image
-                      source={inverter.pcbImage}
-                      style={styles.pcbImage}
-                      resizeMode="contain"
-                    />
-
-                    <View
-                      style={[
-                        styles.pcbLabel,
-                        {
-                          backgroundColor: colors.panel,
-                          borderTopColor: colors.rule,
-                        },
-                      ]}
-                    >
-                      <Text
-                        style={[
-                          styles.pcbLabelText,
-                          { color: colors.readout },
-                        ]}
-                      >
-                        PCB
-                      </Text>
-                    </View>
-                  </Pressable>
-                ) : null}
-              </View>
-
-              <SpecStrip specs={specs} />
-            </View>
+                    <Text style={[styles.mcIcon, { color: colors.signal }]}>
+                      🖼
+                    </Text>
+                  </View>
+                  <View style={styles.mcText}>
+                    <Text style={[styles.mcTitle, { color: colors.text }]}>
+                      {isHindi ? 'पीसीबी फोटो देखें' : 'View PCB Photo'}
+                    </Text>
+                  </View>
+                  <Text style={[styles.chevron, { color: colors.textFaint }]}>
+                    ›
+                  </Text>
+                </View>
+              </Pressable>
+            ) : null}
 
             {mcDoc ? (
               <Pressable
@@ -260,7 +194,7 @@ export default function InverterFaultsScreen() {
                 style={({ pressed }) => [
                   styles.mcCard,
                   {
-                    borderColor: pressed ? colors.ruleStrong : colors.rule,
+                    borderColor: pressed ? colors.signal : colors.rule,
                     backgroundColor: pressed
                       ? colors.panelRaised
                       : colors.panel,
@@ -268,85 +202,57 @@ export default function InverterFaultsScreen() {
                 ]}
               >
                 <View
-                  style={[styles.edge, { backgroundColor: colors.readout }]}
-                />
+                  style={[
+                    styles.mcIconWell,
+                    {
+                      backgroundColor: colors.panelSunken,
+                      borderColor: colors.rule,
+                    },
+                  ]}
+                >
+                  <FontAwesome name="file-pdf-o" size={17} color={colors.readout} />
+                </View>
 
-                <View style={styles.mcInner}>
-                  <View
-                    style={[
-                      styles.mcIconWell,
-                      {
-                        backgroundColor: colors.panelSunken,
-                        borderColor: colors.rule,
-                      },
-                    ]}
-                  >
+                <View style={styles.mcText}>
+                  <View style={styles.mcTitleRow}>
                     <Text
-                      style={[styles.mcIcon, { color: colors.readout }]}
+                      style={[styles.mcTitle, { color: colors.text }]}
+                      numberOfLines={1}
                     >
-                      ⊞
+                      {mcDoc.chipName}
                     </Text>
-                  </View>
 
-                  <View style={styles.mcText}>
-                    <View style={styles.mcTitleRow}>
-                      <Text
-                        style={[
-                          styles.mcTitle,
-                          { color: colors.text },
-                        ]}
-                        numberOfLines={1}
-                      >
-                        {mcDoc.chipName}
-                      </Text>
-
-                      <View
-                        style={[
-                          styles.mcTag,
-                          { borderColor: colors.rule },
-                        ]}
-                      >
-                        <Text
-                          style={[
-                            styles.mcTagText,
-                            { color: colors.readout },
-                          ]}
-                        >
-                          PDF
-                        </Text>
-                      </View>
-                    </View>
-
-                    <Text
+                    <View
                       style={[
-                        styles.mcSubtitle,
+                        styles.mcTag,
                         {
-                          color: colors.textDim,
-                          lineHeight: lineFor('small', isHindi),
+                          backgroundColor: colors.panelSunken,
+                          borderColor: colors.rule,
                         },
                       ]}
-                      numberOfLines={2}
                     >
-                      {mcDoc.subtitle ||
-                        tr(language, 'microcontrollerSubtitle')}
-                    </Text>
-
-                    <Text
-                      style={[
-                        styles.mcAction,
-                        { color: colors.readout },
-                      ]}
-                    >
-                      {tr(language, 'viewPinDetails')}
-                    </Text>
+                      <Text
+                        style={[styles.mcTagText, { color: colors.readout }]}
+                      >
+                        PDF
+                      </Text>
+                    </View>
                   </View>
 
                   <Text
-                    style={[styles.chevron, { color: colors.textFaint }]}
+                    style={[styles.mcSubtitle, { color: colors.textDim }]}
+                    numberOfLines={1}
                   >
-                    ›
+                    {mcDoc.subtitle || tr(language, 'microcontrollerSubtitle')}
                   </Text>
                 </View>
+
+                <FontAwesome
+                  name="chevron-right"
+                  size={11}
+                  color={colors.textFaint}
+                  style={styles.chevron}
+                />
               </Pressable>
             ) : null}
 
@@ -412,7 +318,7 @@ const styles = StyleSheet.create({
   content: {
     paddingHorizontal: layout.gutter,
     paddingTop: space.md,
-    paddingBottom: space.lg,
+    paddingBottom: space.xxxl,
   },
 
   /* HERO */
@@ -489,10 +395,29 @@ const styles = StyleSheet.create({
 
   mcCard: {
     flexDirection: 'row',
-    borderRadius: radius.lg,
-    borderWidth: StyleSheet.hairlineWidth,
-    marginBottom: space.md,
-    overflow: 'hidden',
+    alignItems: 'center',
+    borderRadius: 14,
+    borderWidth: 1,
+    marginBottom: space.sm,
+    paddingVertical: 10,
+    paddingHorizontal: space.sm + 2,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.08,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 2,
+      },
+      default: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.08,
+        shadowRadius: 4,
+      },
+    }),
   },
 
   edge: {
@@ -510,8 +435,8 @@ const styles = StyleSheet.create({
   mcIconWell: {
     width: 42,
     height: 42,
-    borderRadius: radius.sm,
-    borderWidth: StyleSheet.hairlineWidth,
+    borderRadius: radius.sm + 2,
+    borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -522,6 +447,9 @@ const styles = StyleSheet.create({
 
   mcText: {
     flex: 1,
+    marginLeft: space.sm + 2,
+    marginRight: space.xs,
+    justifyContent: 'center',
   },
 
   mcTitleRow: {
@@ -532,25 +460,25 @@ const styles = StyleSheet.create({
 
   mcTitle: {
     flexShrink: 1,
-    fontSize: size.body,
+    fontSize: 14.5,
     fontWeight: weight.bold,
+    letterSpacing: -0.2,
   },
 
   mcTag: {
-    paddingHorizontal: 5,
+    paddingHorizontal: 6,
     paddingVertical: 1,
-    borderRadius: radius.sm,
-    borderWidth: StyleSheet.hairlineWidth,
+    borderRadius: radius.pill,
+    borderWidth: 1,
   },
 
   mcTagText: {
-    fontFamily: mono,
-    fontSize: size.micro,
+    fontSize: 9,
     fontWeight: weight.bold,
   },
 
   mcSubtitle: {
-    fontSize: size.small,
+    fontSize: 11.5,
     marginTop: 2,
   },
 

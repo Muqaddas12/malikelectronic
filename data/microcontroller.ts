@@ -14,10 +14,11 @@ export const microcontrollerDocs: Record<string, MicrocontrollerDoc> = {
     title: 'Luminous Eco Watt+ Microcontroller Pin Details',
     subtitle: 'Complete 28-Pin voltage chart, functions & mode details (Hindi & English)',
     pages: [
+      getDiagramImage('LuminousEcoWatt', 'microcontroller-pin-details'),
       require('@/assets/microcontroller/luminous/luminous_mc_pindetails_page_1.png'),
       require('@/assets/microcontroller/luminous/luminous_mc_pindetails_page_2.png'),
       require('@/assets/microcontroller/luminous/luminous_mc_pindetails_page_3.png'),
-    ],
+    ].filter(Boolean),
   },
 
   'microtek-inverter': {

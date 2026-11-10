@@ -8,6 +8,9 @@ export type CatalogModel = { id: string; brand: string; model: string; diagrams:
 
 const existingIds: Record<string, string> = {
   'Luminous-Eco-Watt-Plus': 'LuminousEcoWatt',
+  'Luminous-Eco-Watt': 'luminous-eco-watt',
+  'Luminous-Eco-watt-Neo': 'luminous-eco-watt',
+  'Luminous-Eco-Watt-Neo': 'luminous-eco-watt',
   'microtek-eb-semi-sine-wave': 'microtek-inverter',
   'microtek-eb-square-wave': 'microtek-square-wave',
   'microtek-24x7-Non-Smd': 'microtek-24x7',
@@ -17,6 +20,8 @@ const existingIds: Record<string, string> = {
 const slug = (text: string) => text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 const modelNames: Record<string, string> = {
   'Luminous-Eco-Watt': 'Eco Watt Neo',
+  'Luminous-Eco-watt-Neo': 'Eco Watt Neo',
+  'Luminous-Eco-Watt-Neo': 'Eco Watt Neo',
   'Luminous-LB': 'LB 675/875/1075',
   'Luminous-Shakti-Charge': 'Shakti Charge 1150',
 };
@@ -54,7 +59,12 @@ export const diagramCatalog: CatalogModel[] = [
 })));
 
 export function getConfiguredDiagrams(inverterId: string): CatalogDiagram[] {
-  const aliases: Record<string, string> = { 'sukam-shark': 'sukam-shark-inverter', 'sukam-shiny': 'sukam-shiny-inverter' };
+  const aliases: Record<string, string> = {
+    'sukam-shark': 'sukam-shark-inverter',
+    'sukam-shiny': 'sukam-shiny-inverter',
+    'luminous-eco-watt-neo': 'luminous-eco-watt',
+    'Luminous-Eco-watt-Neo': 'luminous-eco-watt',
+  };
   const rows = diagramCatalog.find(model => model.id === (aliases[inverterId] ?? inverterId))?.diagrams ?? [];
   // Preserve the MCU sheet available from older Eco Watt+ bookmarks.
   return inverterId === 'LuminousEcoWatt'
