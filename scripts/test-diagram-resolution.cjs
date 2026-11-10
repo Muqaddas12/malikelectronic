@@ -25,7 +25,7 @@ try {
   assert.deepEqual(parseDiagramRows(null), []);
   assert.deepEqual(parseDiagramRows([null, {}, { id: 1, link: 'https://example.com' }, { name: 'Test', link: 42 }]), []);
   assert.equal(parseDiagramRows([{ id: 1, name: 'Test', link: 'https://example.com' }, { id: 1, name: 'Test', link: 'https://example.com' }]).length, 1);
-  for (const filename of ['Luminous.json', 'Microtek.json', 'sukam.json']) {
+  for (const filename of ['Luminous.json', 'Microtek.json', 'sukam.json', 'Livguard.json']) {
     const groups = require('../config/' + filename);
     for (const [name, rows] of Object.entries(groups)) {
       assert.ok(Array.isArray(rows), `${filename}/${name}: rows must be an array`);
@@ -62,6 +62,9 @@ try {
   assert.equal(inverters.find(model => model.id === 'luminous-eco-watt').batteryVoltage, '12V');
   assert.equal(inverters.find(model => model.id === 'luminous-lb').capacity, '675–1075 VA');
   assert.equal(inverters.find(model => model.id === 'luminous-lb').batteryVoltage, '12V');
+  assert.equal(inverters.find(model => model.id === 'luminous-eco-watt-1116').capacity, '675 VA');
+  assert.equal(inverters.find(model => model.id === 'luminous-eco-watt-1116').batteryVoltage, '12V');
+  assert.ok(inverters.find(model => model.id === 'luminous-eco-watt-1116').image);
   const luminous = require('../config/Luminous.json');
   assert.equal(getDiagramLink('LuminousEcoWatt', 'low-battery'), decryptUrl(luminous['Luminous-Eco-Watt-Plus'].find(row => row.faultId === 'low-battery').link));
   assert.equal(getDiagramLink('microtek-square-wave', 'unknown-fault'), undefined);

@@ -127,6 +127,7 @@ const configuredModelImages: Record<string, Inverter['image']> = {
   'luminous-eco-watt': require('@/assets/inverters/LuminousEcoWattNeo.png'),
   'luminous-lb': require('@/assets/inverters/luminous lb.jpg'),
   'luminous-shakti-charge': require('@/assets/inverters/luminous shakti charge.webp'),
+  'luminous-eco-watt-1116': require('@/assets/inverters/LuminousEcoWatt.png'),
 };
 
 // Use rated capacity, never a model number as an assumed VA rating.
@@ -137,6 +138,7 @@ const configuredModelSpecs: Record<string, { capacity: string; batteryVoltage: s
   'luminous-eco-watt': { capacity: '700–1050 VA', batteryVoltage: '12V' },
   'luminous-lb': { capacity: '675–1075 VA', batteryVoltage: '12V' },
   'luminous-shakti-charge': { capacity: '900 VA', batteryVoltage: '12V' },
+  'luminous-eco-watt-1116': { capacity: '675 VA', batteryVoltage: '12V' },
 };
 
 // New config groups appear automatically, without inventing electrical ratings.

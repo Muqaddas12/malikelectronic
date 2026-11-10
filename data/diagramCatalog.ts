@@ -1,6 +1,7 @@
 import luminous from '@/config/Luminous.json';
 import microtek from '@/config/Microtek.json';
 import sukam from '@/config/sukam.json';
+import livguard from '@/config/Livguard.json';
 
 type DiagramRow = { pcbRevision?: string; source?: string; verifiedAt?: string; id: number; faultId?: string; name: string; link: string; isNew?: boolean; usedPins?: string; 'Used Pins'?: string; 'used Pins'?: string };
 export type CatalogDiagram = { pcbRevision?: string; source?: string; verifiedAt?: string; faultId: string; title: string; link: string; usedPins: string; isNew?: boolean };
@@ -16,12 +17,14 @@ const existingIds: Record<string, string> = {
   'microtek-24x7-Non-Smd': 'microtek-24x7',
   'sukam-shark': 'sukam-shark-inverter',
   'sukam-shiny': 'sukam-shiny-inverter',
+  'Livguard LG/E': 'livguard-inverter',
 };
 const slug = (text: string) => text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 const modelNames: Record<string, string> = {
   'Luminous-Eco-Watt': 'Eco Watt Neo',
   'Luminous-Eco-watt-Neo': 'Eco Watt Neo',
   'Luminous-Eco-Watt-Neo': 'Eco Watt Neo',
+  'Luminous-Eco-Watt-1116': 'Eco Watt 1116',
   'Luminous-LB': 'LB 675/875/1075',
   'Luminous-Shakti-Charge': 'Shakti Charge 1150',
 };
@@ -51,10 +54,11 @@ export const diagramCatalog: CatalogModel[] = [
   { brand: 'Luminous', groups: luminous },
   { brand: 'Microtek', groups: microtek },
   { brand: 'Su-Kam', groups: sukam },
+  { brand: 'Livguard', groups: livguard },
 ].flatMap(({ brand, groups }) => Object.entries(groups).map(([key, rows]) => ({
   id: existingIds[key] ?? slug(key),
   brand,
-  model: modelNames[key] ?? key.replace(/^(Luminous|microtek|sukam)-/i, '').replace(/-/g, ' '),
+  model: modelNames[key] ?? key.replace(/^(Luminous|microtek|sukam|Livguard)[-\s]?/i, '').replace(/-/g, ' '),
   diagrams: parseDiagramRows(rows),
 })));
 

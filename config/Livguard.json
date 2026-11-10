@@ -1,0 +1,47 @@
+{
+    "Livguard LG/E":[
+        {
+            "id":1,
+            "name":"Output&Charging Relay",
+            "Used Pins":"3,9",
+            "link":"enc_v1$Mk4S261Q70ePXkTSab0SYg_u7JWZaRrK926YZNx93UkW1gxyE-ewwryN-Gube5xn_jRheHM4X_5OmeKUgIcCDzPO-hGZfSd2YZKVXyYfHfCVCSyz4vqR-mbdy6hP"
+        },
+        {
+            "id":2,
+            "name":"ChangeOver | Fuse Blown",
+            "Used Pins":"11,25,28",
+            "link":"enc_v1$1jxkGhlVaUDDH2yN4kBSAtr_OrYSVeW2bb7k8n6xWd1AYROcNCWhfHFbimHPNyGtw6FyRlj5mtb2RZsdMpAKCmsA58aRlQYsCpDq-8UzshCf1dDxUk6m1Hxuk4HT"
+        },
+        {
+            "id":3,
+            "name":"Fan | Buzzer | Heat Sensor",
+            "Used Pins":"12,17,15",
+            "link":"enc_v1$gflrkSpXhDC3cwA5LB7XTtTZdS-DISzE8xtiJ-MA5NLi-NO1px7xZyI5g94P3cUC2RWetfzKuuGP3GO3a1qNFval4nEckC8VcaMIRv1Ks1369rj6GzpzlW-qSPy9"
+        },
+        {
+            "id":4,
+            "name":"OverLoad&Charging Input",
+            "Used Pins":"13,14",
+            "link":"enc_v1$TERtcD-r5uMNyiXs11YwC5-C8mgMSuCPPjk6DBroaTaR6pWE8AsNVB_2CneP5GCPS2lDoZlZF3Bbc4QjdI9eJRoPYOHpcFD2YSoRBOswS1ke8OqMxB2Zu9uGPORI"
+        },
+        {
+            "id":5,
+            "name":"Battery Low | OverCharge",
+            "Used Pins":"16",
+            "link":"enc_v1$6zrQ4aM-KbgtHU0hMbX6n3qRWmrgi-aSfNnS3SyVqgtnP7N7YoyTGfLBLsu-Rkfqipnsok6yF9_7pOV0HQOOxID8LG8vH-2qSDEUtEEsyU1BQlLcVNodt5exYhVK"
+        },
+        {
+            "id":6,
+            "name":"Mosfet Blast | Mosfet Feedback | Overload",
+            "Used Pins":"22,27,29,31",
+            "link":"enc_v1$FmCp1nbs47z9m4gVQI_ZAyo_6Fc9q9b3i8Wve04CGpsomGQVUPzsdJbTF1pfkPlwvv2q9z0LkC2KXQQVwRmhxs-sTfI8s71cgJaLmGICa6HePOOdjhJZ2ZUePF0H"
+        },
+        {
+            "id":10,
+            "name":"microcontroller",
+            "Used Pins":"",
+            "link":"enc_v1$wokBTdFrfL-MW-Tlbju50NelOF8M5N-lkEj-7OsmQ0ZehtkY7Ai_9fTg2iwTI13IXfzV2NgR0VFY5EcXWW850v7lsXboor1QUPiCQHpkol0PLpkLENUKwrCaJqLX"
+        }
+
+    ]
+}

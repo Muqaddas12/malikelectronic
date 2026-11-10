@@ -97,5 +97,13 @@
       "link": "enc_v1$k8d_Dxq3mu8Ky9dFc0w9rxOwfNUvJzEMLLCvOs8zKP-NnzyiwWrurYWBkETcyyYUasDf9HR5HN9iAjaSdKvwXL7a9LiuqHutFfk8fQJn7yaleWWirDKXxeZEOxgV",
       "faultId": "low-battery"
     }
+  ],
+  "Luminous-Eco-Watt-1116":[
+    {
+      "id":10,
+      "name":"microcontroller",
+      "Used Pins":"",
+      "link":"enc_v1$GagJy_NlQDPnlRGU-fcGyWD8BkcEcDSZhJLu7lu8p7A4xQvTnHgaT73waqOcstmtf_E9UL91lTW1h3M2lSb28QkCCea0RKzTghN3hhLEecJT9pwjNfY73NRZu5Ah"
+    }
   ]
 }
